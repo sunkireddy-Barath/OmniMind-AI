@@ -1,0 +1,29 @@
+{
+  "pipeline": {
+    "global": {
+      "cache": {
+        "paths": [
+          "node_modules/**",
+          "dist/**"
+        ]
+      }
+    },
+    "pipeline": {
+      "build": {
+        "dependsOn": [
+          "lint",
+          "test"
+        ],
+        "outputs": [
+          "dist/**"
+        ]
+      },
+      "lint": {
+        "outputs": []
+      },
+      "test": {
+        "outputs": []
+      }
+    }
+  }
+}

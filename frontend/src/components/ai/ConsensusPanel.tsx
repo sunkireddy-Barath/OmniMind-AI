@@ -2,8 +2,9 @@
 
 import { motion } from 'framer-motion';
 import { CheckCircleIcon, ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
+import { ConsensusResponse } from '@/lib/api';
 
-const consensusData = {
+const defaultConsensusData = {
   recommendation: "Medium Scale Organic Farming",
   confidence: 87,
   keyInsights: [
@@ -36,6 +37,10 @@ const consensusData = {
   ]
 };
 
+interface ConsensusPanelProps {
+  consensus?: ConsensusResponse;
+}
+
 const insightIcons = {
   positive: CheckCircleIcon,
   warning: ExclamationTriangleIcon,
@@ -48,7 +53,20 @@ const insightColors = {
   info: 'text-blue-600 bg-blue-50 border-blue-200',
 };
 
-export default function ConsensusPanel() {
+export default function ConsensusPanel({ consensus }: ConsensusPanelProps) {
+  const consensusData = consensus
+    ? {
+        recommendation: consensus.recommendation,
+        confidence: Math.round(consensus.confidence * 100),
+        keyInsights: consensus.insights.map((insight) => ({
+          type: insight.type,
+          text: insight.text,
+          agent: insight.agent_name,
+        })),
+        nextSteps: consensus.next_steps,
+      }
+    : defaultConsensusData;
+
   return (
     <div className="space-y-6">
       {/* Consensus Recommendation */}
@@ -110,6 +128,13 @@ export default function ConsensusPanel() {
           })}
         </div>
       </div>
+
+      {consensus?.analysis && (
+        <div className="card">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Consensus Analysis</h3>
+          <p className="text-sm text-gray-700 whitespace-pre-wrap">{consensus.analysis}</p>
+        </div>
+      )}
 
       {/* Next Steps */}
       <div className="card">

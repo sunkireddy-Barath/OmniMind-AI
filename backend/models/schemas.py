@@ -1,7 +1,11 @@
-from pydantic import BaseModel, Field
-from typing import List, Optional, Dict, Any
+from __future__ import annotations
+
 from datetime import datetime
 from enum import Enum
+from typing import Any, Dict, List, Optional
+
+from pydantic import BaseModel, Field
+
 
 class AgentStatus(str, Enum):
     PENDING = "pending"
@@ -9,18 +13,39 @@ class AgentStatus(str, Enum):
     COMPLETED = "completed"
     FAILED = "failed"
 
+
+class SessionStatus(str, Enum):
+    QUEUED = "queued"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"
+
+
+class WorkflowStage(str, Enum):
+    PLANNER = "planner"
+    EXPERTS = "experts"
+    DEBATE = "debate"
+    SIMULATION = "simulation"
+    CONSENSUS = "consensus"
+    COMPLETED = "completed"
+
+
 class AgentType(str, Enum):
     PLANNER = "planner"
     RESEARCH = "research"
     FINANCE = "finance"
     STRATEGY = "strategy"
     RISK = "risk"
-    POLICY = "policy"
+    DEBATE = "debate"
+    SIMULATION = "simulation"
+    CONSENSUS = "consensus"
+
 
 class QueryRequest(BaseModel):
-    query: str = Field(..., min_length=10, max_length=1000)
+    query: str = Field(..., min_length=20, max_length=2000)
     user_id: Optional[str] = None
-    context: Optional[Dict[str, Any]] = None
+    context: Dict[str, Any] = Field(default_factory=dict)
+
 
 class AgentCreate(BaseModel):
     name: str
@@ -28,6 +53,50 @@ class AgentCreate(BaseModel):
     role: str
     system_prompt: str
     query_id: str
+
+
+class WorkflowStep(BaseModel):
+    id: int
+    name: str
+    stage: WorkflowStage
+    status: AgentStatus
+
+
+class ReasoningNode(BaseModel):
+    id: str
+    label: str
+    stage: WorkflowStage
+    status: AgentStatus
+    position: Dict[str, float]
+
+
+class ReasoningEdge(BaseModel):
+    id: str
+    source: str
+    target: str
+    label: str
+
+
+class ReasoningGraph(BaseModel):
+    nodes: List[ReasoningNode]
+    edges: List[ReasoningEdge]
+
+
+class KnowledgeDocument(BaseModel):
+    id: str
+    title: str
+    source: str
+    score: float
+    snippet: str
+    metadata: Dict[str, Any] = Field(default_factory=dict)
+
+
+class AgentMessage(BaseModel):
+    agent_name: str
+    stage: WorkflowStage
+    content: str
+    timestamp: datetime
+
 
 class AgentResponse(BaseModel):
     id: str
@@ -37,8 +106,10 @@ class AgentResponse(BaseModel):
     status: AgentStatus
     progress: int = 0
     output: Optional[str] = None
+    messages: List[str] = Field(default_factory=list)
     created_at: datetime
     updated_at: datetime
+
 
 class SimulationScenario(BaseModel):
     name: str
@@ -47,11 +118,15 @@ class SimulationScenario(BaseModel):
     risk_level: str
     timeline: str
     roi: float
-    parameters: Dict[str, Any]
+    confidence: float
+    outcome: str
+    parameters: Dict[str, Any] = Field(default_factory=dict)
+
 
 class SimulationRequest(BaseModel):
     query_id: str
     scenarios: List[Dict[str, Any]]
+
 
 class SimulationResponse(BaseModel):
     id: str
@@ -61,11 +136,13 @@ class SimulationResponse(BaseModel):
     confidence: float
     created_at: datetime
 
+
 class ConsensusInsight(BaseModel):
-    type: str  # positive, warning, info
+    type: str
     text: str
     agent_name: str
     confidence: float
+
 
 class ConsensusResponse(BaseModel):
     id: str
@@ -74,14 +151,30 @@ class ConsensusResponse(BaseModel):
     confidence: float
     insights: List[ConsensusInsight]
     next_steps: List[str]
+    analysis: str
     created_at: datetime
+
 
 class QueryResponse(BaseModel):
     id: str
     query: str
-    status: str
-    agents: List[AgentResponse]
+    status: SessionStatus
+    current_stage: WorkflowStage
+    context: Dict[str, Any] = Field(default_factory=dict)
+    agents: List[AgentResponse] = Field(default_factory=list)
+    messages: List[AgentMessage] = Field(default_factory=list)
+    supporting_docs: List[KnowledgeDocument] = Field(default_factory=list)
+    workflow_steps: List[WorkflowStep] = Field(default_factory=list)
+    graph: ReasoningGraph
     simulation: Optional[SimulationResponse] = None
     consensus: Optional[ConsensusResponse] = None
     created_at: datetime
     updated_at: datetime
+
+
+class SessionEvent(BaseModel):
+    type: str
+    session_id: str
+    stage: Optional[WorkflowStage] = None
+    message: str
+    snapshot: Optional[QueryResponse] = None

@@ -27,7 +27,7 @@ export function useQuery(queryId: string | null) {
     
     // Poll for updates every 2 seconds if query is processing
     const interval = setInterval(() => {
-      if (data?.status === 'processing') {
+      if (data?.status === 'queued' || data?.status === 'running') {
         fetchQuery();
       }
     }, 2000);

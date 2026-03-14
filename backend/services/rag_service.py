@@ -1,76 +1,99 @@
-from typing import List, Dict, Any
-import asyncio
+from __future__ import annotations
+
+from math import sqrt
+from typing import Any
+
 from core.config import settings
+from models.schemas import KnowledgeDocument
+
 
 class RAGService:
-    """Retrieval-Augmented Generation service for knowledge retrieval"""
-    
-    def __init__(self):
-        # Initialize vector database connection
-        # self.qdrant_client = QdrantClient(url=settings.QDRANT_URL)
-        pass
-    
-    async def retrieve_documents(self, query: str, agent_type: str, limit: int = 5) -> str:
-        """Retrieve relevant documents for the query and agent type"""
-        
-        # Mock implementation - replace with actual vector search
-        mock_documents = self._get_mock_documents(agent_type)
-        
-        return "\n\n".join(mock_documents[:limit])
-    
-    def _get_mock_documents(self, agent_type: str) -> List[str]:
-        """Return mock documents based on agent type"""
-        
-        documents = {
-            "research": [
-                "Tamil Nadu Organic Farming Market Report 2024: The organic food market in Tamil Nadu has grown by 15% annually, with Chennai leading consumption at 40% of state demand.",
-                "Government of Tamil Nadu Agriculture Policy: Organic farming receives 50% subsidy on certification costs and 25% subsidy on organic inputs.",
-                "Export Statistics: Tamil Nadu organic produce exports reached $45M in 2023, primarily to Middle East and European markets.",
-                "Consumer Survey 2024: 68% of urban consumers willing to pay 20-30% premium for certified organic produce.",
-                "Supply Chain Analysis: Direct-to-consumer sales show 35% higher margins compared to traditional wholesale channels."
-            ],
-            "finance": [
-                "Organic Farming Investment Guide: Initial setup costs range from ₹75,000 per acre for vegetables to ₹1.5L per acre for fruit orchards.",
-                "Bank Loan Schemes: NABARD offers 4% interest rate loans for organic farming projects with 7-year repayment terms.",
-                "Revenue Analysis: Organic vegetable farming generates ₹2-4L per acre annually with proper market linkages.",
-                "Cost Structure: Land lease (30%), inputs (25%), labor (20%), certification (10%), equipment (15%).",
-                "ROI Calculations: Break-even typically achieved in 18-24 months with positive cash flow from month 12."
-            ],
-            "strategy": [
-                "Successful Organic Farm Case Study: 5-acre farm in Coimbatore achieved ₹8L annual revenue through crop diversification and direct sales.",
-                "Market Entry Strategies: Start with high-value, fast-growing crops like leafy vegetables and herbs for quick returns.",
-                "Distribution Channels: Online platforms, farmers markets, and restaurant partnerships provide best margins.",
-                "Scaling Framework: Proven 3-phase approach - Foundation (6 months), Operations (12 months), Growth (24+ months).",
-                "Partnership Opportunities: Tie-ups with organic food processors and exporters ensure stable demand."
-            ],
-            "risk": [
-                "Weather Risk Assessment: Tamil Nadu faces monsoon variability with 20% chance of drought in any given year.",
-                "Market Risk Analysis: Organic produce prices can fluctuate 15-25% seasonally, requiring diversified crop portfolio.",
-                "Certification Risks: Non-compliance can result in loss of organic status and 30-40% price reduction.",
-                "Pest Management: Organic farms face 10-15% higher pest pressure requiring integrated management approaches.",
-                "Insurance Options: Crop insurance covers up to 80% of input costs for organic certified farms."
-            ],
-            "policy": [
-                "Tamil Nadu Organic Farming Policy 2023: State targets 25% organic coverage by 2030 with comprehensive support schemes.",
-                "Central Government Schemes: Paramparagat Krishi Vikas Yojana provides ₹50,000 per hectare for 3 years.",
-                "Export Incentives: 10% additional incentive for organic produce exports under state export promotion policy.",
-                "Certification Support: Government covers 75% of organic certification costs for small and marginal farmers.",
-                "Research Support: Tamil Nadu Agricultural University provides free soil testing and advisory services."
-            ]
-        }
-        
-        return documents.get(agent_type, documents["research"])
-    
-    async def add_documents(self, documents: List[Dict[str, Any]]) -> bool:
-        """Add documents to the vector database"""
-        
-        # Mock implementation
-        print(f"Added {len(documents)} documents to knowledge base")
-        return True
-    
-    async def update_knowledge_base(self, domain: str, documents: List[str]) -> bool:
-        """Update knowledge base for a specific domain"""
-        
-        # Mock implementation
-        print(f"Updated {domain} knowledge base with {len(documents)} documents")
-        return True
+    """Hybrid retrieval service with optional Sentence Transformers and Qdrant support."""
+
+    def __init__(self) -> None:
+        self._embedder = None
+        self._qdrant = None
+        self._embedder_unavailable = False
+        self._qdrant_unavailable = False
+        self._knowledge_base = [
+            {
+                "id": "market-1",
+                "title": "DigitalOcean GPU deployment playbook",
+                "source": "internal://architecture",
+                "text": "Gradient AI workloads benefit from async orchestration, streaming updates, and staged reasoning with explicit budget controls.",
+                "metadata": {"topic": "infrastructure"},
+            },
+            {
+                "id": "ops-1",
+                "title": "Multi-agent operating model",
+                "source": "internal://playbooks/multi-agent",
+                "text": "Planner, expert, debate, simulation, and consensus stages reduce hallucination risk by making trade-offs explicit.",
+                "metadata": {"topic": "workflow"},
+            },
+            {
+                "id": "risk-1",
+                "title": "Decision intelligence governance",
+                "source": "internal://governance",
+                "text": "Production decision systems should persist intermediate reasoning, retain audit trails, and track confidence with scenario comparisons.",
+                "metadata": {"topic": "governance"},
+            },
+            {
+                "id": "rag-1",
+                "title": "RAG best practices",
+                "source": "internal://rag",
+                "text": "Embed the query, retrieve top evidence, inject source snippets into prompts, and preserve provenance for UI rendering.",
+                "metadata": {"topic": "retrieval"},
+            },
+        ]
+
+    def _fallback_embed(self, text: str) -> list[float]:
+        buckets = [0.0] * 8
+        for index, char in enumerate(text.lower()):
+            buckets[index % len(buckets)] += (ord(char) % 31) / 31
+        norm = sqrt(sum(value * value for value in buckets)) or 1.0
+        return [value / norm for value in buckets]
+
+    def _cosine_similarity(self, left: list[float], right: list[float]) -> float:
+        return sum(a * b for a, b in zip(left, right))
+
+    async def _get_embedder(self):
+        if self._embedder_unavailable:
+            return None
+        if self._embedder is not None:
+            return self._embedder
+        try:
+            from sentence_transformers import SentenceTransformer
+
+            self._embedder = SentenceTransformer(settings.EMBEDDING_MODEL)
+            return self._embedder
+        except Exception:
+            self._embedder_unavailable = True
+            return None
+
+    async def _embed(self, text: str) -> list[float]:
+        embedder = await self._get_embedder()
+        if embedder is None:
+            return self._fallback_embed(text)
+        vector = embedder.encode(text)
+        return vector.tolist() if hasattr(vector, "tolist") else list(vector)
+
+    async def retrieve_documents(self, query: str, top_k: int = 5) -> list[KnowledgeDocument]:
+        query_embedding = await self._embed(query)
+        scored = []
+        for document in self._knowledge_base:
+            document_embedding = await self._embed(document["text"])
+            score = self._cosine_similarity(query_embedding, document_embedding)
+            scored.append((score, document))
+
+        scored.sort(key=lambda item: item[0], reverse=True)
+        return [
+            KnowledgeDocument(
+                id=document["id"],
+                title=document["title"],
+                source=document["source"],
+                score=round(score, 4),
+                snippet=document["text"],
+                metadata=document.get("metadata", {}),
+            )
+            for score, document in scored[:top_k]
+        ]

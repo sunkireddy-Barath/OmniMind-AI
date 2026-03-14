@@ -1,0 +1,8 @@
+packages:
+  - apps/web
+  - apps/api
+  - services/agent-engine
+  - services/knowledge
+  - services/data-memory
+  - packages/shared-types
+  - packages/ui

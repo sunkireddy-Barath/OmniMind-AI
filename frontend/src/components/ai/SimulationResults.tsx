@@ -2,8 +2,9 @@
 
 import { motion } from 'framer-motion';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { SimulationResponse } from '@/lib/api';
 
-const simulationData = [
+const defaultSimulationData = [
   {
     scenario: 'Small Scale',
     investment: 150000,
@@ -30,19 +31,40 @@ const simulationData = [
   },
 ];
 
-const chartData = simulationData.map(item => ({
-  name: item.scenario,
-  Investment: item.investment / 1000,
-  Profit: item.expectedProfit / 1000,
-  ROI: item.roi,
-}));
+interface SimulationResultsProps {
+  simulation?: SimulationResponse;
+}
 
-export default function SimulationResults() {
+export default function SimulationResults({ simulation }: SimulationResultsProps) {
+  const simulationData = simulation
+    ? simulation.scenarios.map((scenario) => ({
+        scenario: scenario.name,
+        investment: scenario.investment,
+        expectedProfit: scenario.expected_profit,
+        risk: scenario.risk_level,
+        timeline: scenario.timeline,
+        roi: scenario.roi,
+      }))
+    : defaultSimulationData;
+
+  const chartData = simulationData.map(item => ({
+    name: item.scenario,
+    Investment: item.investment / 1000,
+    Profit: item.expectedProfit / 1000,
+    ROI: item.roi,
+  }));
+
   return (
     <div className="card">
       <h2 className="text-xl font-semibold text-gray-900 mb-6">
         Scenario Simulation Results
       </h2>
+
+      {simulation && (
+        <p className="text-sm text-gray-600 mb-4">
+          Recommended scenario: <span className="font-semibold">{simulation.recommended_scenario}</span> · Confidence {Math.round(simulation.confidence * 100)}%
+        </p>
+      )}
 
       <div className="mb-8">
         <ResponsiveContainer width="100%" height={300}>

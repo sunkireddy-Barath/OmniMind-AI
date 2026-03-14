@@ -1,4 +1,5 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
+const WS_BASE_URL = API_BASE_URL.replace('http://', 'ws://').replace('https://', 'wss://');
 
 export interface QueryRequest {
   query: string;
@@ -6,11 +7,21 @@ export interface QueryRequest {
   context?: Record<string, any>;
 }
 
+export type AgentStatus = 'pending' | 'active' | 'completed' | 'failed';
+export type SessionStatus = 'queued' | 'running' | 'completed' | 'failed';
+export type WorkflowStage = 'planner' | 'experts' | 'debate' | 'simulation' | 'consensus' | 'completed';
+
 export interface QueryResponse {
   id: string;
   query: string;
-  status: string;
+  status: SessionStatus;
+  current_stage: WorkflowStage;
+  context: Record<string, any>;
   agents: AgentResponse[];
+  messages: AgentMessage[];
+  supporting_docs: KnowledgeDocument[];
+  workflow_steps: WorkflowStep[];
+  graph: ReasoningGraph;
   simulation?: SimulationResponse;
   consensus?: ConsensusResponse;
   created_at: string;
@@ -22,11 +33,55 @@ export interface AgentResponse {
   name: string;
   agent_type: string;
   role: string;
-  status: string;
+  status: AgentStatus;
   progress: number;
   output?: string;
+  messages: string[];
   created_at: string;
   updated_at: string;
+}
+
+export interface AgentMessage {
+  agent_name: string;
+  stage: WorkflowStage;
+  content: string;
+  timestamp: string;
+}
+
+export interface WorkflowStep {
+  id: number;
+  name: string;
+  stage: WorkflowStage;
+  status: AgentStatus;
+}
+
+export interface KnowledgeDocument {
+  id: string;
+  title: string;
+  source: string;
+  score: number;
+  snippet: string;
+  metadata: Record<string, any>;
+}
+
+export interface ReasoningNode {
+  id: string;
+  label: string;
+  stage: WorkflowStage;
+  status: AgentStatus;
+  position: Record<string, number>;
+}
+
+export interface ReasoningEdge {
+  id: string;
+  source: string;
+  target: string;
+  label: string;
+}
+
+export interface ReasoningGraph {
+  nodes: ReasoningNode[];
+  edges: ReasoningEdge[];
 }
 
 export interface SimulationResponse {
@@ -45,6 +100,8 @@ export interface SimulationScenario {
   risk_level: string;
   timeline: string;
   roi: number;
+  confidence: number;
+  outcome: string;
   parameters: Record<string, any>;
 }
 
@@ -55,6 +112,7 @@ export interface ConsensusResponse {
   confidence: number;
   insights: ConsensusInsight[];
   next_steps: string[];
+  analysis: string;
   created_at: string;
 }
 
@@ -63,6 +121,14 @@ export interface ConsensusInsight {
   text: string;
   agent_name: string;
   confidence: number;
+}
+
+export interface SessionEvent {
+  type: string;
+  session_id: string;
+  stage?: WorkflowStage;
+  message: string;
+  snapshot?: QueryResponse;
 }
 
 class ApiClient {
@@ -145,6 +211,36 @@ class ApiClient {
 
   async getSimulationsForQuery(queryId: string): Promise<SimulationResponse[]> {
     return this.request<SimulationResponse[]>(`/api/simulations/query/${queryId}`);
+  }
+
+  async exportQuery(queryId: string, format: 'json' = 'json'): Promise<Blob> {
+    const response = await fetch(`${this.baseUrl}/api/queries/${queryId}/export?format=${format}`);
+    if (!response.ok) {
+      throw new Error(`Failed to export decision ${queryId}`);
+    }
+    return response.blob();
+  }
+
+  streamQuery(
+    queryId: string,
+    onEvent: (event: SessionEvent) => void,
+    onError?: (error: Event) => void
+  ): WebSocket {
+    const socket = new WebSocket(`${WS_BASE_URL}/api/queries/${queryId}/stream`);
+    socket.onmessage = (rawEvent) => {
+      try {
+        const payload = JSON.parse(rawEvent.data) as SessionEvent;
+        onEvent(payload);
+      } catch {
+        // ignore malformed socket payloads
+      }
+    };
+    socket.onerror = (error) => {
+      if (onError) {
+        onError(error);
+      }
+    };
+    return socket;
   }
 }
 
