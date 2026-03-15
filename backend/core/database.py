@@ -1,14 +1,20 @@
-from sqlalchemy import create_engine, MetaData
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 import asyncio
 from .config import settings
 
-# Async database setup
+# Normalise URL — accept both postgresql:// and postgresql+asyncpg://
+_db_url = settings.DATABASE_URL
+if _db_url.startswith("postgresql://"):
+    _db_url = _db_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+
 engine = create_async_engine(
-    settings.DATABASE_URL.replace("postgresql://", "postgresql+asyncpg://"),
-    echo=True
+    _db_url,
+    echo=False,          # set True for SQL debug logging
+    pool_size=10,
+    max_overflow=20,
+    pool_pre_ping=True,  # detect stale connections
 )
 
 AsyncSessionLocal = sessionmaker(

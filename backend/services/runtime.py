@@ -21,6 +21,7 @@ from services.cache_service import session_cache
 from services.decision_graph import DecisionGraph
 from services.event_bus import session_event_bus
 from services.llm_service import LLMService
+from services.memory_service import memory_service
 from services.rag_service import RAGService
 from services.session_store import session_store
 
@@ -33,10 +34,11 @@ class DecisionRuntime:
 
     def _build_initial_snapshot(self, session_id: str, query: str, context: dict[str, Any]) -> QueryResponse:
         now = datetime.utcnow()
+        # Named personas from master spec — order matches EXPERT_TYPES in decision_graph.py
         agents = [
             AgentResponse(
                 id=f"{session_id}-planner",
-                name="Planner Agent",
+                name="Planner",
                 agent_type=AgentType.PLANNER,
                 role="Problem decomposition and planning",
                 status=AgentStatus.PENDING,
@@ -46,29 +48,9 @@ class DecisionRuntime:
             ),
             AgentResponse(
                 id=f"{session_id}-research",
-                name="Research Agent",
+                name="Priya",
                 agent_type=AgentType.RESEARCH,
-                role="Evidence retrieval and synthesis",
-                status=AgentStatus.PENDING,
-                progress=0,
-                created_at=now,
-                updated_at=now,
-            ),
-            AgentResponse(
-                id=f"{session_id}-finance",
-                name="Finance Agent",
-                agent_type=AgentType.FINANCE,
-                role="Cost, ROI, and downside modeling",
-                status=AgentStatus.PENDING,
-                progress=0,
-                created_at=now,
-                updated_at=now,
-            ),
-            AgentResponse(
-                id=f"{session_id}-strategy",
-                name="Strategy Agent",
-                agent_type=AgentType.STRATEGY,
-                role="Execution strategy and sequencing",
+                role="Research & Intelligence Agent",
                 status=AgentStatus.PENDING,
                 progress=0,
                 created_at=now,
@@ -76,9 +58,39 @@ class DecisionRuntime:
             ),
             AgentResponse(
                 id=f"{session_id}-risk",
-                name="Risk Agent",
+                name="Arjun",
                 agent_type=AgentType.RISK,
-                role="Risk analysis and mitigation",
+                role="Risk Analyst Agent",
+                status=AgentStatus.PENDING,
+                progress=0,
+                created_at=now,
+                updated_at=now,
+            ),
+            AgentResponse(
+                id=f"{session_id}-finance",
+                name="Kavya",
+                agent_type=AgentType.FINANCE,
+                role="Financial Strategy Agent",
+                status=AgentStatus.PENDING,
+                progress=0,
+                created_at=now,
+                updated_at=now,
+            ),
+            AgentResponse(
+                id=f"{session_id}-strategy",
+                name="Ravi",
+                agent_type=AgentType.STRATEGY,
+                role="Strategy & Execution Agent",
+                status=AgentStatus.PENDING,
+                progress=0,
+                created_at=now,
+                updated_at=now,
+            ),
+            AgentResponse(
+                id=f"{session_id}-policy",
+                name="Meera",
+                agent_type=AgentType.POLICY,
+                role="Policy & Government Schemes Agent",
                 status=AgentStatus.PENDING,
                 progress=0,
                 created_at=now,
@@ -88,7 +100,7 @@ class DecisionRuntime:
                 id=f"{session_id}-debate",
                 name="Debate Moderator",
                 agent_type=AgentType.DEBATE,
-                role="Cross-agent trade-off debate",
+                role="Cross-agent trade-off synthesis",
                 status=AgentStatus.PENDING,
                 progress=0,
                 created_at=now,
@@ -96,7 +108,7 @@ class DecisionRuntime:
             ),
             AgentResponse(
                 id=f"{session_id}-simulation",
-                name="Simulation Agent",
+                name="Simulation Engine",
                 agent_type=AgentType.SIMULATION,
                 role="Scenario simulation and scoring",
                 status=AgentStatus.PENDING,
@@ -106,7 +118,7 @@ class DecisionRuntime:
             ),
             AgentResponse(
                 id=f"{session_id}-consensus",
-                name="Consensus Agent",
+                name="Consensus Engine",
                 agent_type=AgentType.CONSENSUS,
                 role="Final recommendation synthesis",
                 status=AgentStatus.PENDING,
@@ -193,6 +205,19 @@ class DecisionRuntime:
             final_snapshot = await self.graph.run(snapshot, on_event)
             await session_store.save(final_snapshot)
             await session_cache.set_snapshot(final_snapshot)
+
+            # Persist consensus summary to memory for cross-session context
+            if final_snapshot.consensus:
+                await memory_service.store_consensus_summary(
+                    session_id, final_snapshot.consensus.analysis
+                )
+                user_id = final_snapshot.context.get("user_id", "anonymous")
+                await memory_service.record_query(
+                    user_id=user_id,
+                    session_id=session_id,
+                    query=final_snapshot.query,
+                    summary=final_snapshot.consensus.recommendation,
+                )
         except Exception as exc:
             snapshot.status = SessionStatus.FAILED
             snapshot.updated_at = datetime.utcnow()
