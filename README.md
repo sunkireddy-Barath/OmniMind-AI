@@ -1,105 +1,128 @@
-# OmniMind AI - Autonomous Multi-Agent AI Platform
+# OmniMind AI
 
-## Overview
-OmniMind AI is a full-stack autonomous AI platform that uses collaborative intelligent agents to solve complex real-world problems through structured decision intelligence and simulation.
+Autonomous Multi-Agent AI Platform for Real-World Decision Intelligence and Simulation.
 
-## Project Structure
+Built for the **DigitalOcean Gradient AI Hackathon** — targeting $14,000 across 4 prize categories.
+
+---
+
+## Architecture — 5 Layers
+
 ```
-omnimind-ai/
-├── frontend/                 # Next.js 14 Frontend
-│   ├── src/
-│   │   ├── app/             # Next.js App Router
-│   │   ├── components/      # React Components
-│   │   │   ├── ai/         # AI-specific components
-│   │   │   ├── layout/     # Layout components
-│   │   │   ├── sections/   # Page sections
-│   │   │   └── ui/         # UI components
-│   │   ├── lib/            # Utilities
-│   │   └── types/          # TypeScript types
-│   ├── package.json
-│   ├── tailwind.config.js
-│   └── tsconfig.json
-├── backend/                  # FastAPI Backend
-│   ├── api/                 # API routes
-│   ├── core/                # Core configuration
-│   ├── models/              # Data models
-│   ├── services/            # Business logic
-│   ├── main.py
-│   └── requirements.txt
-├── docs/                    # Documentation
-├── docker-compose.yml       # Docker services
-└── README.md
+Layer 1  Frontend        Next.js 14 + TypeScript + Tailwind CSS
+Layer 2  Backend API     FastAPI (Python 3.11) + WebSocket streaming
+Layer 3  Agent Engine    LangGraph + Llama 3.1 70B on DO Gradient AI GPU
+Layer 4  Knowledge       Qdrant vector DB + Sentence Transformers (all-MiniLM-L6-v2)
+Layer 5  Data & Memory   PostgreSQL (sessions) + Redis (cache + memory)
 ```
 
-## Architecture
-- **Frontend**: Next.js 14 with TypeScript, Tailwind CSS, and modern UI components
-- **Backend**: FastAPI with Python for AI orchestration and APIs
-- **AI Layer**: Multi-agent system with LLM integration
-- **Database**: PostgreSQL with vector search capabilities
-- **Deployment**: Docker containers on DigitalOcean
+---
+
+## Agent Council
+
+| Agent | Persona | Role | Opening phrase |
+|-------|---------|------|----------------|
+| Priya | Research & Intelligence | Market analysis, source citation | "Analysis of [N] sources indicates..." |
+| Arjun | Risk Analyst | Stress-testing, risk scoring | "Before we proceed, I need to flag [N] risks..." |
+| Kavya | Financial Strategy | Rs. figures, ROI, break-even | "Let me run the numbers on this..." |
+| Ravi  | Strategy & Execution | 3-phase roadmap, milestones | "Based on the council's analysis, here's the execution plan..." |
+| Meera | Policy & Govt Schemes | PM-KISAN, PMFBY, MUDRA, NABARD | "Good news — I found [N] schemes you likely qualify for..." |
+
+Plus: Planner, Debate Moderator, Simulation Engine, Consensus Engine.
+
+---
+
+## Workflow
+
+```
+Query → Planner → [Priya, Arjun, Kavya, Ravi, Meera] → Debate → Simulation → Consensus
+```
+
+Each stage streams live to the frontend via WebSocket. Every LLM call goes through
+DigitalOcean Gradient AI (Llama 3.1 70B) and returns model name, token count, and
+latency — visible in the UI.
+
+---
 
 ## Quick Start
 
-### Using Docker (Recommended)
-```bash
-# Clone the repository
-git clone <repository-url>
-cd omnimind-ai
+### 1. Configure environment
 
-# Set up environment variables
+```bash
 cp .env.example .env
-# Edit .env with your configuration
-
-# Start all services
-docker-compose up -d
-
-# Access the application
-# Frontend: http://localhost:3000
-# Backend API: http://localhost:8000
-# API Documentation: http://localhost:8000/docs
+# Edit .env — set GRADIENT_API_KEY and GRADIENT_WORKSPACE_ID
 ```
 
-### Manual Setup
+### 2. Start all services
 
-#### Frontend Setup
 ```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
+docker compose up --build
 ```
 
-#### Backend Setup
+This starts: frontend (3000), backend (8000), Qdrant (6333), Redis (6379), PostgreSQL (5432).
+
+The backend automatically seeds the knowledge base into Qdrant on first startup.
+
+### 3. Seed knowledge base manually (optional)
+
 ```bash
-cd backend
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Start the server
-uvicorn main:app --reload
+docker compose exec backend python seed_knowledge.py
 ```
 
-## Features
-- **Multi-Agent Collaboration**: Dynamic agent creation and orchestration
-- **Advanced UI/UX**: Modern design with animations and interactions
-- **Real-time Workflow**: Live agent progress tracking
-- **Scenario Simulation**: Investment analysis and risk assessment
-- **Consensus Engine**: AI debate and recommendation generation
+### 4. Open the app
 
-## Development
-- Frontend: Next.js with hot reload at http://localhost:3000
-- Backend: FastAPI with auto-reload at http://localhost:8000
-- Database: PostgreSQL at localhost:5432
-- Vector DB: Qdrant at localhost:6333
-- Cache: Redis at localhost:6379
+```
+http://localhost:3000
+```
 
-## Documentation
-See `/docs/` folder for detailed architecture and setup guides.
+Try the demo query: *"How can I start an organic vegetable farm in Tamil Nadu with Rs.1.5 lakh?"*
+
+---
+
+## API Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/queries` | Start a new agent workflow |
+| GET | `/api/queries/{id}` | Get session status and results |
+| GET | `/api/queries/{id}/export` | Export full analysis as JSON |
+| WS | `/api/queries/{id}/stream` | Real-time WebSocket event stream |
+| GET | `/api/agents/{query_id}` | List agents for a session |
+| POST | `/api/simulations` | Run a standalone simulation |
+| GET | `/health` | Full Layer 3/4/5 health status |
+| GET | `/api/gradient/status` | Verify DO Gradient AI integration |
+
+---
+
+## Knowledge Base Collections
+
+| Collection | Documents |
+|------------|-----------|
+| `agriculture` | Tamil Nadu crop calendar, drip irrigation subsidy, organic certification, e-NAM |
+| `government_schemes` | PM-KISAN, PMFBY, MUDRA, NABARD KCC, PM-KMY, Startup India, TN NEED scheme |
+| `business` | FPO formation, MSME Udyam registration, cloud kitchen model |
+| `finance` | SBI agri loans, NABARD RIDF, interest rates |
+| `career` | Tamil Nadu IT market 2025, career transition guide |
+
+---
+
+## Environment Variables
+
+| Variable | Description |
+|----------|-------------|
+| `GRADIENT_API_KEY` | DigitalOcean Gradient AI API key |
+| `GRADIENT_BASE_URL` | Gradient AI base URL (default: `https://inference.do-ai.run/v1`) |
+| `GRADIENT_WORKSPACE_ID` | Gradient AI workspace ID |
+| `LLM_MODEL` | Model name (default: `llama3-1-70b-instruct`) |
+| `LLM_MAX_TOKENS` | Max tokens per LLM call (default: `2048`) |
+| `DATABASE_URL` | PostgreSQL connection string |
+| `REDIS_URL` | Redis connection string |
+| `QDRANT_URL` | Qdrant vector DB URL |
+| `QDRANT_COLLECTION` | Qdrant collection name (default: `omnimind_knowledge`) |
+| `EMBEDDING_MODEL` | Sentence Transformers model (default: `sentence-transformers/all-MiniLM-L6-v2`) |
+
+---
+
+## License
+
+MIT

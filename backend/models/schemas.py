@@ -36,6 +36,7 @@ class AgentType(str, Enum):
     FINANCE = "finance"
     STRATEGY = "strategy"
     RISK = "risk"
+    POLICY = "policy"
     DEBATE = "debate"
     SIMULATION = "simulation"
     CONSENSUS = "consensus"

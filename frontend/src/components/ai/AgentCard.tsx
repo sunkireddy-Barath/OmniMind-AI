@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion';
 import { CheckCircleIcon, ClockIcon, PlayIcon } from '@heroicons/react/24/outline';
-import { Brain, FileText, DollarSign, Target, Shield } from 'lucide-react';
 
 interface Agent {
   id: string;
@@ -10,63 +9,73 @@ interface Agent {
   role: string;
   status: 'completed' | 'active' | 'pending';
   progress: number;
+  model?: string;
+  tokens?: number;
+  latency_ms?: number;
+  provider?: string;
 }
 
 interface AgentCardProps {
   agent: Agent;
 }
 
-const agentIcons = {
-  planner: Brain,
-  research: FileText,
-  finance: DollarSign,
-  strategy: Target,
-  risk: Shield,
-};
-
-const statusColors = {
-  completed: 'bg-green-100 text-green-800 border-green-200',
-  active: 'bg-blue-100 text-blue-800 border-blue-200',
-  pending: 'bg-gray-100 text-gray-600 border-gray-200',
+// Named persona colours and emojis matching master spec
+const PERSONA_META: Record<string, { color: string; bg: string; border: string; icon: string }> = {
+  Priya:              { color: 'text-purple-700', bg: 'bg-purple-50',  border: 'border-purple-200', icon: '🔬' },
+  Arjun:              { color: 'text-amber-700',  bg: 'bg-amber-50',   border: 'border-amber-200',  icon: '⚠️' },
+  Kavya:              { color: 'text-green-700',  bg: 'bg-green-50',   border: 'border-green-200',  icon: '💰' },
+  Ravi:               { color: 'text-blue-700',   bg: 'bg-blue-50',    border: 'border-blue-200',   icon: '🗺️' },
+  Meera:              { color: 'text-rose-700',   bg: 'bg-rose-50',    border: 'border-rose-200',   icon: '🏛️' },
+  Planner:            { color: 'text-gray-700',   bg: 'bg-gray-50',    border: 'border-gray-200',   icon: '🧠' },
+  'Debate Moderator': { color: 'text-indigo-700', bg: 'bg-indigo-50',  border: 'border-indigo-200', icon: '⚖️' },
+  'Simulation Engine':{ color: 'text-cyan-700',   bg: 'bg-cyan-50',    border: 'border-cyan-200',   icon: '📊' },
+  'Consensus Engine': { color: 'text-teal-700',   bg: 'bg-teal-50',    border: 'border-teal-200',   icon: '✅' },
 };
 
 const statusIcons = {
   completed: CheckCircleIcon,
-  active: PlayIcon,
-  pending: ClockIcon,
+  active:    PlayIcon,
+  pending:   ClockIcon,
 };
 
 export default function AgentCard({ agent }: AgentCardProps) {
-  const Icon = agentIcons[agent.id as keyof typeof agentIcons] || Brain;
+  const meta = PERSONA_META[agent.name] ?? PERSONA_META['Planner'];
   const StatusIcon = statusIcons[agent.status];
+  const isActive = agent.status === 'active';
 
   return (
-    <div className={`border rounded-lg p-4 ${statusColors[agent.status]} transition-all duration-300`}>
+    <div
+      className={`border rounded-xl p-4 transition-all duration-300 ${meta.bg} ${meta.border}
+        ${isActive ? 'ring-2 ring-offset-1 ring-blue-400 shadow-md' : ''}`}
+    >
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-            <Icon className="h-5 w-5 text-gray-700" />
+          <div className={`w-10 h-10 rounded-full bg-white flex items-center justify-center text-xl shadow-sm ${meta.border} border`}>
+            {meta.icon}
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900">{agent.name}</h3>
-            <p className="text-sm text-gray-600">{agent.role}</p>
+            <h3 className={`font-semibold ${meta.color}`}>{agent.name}</h3>
+            <p className="text-xs text-gray-500">{agent.role}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <StatusIcon className="h-5 w-5" />
-          <span className="text-sm font-medium capitalize">{agent.status}</span>
+        <div className={`flex items-center gap-1 text-xs font-medium ${meta.color}`}>
+          <StatusIcon className="h-4 w-4" />
+          <span className="capitalize">{agent.status}</span>
+          {isActive && (
+            <span className="ml-1 inline-block w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+          )}
         </div>
       </div>
 
-      {agent.status === 'active' && (
-        <div className="space-y-2">
-          <div className="flex justify-between text-sm">
-            <span>Progress</span>
+      {isActive && (
+        <div className="space-y-1 mb-2">
+          <div className="flex justify-between text-xs text-gray-500">
+            <span>Thinking...</span>
             <span>{agent.progress}%</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-gray-200 rounded-full h-1.5">
             <motion.div
-              className="bg-blue-600 h-2 rounded-full"
+              className="bg-blue-500 h-1.5 rounded-full"
               initial={{ width: 0 }}
               animate={{ width: `${agent.progress}%` }}
               transition={{ duration: 0.5 }}
@@ -76,14 +85,19 @@ export default function AgentCard({ agent }: AgentCardProps) {
       )}
 
       {agent.status === 'completed' && (
-        <div className="text-sm text-green-700">
-          ✓ Analysis complete - insights ready
-        </div>
+        <p className={`text-xs ${meta.color}`}>✓ Analysis complete</p>
+      )}
+      {agent.status === 'pending' && (
+        <p className="text-xs text-gray-400">Waiting for previous agents...</p>
       )}
 
-      {agent.status === 'pending' && (
-        <div className="text-sm text-gray-500">
-          Waiting for previous agents to complete
+      {/* Gradient AI metadata — visible for judges */}
+      {agent.provider && agent.provider !== 'fallback' && (
+        <div className="mt-2 pt-2 border-t border-gray-100 flex flex-wrap gap-2">
+          <span className="text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">{agent.provider}</span>
+          {agent.model && <span className="text-xs text-gray-400">{agent.model}</span>}
+          {agent.tokens != null && <span className="text-xs text-gray-400">{agent.tokens} tokens</span>}
+          {agent.latency_ms != null && <span className="text-xs text-gray-400">{agent.latency_ms}ms</span>}
         </div>
       )}
     </div>
