@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import ConsensusPanel from '../ai/ConsensusPanel';
 import SimulationResults from '../ai/SimulationResults';
+import MultiAgentChat from '../ai/MultiAgentChat';
 
 interface DashboardProps {
   user: { name: string; email: string };
@@ -180,7 +181,7 @@ export default function Dashboard({ user, activeTab = 'dashboard' }: DashboardPr
            transition={{ duration: 0.4 }}
         >
           {activeTab === 'dashboard' && renderOverview()}
-          {activeTab === 'chat' && renderPlaceholder('Collaboration Hub', 'Connected communication channels are being prepared.')}
+          {activeTab === 'chat' && <MultiAgentChat />}
           {activeTab === 'rag' && renderPlaceholder('Resource Center', 'Building a comprehensive library of verified resources.')}
           {activeTab === 'sim' && (
             <div className="p-8 max-w-7xl mx-auto">
