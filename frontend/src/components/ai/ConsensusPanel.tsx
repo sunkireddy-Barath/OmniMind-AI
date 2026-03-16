@@ -72,8 +72,8 @@ export default function ConsensusPanel({ consensus }: ConsensusPanelProps) {
       {/* Consensus Recommendation */}
       <div className="royal-card p-10">
         <div className="flex items-center justify-between mb-10">
-          <h2 className="text-xl font-black uppercase tracking-tight italic">
-            Sovereign Consensus
+          <h2 className="text-xl font-bold uppercase tracking-tight">
+            Strategic Insights
           </h2>
           <div className="w-12 h-1 rounded-full bg-gradient-to-r from-royal-gold to-transparent" />
         </div>
@@ -105,18 +105,18 @@ export default function ConsensusPanel({ consensus }: ConsensusPanelProps) {
               />
             </svg>
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <span className="text-4xl font-black italic tracking-tighter">{consensusData.confidence}%</span>
-              <span className="text-[8px] font-black text-royal-text-secondary uppercase tracking-[0.3em]">Certainty</span>
+              <span className="text-4xl font-bold tracking-tighter">{consensusData.confidence}%</span>
+              <span className="text-[8px] font-bold text-royal-text-secondary uppercase tracking-[0.2em]">Confidence</span>
             </div>
           </div>
         </div>
 
         <div className="text-center p-8 bg-royal-gold/5 rounded-[2rem] border border-royal-gold/10 relative group overflow-hidden transition-colors duration-500">
           <div className="absolute inset-0 bg-gradient-to-br from-royal-gold/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-          <h3 className="text-[10px] font-black text-royal-gold mb-4 uppercase tracking-[0.4em]">
-            Recommended Mandate
+          <h3 className="text-[10px] font-bold text-royal-gold mb-4 uppercase tracking-[0.2em]">
+            Recommended Outcome
           </h3>
-          <p className="text-lg font-bold leading-relaxed italic relative z-10">
+          <p className="text-lg font-bold leading-relaxed relative z-10">
             "{consensusData.recommendation}"
           </p>
         </div>
@@ -124,8 +124,8 @@ export default function ConsensusPanel({ consensus }: ConsensusPanelProps) {
 
       {/* Key Insights */}
       <div className="royal-card p-10">
-        <h3 className="text-lg font-black uppercase tracking-tight mb-8 italic">
-          Strategic Synthesis
+        <h3 className="text-lg font-bold uppercase tracking-tight mb-8">
+          Detailed Synthesis
         </h3>
         <div className="space-y-4">
           {consensusData.keyInsights.map((insight, index) => {
@@ -144,7 +144,7 @@ export default function ConsensusPanel({ consensus }: ConsensusPanelProps) {
                   </div>
                   <div className="flex-1">
                     <p className="text-xs font-bold leading-relaxed mb-2 opacity-80">{insight.text}</p>
-                    <p className="text-[9px] font-black uppercase tracking-widest text-royal-gold/40">Construct: {insight.agent}</p>
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-royal-gold/40">Source: {insight.agent}</p>
                   </div>
                 </div>
               </motion.div>
@@ -155,8 +155,8 @@ export default function ConsensusPanel({ consensus }: ConsensusPanelProps) {
 
       {/* Next Steps */}
       <div className="royal-card p-10">
-        <h3 className="text-lg font-black text-white uppercase tracking-tight mb-8 italic">
-          Execution Protocols
+        <h3 className="text-lg font-bold uppercase tracking-tight mb-8">
+          Action Plan
         </h3>
         <div className="space-y-4">
           {consensusData.nextSteps.map((step, index) => (
@@ -167,7 +167,7 @@ export default function ConsensusPanel({ consensus }: ConsensusPanelProps) {
               transition={{ delay: index * 0.1 }}
               className="flex items-center gap-6 p-4 rounded-2xl bg-royal-gold/5 border border-royal-gold/10 hover:border-royal-gold/20 transition-all duration-500 group"
             >
-              <div className="w-10 h-10 bg-royal-black border border-royal-gold/20 text-royal-gold rounded-xl flex items-center justify-center text-xs font-black shadow-3xl group-hover:scale-110 transition-transform">
+              <div className="w-10 h-10 bg-royal-black border border-royal-gold/20 text-royal-gold rounded-xl flex items-center justify-center text-xs font-bold shadow-3xl group-hover:scale-110 transition-transform">
                 {String(index + 1).padStart(2, '0')}
               </div>
               <span className="text-xs font-bold text-royal-text-secondary group-hover:text-royal-text-primary transition-colors">{step}</span>

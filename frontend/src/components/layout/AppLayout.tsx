@@ -42,16 +42,16 @@ export default function AppLayout({ user, onSignOut, children, activeTab, setAct
   }, [isDarkTheme]);
 
   const menuItems = [
-    { id: 'dashboard', name: 'Dominion Overview', icon: LayoutDashboard },
-    { id: 'chat', name: 'Multi-Agent Chat', icon: MessageSquare },
-    { id: 'rag', name: 'Knowledge Vault', icon: Database },
-    { id: 'sim', name: 'Simulation', icon: PlayCircle },
-    { id: 'consensus', name: 'Sovereign Consensus', icon: ShieldCheck },
-    { id: 'analytics', name: 'Intelligence Logs', icon: BarChart3 },
+    { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
+    { id: 'chat', name: 'Collaboration Hub', icon: MessageSquare },
+    { id: 'rag', name: 'Resource Center', icon: Database },
+    { id: 'sim', name: 'Scenario Planner', icon: PlayCircle },
+    { id: 'consensus', name: 'Strategic Insights', icon: ShieldCheck },
+    { id: 'analytics', name: 'Activity Reports', icon: BarChart3 },
   ];
 
   return (
-    <div className="flex h-screen bg-royal-black overflow-hidden transition-colors duration-500">
+    <div className="flex h-screen bg-royal-black overflow-x-hidden overflow-y-hidden transition-colors duration-500">
       {/* Sidebar */}
       <motion.aside
         initial={false}
@@ -112,7 +112,7 @@ export default function AppLayout({ user, onSignOut, children, activeTab, setAct
           >
             <LogOut size={20} />
             {!isSidebarCollapsed && (
-              <span className="text-xs font-black uppercase tracking-widest">Sever Link</span>
+              <span className="text-xs font-black uppercase tracking-widest">Sign Out</span>
             )}
           </button>
         </div>
@@ -123,12 +123,12 @@ export default function AppLayout({ user, onSignOut, children, activeTab, setAct
         {/* Top Header */}
         <header className="h-20 bg-royal-black/50 backdrop-blur-xl border-b border-royal-gold/10 px-8 flex items-center justify-between z-20 transition-colors duration-500">
           <div className="flex items-center gap-4">
-            <h2 className="text-sm font-black uppercase tracking-[0.3em] text-royal-text-secondary">
-              {menuItems.find(i => i.id === activeTab)?.name || 'Command Center'}
+            <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-royal-text-secondary">
+              {menuItems.find(i => i.id === activeTab)?.name || 'Welcome Center'}
             </h2>
             <div className="hidden sm:flex items-center gap-2 px-3 py-1 rounded-full bg-royal-gold/5 border border-royal-gold/10">
               <Sparkles size={12} className="text-royal-gold" />
-              <span className="text-[8px] font-black text-royal-gold uppercase tracking-widest">Protocol Active</span>
+              <span className="text-[8px] font-bold text-royal-gold uppercase tracking-widest">System Active</span>
             </div>
           </div>
 
@@ -152,8 +152,8 @@ export default function AppLayout({ user, onSignOut, children, activeTab, setAct
             {/* Profile */}
             <div className="flex items-center gap-4 pl-6 border-l border-royal-gold/10">
               <div className="text-right hidden sm:block">
-                <p className="text-[10px] font-black uppercase tracking-wider">{user.name}</p>
-                <p className="text-[8px] font-bold text-royal-gold/60 uppercase tracking-widest text-glow">Sovereign Tier</p>
+                <p className="text-[10px] font-bold uppercase tracking-wider">{user.name}</p>
+                <p className="text-[8px] font-medium text-royal-gold/60 uppercase tracking-widest">Professional Member</p>
               </div>
               <div className="relative group cursor-pointer">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-royal-gold to-royal-gold-dark flex items-center justify-center font-black text-royal-black shadow-3xl group-hover:scale-105 transition-transform">
@@ -167,7 +167,7 @@ export default function AppLayout({ user, onSignOut, children, activeTab, setAct
         </header>
 
         {/* Viewport */}
-        <main className="flex-1 overflow-y-auto relative scrollbar-hide">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden relative scrollbar-hide">
           {/* Background decoration */}
           <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-royal-gold/5 blur-[120px] rounded-full -mr-64 -mt-64 pointer-events-none" />
           <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-royal-gold/5 blur-[120px] rounded-full -ml-64 -mb-64 pointer-events-none" />
