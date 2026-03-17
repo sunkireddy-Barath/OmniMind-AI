@@ -143,8 +143,8 @@ class MultiAgentDebateService:
             return "Gemini API key missing."
             
         url = (
-            "https://generativelanguage.googleapis.com/v1/"
-            f"models/gemini-1.5-pro:generateContent?key={self.gemini_api_key}"
+            "https://generativelanguage.googleapis.com/v1beta/"
+            f"models/gemini-1.5-flash:generateContent?key={self.gemini_api_key}"
         )
         
         payload = {
@@ -166,13 +166,8 @@ class MultiAgentDebateService:
                     url, json=payload, headers={"Content-Type": "application/json"}
                 )
                 if resp.status_code != 200:
-                    # Fallback to v1beta
-                    url_beta = url.replace("/v1/", "/v1beta/")
-                    resp = await client.post(url_beta, json=payload, headers={"Content-Type": "application/json"})
-                    
-                    if resp.status_code != 200:
-                        logger.error("Gemini returned %s: %s", resp.status_code, resp.text[:300])
-                        return f"[Gemini error {resp.status_code}] {resp.text[:200]}"
+                    logger.error("Gemini returned %s: %s", resp.status_code, resp.text[:300])
+                    return f"[Gemini error {resp.status_code}] {resp.text[:200]}"
                 
                 data = resp.json()
                 return data["candidates"][0]["content"]["parts"][0]["text"]

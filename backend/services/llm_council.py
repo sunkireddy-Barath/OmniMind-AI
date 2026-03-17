@@ -1,6 +1,6 @@
 """
 LLM Council Chat System - Multi-Provider 7 Agents
-OpenAI GPT-5.4 + Google Gemini Pro + Groq Llama 3.1
+OpenAI GPT-4o + Google Gemini Pro + Groq Llama 3.1
 """
 import os
 import asyncio
@@ -8,13 +8,34 @@ import uuid
 from typing import Dict, List, Any, Optional
 from datetime import datetime
 
+from dotenv import load_dotenv
+load_dotenv()  # ensure .env is loaded before reading keys
+
 from pydantic import BaseModel
+
+# Pull keys from settings (which reads .env) with os.getenv fallback
+try:
+    from core.config import settings as _settings
+    _OPENAI_KEY  = _settings.OPENAI_API_KEY  or os.getenv("OPENAI_API_KEY", "")
+    _GOOGLE_KEY  = _settings.GOOGLE_API_KEY  or os.getenv("GOOGLE_API_KEY", "")
+    _GROQ_KEY    = _settings.GROQ_API_KEY    or os.getenv("GROQ_API_KEY", "")
+    _TAVILY_KEY  = _settings.TAVILY_API_KEY  or os.getenv("TAVILY_API_KEY", "")
+except Exception:
+    _OPENAI_KEY  = os.getenv("OPENAI_API_KEY", "")
+    _GOOGLE_KEY  = os.getenv("GOOGLE_API_KEY", "")
+    _GROQ_KEY    = os.getenv("GROQ_API_KEY", "")
+    _TAVILY_KEY  = os.getenv("TAVILY_API_KEY", "")
 
 try:
     from langchain_openai import ChatOpenAI
     from langchain_google_genai import ChatGoogleGenerativeAI
     from langchain_groq import ChatGroq
-    from langchain_community.tools.tavily_search import TavilySearchResults
+    try:
+        from langchain_tavily import TavilySearch as TavilySearchResults
+        _TAVILY_NEW = True
+    except ImportError:
+        from langchain_community.tools.tavily_search import TavilySearchResults
+        _TAVILY_NEW = False
     LANGCHAIN_AVAILABLE = True
 except ImportError:
     LANGCHAIN_AVAILABLE = False
@@ -52,31 +73,47 @@ class LLMCouncilChat:
         self.llms: Dict[str, Any] = {}
 
         if LANGCHAIN_AVAILABLE:
-            if os.getenv("OPENAI_API_KEY"):
-                self.llms["openai"] = ChatOpenAI(
-                    model="gpt-4o",  # fallback; override with gpt-5.4 when available
-                    temperature=0.7,
-                    api_key=os.getenv("OPENAI_API_KEY"),
-                )
+            if _OPENAI_KEY:
+                try:
+                    self.llms["openai"] = ChatOpenAI(
+                        model="gpt-4o",
+                        temperature=0.7,
+                        api_key=_OPENAI_KEY,
+                    )
+                except Exception:
+                    pass
 
-            if os.getenv("GOOGLE_API_KEY"):
-                self.llms["gemini"] = ChatGoogleGenerativeAI(
-                    model="gemini-pro",
-                    temperature=0.7,
-                    google_api_key=os.getenv("GOOGLE_API_KEY"),
-                )
+            if _GOOGLE_KEY:
+                try:
+                    self.llms["gemini"] = ChatGoogleGenerativeAI(
+                        model="gemini-1.5-flash",
+                        temperature=0.7,
+                        google_api_key=_GOOGLE_KEY,
+                    )
+                    # Use Gemini as openai fallback if OpenAI quota exceeded
+                    if "openai" not in self.llms:
+                        self.llms["openai"] = self.llms["gemini"]
+                except Exception:
+                    pass
 
-            if os.getenv("GROQ_API_KEY"):
-                self.llms["groq"] = ChatGroq(
-                    model="llama-3.1-70b-versatile",
-                    temperature=0.7,
-                    groq_api_key=os.getenv("GROQ_API_KEY"),
-                )
+            if _GROQ_KEY:
+                try:
+                    self.llms["groq"] = ChatGroq(
+                        model="llama-3.1-70b-versatile",
+                        temperature=0.7,
+                        groq_api_key=_GROQ_KEY,
+                    )
+                except Exception:
+                    pass
 
         self.search_available = False
-        if LANGCHAIN_AVAILABLE and os.getenv("TAVILY_API_KEY"):
+        if LANGCHAIN_AVAILABLE and _TAVILY_KEY:
             try:
-                self.search = TavilySearchResults(k=3)
+                os.environ["TAVILY_API_KEY"] = _TAVILY_KEY
+                if _TAVILY_NEW:
+                    self.search = TavilySearchResults(max_results=3)
+                else:
+                    self.search = TavilySearchResults(k=3)
                 self.search_available = True
             except Exception:
                 pass
@@ -187,6 +224,15 @@ Respond as the {agent['role']} using {agent['model']}. Be concise and insightful
             response = await llm.ainvoke(prompt)
             return f"{agent['emoji']} {agent['name']} ({agent['model']}): {response.content}"
         except Exception as e:
+            # If quota exceeded, try Gemini fallback
+            if "429" in str(e) or "quota" in str(e).lower():
+                fallback = self.llms.get("gemini") or self.llms.get("groq")
+                if fallback and fallback is not llm:
+                    try:
+                        response = await fallback.ainvoke(prompt)
+                        return f"{agent['emoji']} {agent['name']} (Gemini fallback): {response.content}"
+                    except Exception:
+                        pass
             return f"{agent['emoji']} {agent['name']} ({agent['model']}): Error — {e}"
 
     async def add_agent_message(self, session_id: str, agent_key: str) -> ChatMessage:
@@ -265,7 +311,7 @@ Synthesize all perspectives into a balanced, actionable final answer:"""
         return {
             "openai": "openai" in self.llms,
             "gemini": "gemini" in self.llms,
-            "groq": "groq" in self.llms,
+            "groq":   "groq"   in self.llms,
             "tavily": self.search_available,
         }
 

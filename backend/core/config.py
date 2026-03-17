@@ -34,7 +34,6 @@ class Settings(BaseSettings):
     AI_PROVIDER: str = os.getenv("AI_PROVIDER", "gradient")
 
     # Multi-Agent Debate System
-    TAVILY_API_KEY: str = os.getenv("TAVILY_API_KEY", "")
     OPENROUTER_API_KEY: str = os.getenv("OPENROUTER_API_KEY", "")
     GEMINI_API_KEY: str = os.getenv("GEMINI_API_KEY", "")
     OPENAI_FINANCE_API_KEY: str = os.getenv("OPENAI_FINANCE_API_KEY", "")

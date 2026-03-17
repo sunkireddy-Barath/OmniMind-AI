@@ -18,7 +18,7 @@ import {
   User,
   ShieldCheck,
   Zap,
-  LayoutDashboard
+  LayoutDashboard,
 } from 'lucide-react';
 import { useTheme } from '@/context/ThemeContext';
 

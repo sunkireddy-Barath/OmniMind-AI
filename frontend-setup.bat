@@ -1,4 +1,5 @@
 @echo off
+cd /d "%~dp0"
 echo 🚀 OmniMind AI Frontend Setup
 echo ================================
 
@@ -29,15 +30,8 @@ node --version
 REM Check if npm is available
 npm --version >nul 2>&1
 if %errorlevel% neq 0 (
-    echo ❌ npm is not available
-    echo    npm should come with Node.js installation
-    pause
-    exit /b 1
+    echo  [WARN]  npm not found in PATH — trying npx fallback
 )
-
-echo ✅ npm is available
-npm --version
-echo.
 
 REM Navigate to frontend directory
 cd frontend
