@@ -1,107 +1,99 @@
 # OmniMind AI
 
-OmniMind-AI  Autonomous Multi Agent AI Platform for Real World Decision Intelligence and Simulation
+Autonomous Multi-Agent AI Platform for Real-World Decision Intelligence and Simulation.
 
-## 🧠 NEW: LLM Council - Multi-Agent Chat System
-
-**5 specialized AI agents debate complex questions to reach consensus:**
-
-- 🧠 **Analyst** - Logical reasoning and structured thinking
-- 🔍 **Researcher** - Web research using Tavily API  
-- ⚠️ **Critic** - Critical analysis and flaw detection
-- 💭 **Debater** - Alternative viewpoints and counter-arguments
-- ✅ **Verifier** - Fact checking and final synthesis
-
-**Quick Test:**
-```bash
-cd backend
-python test_council.py
-```
-
-**API Example:**
-```bash
-# Start debate
-curl -X POST "http://localhost:8000/api/council/chat/start" \
-  -H "Content-Type: application/json" \
-  -d '{"question": "Will AGI happen before 2035?"}'
-
-# Run full council discussion  
-curl -X POST "http://localhost:8000/api/council/chat/run-all/{session_id}"
-```
-
-See [LLM_COUNCIL_README.md](LLM_COUNCIL_README.md) for full documentation.
+Multi-provider LLM architecture with 7-agent Council, 4-agent Debate, RAG knowledge base, and a Next.js frontend — all running locally with a single bat file.
 
 ---
 
-## Architecture — 5 Layers
+## Quick Start (Windows)
 
-```
-Layer 1  Frontend        Next.js 14 + TypeScript + Tailwind CSS
-Layer 2  Backend API     FastAPI (Python 3.11) + WebSocket streaming
-Layer 3  Agent Engine    LangGraph + Llama 3.1 70B on DO Gradient AI GPU
-Layer 4  Knowledge       Qdrant vector DB + Sentence Transformers (all-MiniLM-L6-v2)
-Layer 5  Data & Memory   PostgreSQL (sessions) + Redis (cache + memory)
+```bat
+start-full-system.bat
 ```
 
+That's it. It handles venv creation, dependency install, frontend `npm install`, and launches both servers in separate windows.
 
-## Agent Council
-
-| Agent | Persona | Role | Opening phrase |
-|-------|---------|------|----------------|
-| Priya | Research & Intelligence | Market analysis, source citation | "Analysis of [N] sources indicates..." |
-| Arjun | Risk Analyst | Stress-testing, risk scoring | "Before we proceed, I need to flag [N] risks..." |
-| Kavya | Financial Strategy | Rs. figures, ROI, break-even | "Let me run the numbers on this..." |
-| Ravi  | Strategy & Execution | 3-phase roadmap, milestones | "Based on the council's analysis, here's the execution plan..." |
-| Meera | Policy & Govt Schemes | PM-KISAN, PMFBY, MUDRA, NABARD | "Good news — I found [N] schemes you likely qualify for..." |
-
-Plus: Planner, Debate Moderator, Simulation Engine, Consensus Engine.
+| URL | Service |
+|-----|---------|
+| http://localhost:3000 | Frontend (Next.js) |
+| http://localhost:8000 | Backend API (FastAPI) |
+| http://localhost:8000/docs | Swagger UI |
+| http://localhost:8000/api/council/health | Council health |
+| http://localhost:8000/api/debate/run | Debate endpoint |
 
 ---
 
-## Workflow
+## Architecture
 
 ```
-Query → Planner → [Priya, Arjun, Kavya, Ravi, Meera] → Debate → Simulation → Consensus
+┌─────────────────────────────────────────────────────────┐
+│  Frontend  —  Next.js 14 + TypeScript + Tailwind CSS    │
+│  MultiAgentChat  ←→  Debate Mode  ←→  Council Mode      │
+└────────────────────────┬────────────────────────────────┘
+                         │ HTTP / REST
+┌────────────────────────▼────────────────────────────────┐
+│  Backend API  —  FastAPI (Python 3.13) + Uvicorn        │
+│  /api/council/*   /api/debate/*   /api/queries/*        │
+│  /api/agents/*    /api/simulations/*                    │
+└──────┬──────────────────────────┬───────────────────────┘
+       │                          │
+┌──────▼──────────┐   ┌───────────▼──────────────────────┐
+│  LLM Council    │   │  Multi-Agent Debate               │
+│  7 Agents       │   │  4 Agents + Moderator             │
+│  3 Providers    │   │  4 Providers                      │
+└──────┬──────────┘   └───────────┬──────────────────────┘
+       │                          │
+┌──────▼──────────────────────────▼──────────────────────┐
+│  LLM Providers                                          │
+│  OpenAI GPT-4o  │  Gemini 1.5 Flash  │  Groq Llama 3.1 │
+│  OpenRouter Mixtral  │  Tavily Search                   │
+└─────────────────────────────────────────────────────────┘
+       │
+┌──────▼──────────────────────────────────────────────────┐
+│  Data Layer                                             │
+│  SQLite (local dev)  │  Sentence Transformers (RAG)     │
+│  In-memory vector KB  │  Redis (optional cache)         │
+└─────────────────────────────────────────────────────────┘
 ```
-
-Each stage streams live to the frontend via WebSocket. Every LLM call goes through
-DigitalOcean Gradient AI (Llama 3.1 70B) and returns model name, token count, and
-latency — visible in the UI.
 
 ---
 
-## Quick Start
+## LLM Council — 7 Agents
 
-### 1. Configure environment
+Accessible from the Multi-Agent Chat UI via the **Council** toggle.
 
-```bash
-cp .env.example .env
-# Edit .env — set GRADIENT_API_KEY and GRADIENT_WORKSPACE_ID
-```
+| Agent | Provider | Model | Role |
+|-------|----------|-------|------|
+| 🧠 Analyst | OpenAI | GPT-4o | Logical reasoning & structured frameworks |
+| 🔍 Researcher | OpenAI + Tavily | GPT-4o | Evidence-based research with live web search |
+| ⚠️ Critic | Google | Gemini 1.5 Flash | Risk identification & assumption challenging |
+| 🎯 Strategist | Google | Gemini 1.5 Flash | Strategic planning & implementation roadmaps |
+| 💭 Debater | Groq | Llama 3.1 70B | Counter-arguments & alternative perspectives |
+| 🔗 Synthesizer | Groq | Llama 3.1 70B | Pattern recognition & unified insights |
+| ✅ Verifier | Best Available | Hybrid | Fact checking & final consensus |
 
-### 2. Start all services
+All 7 agents respond in sequence, each building on prior context. A final consensus is generated by the Verifier using the best available LLM.
 
-```bash
-docker compose up --build
-```
+---
 
-This starts: frontend (3000), backend (8000), Qdrant (6333), Redis (6379), PostgreSQL (5432).
+## Multi-Agent Debate — 4 Agents
 
-The backend automatically seeds the knowledge base into Qdrant on first startup.
+Accessible from the Multi-Agent Chat UI via the **Debate** toggle.
 
-### 3. Seed knowledge base manually (optional)
+| Agent | Persona | Provider | Role |
+|-------|---------|----------|------|
+| Priya | Research & Intelligence | Tavily + OpenAI | Live search + evidence analysis |
+| Arjun | Risk Analysis | OpenRouter (Mixtral) | Risk scoring & failure scenarios |
+| Kavya | Financial & Resources | OpenAI | ROI, costs, resource feasibility |
+| Ravi | Strategy & Execution | Gemini 1.5 Flash | Final consensus + execution plan |
 
-```bash
-docker compose exec backend python seed_knowledge.py
-```
-
-### 4. Open the app
-
-```
-http://localhost:3000
-```
-
-Try the demo query: *"How can I start an organic vegetable farm in Tamil Nadu with Rs.1.5 lakh?"*
+**5-step pipeline:**
+1. Problem restatement + research (Priya)
+2. Risk analysis (Arjun)
+3. Financial analysis (Kavya)
+4. Moderated debate between all three
+5. Final consensus & execution plan (Ravi)
 
 ---
 
@@ -109,43 +101,122 @@ Try the demo query: *"How can I start an organic vegetable farm in Tamil Nadu wi
 
 | Method | Path | Description |
 |--------|------|-------------|
-| POST | `/api/queries` | Start a new agent workflow |
-| GET | `/api/queries/{id}` | Get session status and results |
-| GET | `/api/queries/{id}/export` | Export full analysis as JSON |
-| WS | `/api/queries/{id}/stream` | Real-time WebSocket event stream |
-| GET | `/api/agents/{query_id}` | List agents for a session |
-| POST | `/api/simulations` | Run a standalone simulation |
-| GET | `/health` | Full Layer 3/4/5 health status |
-| GET | `/api/gradient/status` | Verify DO Gradient AI integration |
-
----
-
-## Knowledge Base Collections
-
-| Collection | Documents |
-|------------|-----------|
-| `agriculture` | Tamil Nadu crop calendar, drip irrigation subsidy, organic certification, e-NAM |
-| `government_schemes` | PM-KISAN, PMFBY, MUDRA, NABARD KCC, PM-KMY, Startup India, TN NEED scheme |
-| `business` | FPO formation, MSME Udyam registration, cloud kitchen model |
-| `finance` | SBI agri loans, NABARD RIDF, interest rates |
-| `career` | Tamil Nadu IT market 2025, career transition guide |
+| GET | `/health` | Full system health check |
+| POST | `/api/council/chat/start` | Start a Council session |
+| POST | `/api/council/chat/run-all/{session_id}` | Run all 7 agents |
+| POST | `/api/council/chat/{session_id}/agent/{agent_key}` | Run single agent |
+| GET | `/api/council/agents` | List agents + provider status |
+| GET | `/api/council/health` | Council health + key status |
+| POST | `/api/debate/run` | Run full 4-agent debate |
+| POST | `/api/queries` | Start agent workflow |
+| GET | `/api/queries/{id}` | Get session results |
+| WS | `/api/queries/{id}/stream` | WebSocket event stream |
+| POST | `/api/simulations` | Run scenario simulation |
 
 ---
 
 ## Environment Variables
 
-| Variable | Description |
-|----------|-------------|
-| `GRADIENT_API_KEY` | DigitalOcean Gradient AI API key |
-| `GRADIENT_BASE_URL` | Gradient AI base URL (default: `https://inference.do-ai.run/v1`) |
-| `GRADIENT_WORKSPACE_ID` | Gradient AI workspace ID |
-| `LLM_MODEL` | Model name (default: `llama3-1-70b-instruct`) |
-| `LLM_MAX_TOKENS` | Max tokens per LLM call (default: `2048`) |
-| `DATABASE_URL` | PostgreSQL connection string |
-| `REDIS_URL` | Redis connection string |
-| `QDRANT_URL` | Qdrant vector DB URL |
-| `QDRANT_COLLECTION` | Qdrant collection name (default: `omnimind_knowledge`) |
-| `EMBEDDING_MODEL` | Sentence Transformers model (default: `sentence-transformers/all-MiniLM-L6-v2`) |
+Copy `.env.example` to `.env` and fill in your keys.
+
+| Variable | Provider | Used By |
+|----------|----------|---------|
+| `OPENAI_API_KEY` | OpenAI | Analyst, Researcher, Finance agents |
+| `OPENAI_FINANCE_API_KEY` | OpenAI | Kavya (Financial agent) |
+| `OPENAI_RESEARCH_API_KEY` | OpenAI | Priya (Research agent) |
+| `GOOGLE_API_KEY` | Google | Critic, Strategist (Council) |
+| `GEMINI_API_KEY` | Google | Ravi (Strategy agent, Debate) |
+| `GROQ_API_KEY` | Groq | Debater, Synthesizer (Council) |
+| `TAVILY_API_KEY` | Tavily | Researcher (live web search) |
+| `OPENROUTER_API_KEY` | OpenRouter | Arjun (Risk agent, Mixtral) |
+| `DATABASE_URL` | — | SQLite local / PostgreSQL prod |
+
+Minimum to get started: `GOOGLE_API_KEY` + `GEMINI_API_KEY` + `TAVILY_API_KEY` + `OPENROUTER_API_KEY`.
+
+---
+
+## Setup Scripts
+
+| File | Purpose |
+|------|---------|
+| `start-full-system.bat` | One-click: setup + launch backend + frontend |
+| `setup-backend.bat` | First-time backend setup (venv + deps) |
+| `start-backend.bat` | Start backend server only |
+| `start-frontend.bat` | Start frontend dev server only |
+
+---
+
+## Project Structure
+
+```
+OmniMind-AI/
+├── backend/
+│   ├── api/routes/          # FastAPI route handlers
+│   │   ├── council.py       # LLM Council endpoints
+│   │   ├── debate.py        # Multi-Agent Debate endpoints
+│   │   ├── agents.py
+│   │   ├── queries.py
+│   │   └── simulations.py
+│   ├── core/
+│   │   ├── config.py        # Pydantic settings (reads .env)
+│   │   └── database.py      # SQLite/PostgreSQL async engine
+│   ├── services/
+│   │   ├── llm_council.py   # 7-agent council logic
+│   │   ├── multi_agent_debate.py  # 4-agent debate pipeline
+│   │   ├── rag_service.py   # Vector search + in-memory KB
+│   │   ├── decision_graph.py
+│   │   └── memory_service.py
+│   ├── models/
+│   │   ├── entities.py      # SQLAlchemy ORM models
+│   │   └── schemas.py       # Pydantic request/response schemas
+│   └── main.py              # FastAPI app entry point
+├── frontend/
+│   └── src/
+│       ├── app/             # Next.js App Router pages
+│       ├── components/
+│       │   ├── ai/
+│       │   │   ├── MultiAgentChat.tsx   # Debate + Council UI
+│       │   │   ├── LLMCouncil.tsx       # 7-agent council panel
+│       │   │   └── ...
+│       │   ├── sections/    # Landing page sections
+│       │   └── layout/      # AppLayout, sidebar
+│       └── lib/api.ts       # API client
+├── requirements.txt         # Python dependencies (actual installed versions)
+├── .env.example             # Environment variable template
+├── start-full-system.bat    # One-click launcher
+└── docker-compose.yml       # Docker setup (optional)
+```
+
+---
+
+## Knowledge Base
+
+Built-in fallback KB (no Qdrant needed locally):
+
+| Collection | Content |
+|------------|---------|
+| `agriculture` | Tamil Nadu crop calendar, organic farming, drip irrigation subsidies |
+| `government_schemes` | PM-KISAN, PMFBY, MUDRA, NABARD KCC, Startup India, TN schemes |
+| `business` | FPO formation, MSME registration, cloud kitchen model |
+| `finance` | SBI agri loans, NABARD RIDF, interest rates |
+| `career` | Tamil Nadu IT market 2025, skill demand |
+
+Qdrant + Sentence Transformers are optional — the system falls back to cosine similarity over the in-memory KB automatically.
+
+---
+
+## Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| Frontend | Next.js 14, TypeScript, Tailwind CSS |
+| Backend | FastAPI, Python 3.13, Uvicorn |
+| LLM Orchestration | LangChain, LangGraph |
+| LLM Providers | OpenAI, Google Gemini, Groq, OpenRouter |
+| Search | Tavily API |
+| Database | SQLite (local) / PostgreSQL (prod) |
+| Vector Search | Sentence Transformers + in-memory / Qdrant |
+| Cache | Redis (optional) |
 
 ---
 
