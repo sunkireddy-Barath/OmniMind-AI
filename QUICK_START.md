@@ -1,61 +1,63 @@
-# 🚀 Quick Start Guide - ChatGPT-like LLM Council
+# Quick Start — OmniMind AI
 
-## 🎯 What You Get
+## What You Get
 
-A **ChatGPT-like interface** where **5 AI agents debate** your questions:
+Two AI debate modes accessible from a single chat interface:
 
-- 🧠 **Analyst** - Logical reasoning
-- 🔍 **Researcher** - Web research  
-- ⚠️ **Critic** - Critical analysis
-- 💭 **Debater** - Alternative viewpoints
-- ✅ **Verifier** - Fact checking
+- **Council 7** — 7 agents across OpenAI, Gemini, and Groq debate your question
+- **Debate 4** — 4 named persona agents (Priya, Arjun, Kavya, Ravi) run a structured 5-step analysis
 
-## ⚡ 30-Second Setup
+---
 
-### 1. Start Backend
-```bash
-cd OmniMind-AI
-start-council.bat  # Windows
-# or
-./start-council.sh  # Linux/Mac
+## 30-Second Setup (Windows)
+
+### 1. Configure API Keys
+
+Edit `.env` in the project root. Minimum required:
+
+```
+GOOGLE_API_KEY=your_google_key
+GEMINI_API_KEY=your_gemini_key
+TAVILY_API_KEY=your_tavily_key
+OPENROUTER_API_KEY=your_openrouter_key
 ```
 
-### 2. Start Frontend
-```bash
-cd frontend
-npm install
-npm run dev
+Copy `.env.example` to `.env` if you haven't already.
+
+### 2. Launch Everything
+
+```bat
+start-full-system.bat
 ```
 
-### 3. Open Browser
+This handles venv creation, dependency install, and opens both servers in separate windows.
+
+### 3. Open the App
+
 ```
 http://localhost:3000
 ```
 
-**That's it!** You now have a ChatGPT-like interface with 5 AI agents.
+---
 
-## 🔑 Optional: Full AI Power
+## Individual Scripts
 
-For complete functionality, set these API keys:
+| Script | Purpose |
+|--------|---------|
+| `start-full-system.bat` | One-click: setup + backend + frontend |
+| `setup-backend.bat` | First-time venv + dependency install only |
+| `start-backend.bat` | Start backend server only (port 8000) |
+| `start-frontend.bat` | Start frontend dev server only (port 3000) |
 
-```bash
-# Windows
-set OPENAI_API_KEY=your-openai-key
-set TAVILY_API_KEY=your-tavily-key
+---
 
-# Linux/Mac
-export OPENAI_API_KEY="your-openai-key"
-export TAVILY_API_KEY="your-tavily-key"
-```
+## Using the Chat Interface
 
-**Without API keys**: System works in demo mode with template responses.
-
-## 💬 How to Use
-
-1. **Type your question** in the chat input
-2. **Press Enter** or click Send
-3. **Watch 5 agents discuss** your question step by step
-4. **Get final consensus** from all perspectives
+1. Open the app at `http://localhost:3000`
+2. Navigate to **Multi-Agent Chat** in the sidebar
+3. Toggle between **Debate 4** and **Council 7** in the header
+4. Type your question and press Enter
+5. Watch agents respond in sequence, then get a final consensus
 
 ### Example Questions
 - "Should I invest in AI stocks in 2026?"
@@ -63,70 +65,46 @@ export TAVILY_API_KEY="your-tavily-key"
 - "Will renewable energy replace fossil fuels by 2030?"
 - "How should I prepare for career changes in the AI era?"
 
-## 🏗️ Architecture
+---
 
-```
-Frontend (localhost:3000)
-    ↓
-Backend API (localhost:8000)
-    ↓
-┌─────────────────────────────────────┐
-│  🧠 Analyst → 🔍 Researcher         │
-│       ↓            ↓                │
-│  ⚠️ Critic ← 💭 Debater ← ✅ Verifier │
-└─────────────────────────────────────┘
-    ↓
-Final Consensus
-```
+## API Access
 
-## 🔧 Troubleshooting
+Backend Swagger UI: `http://localhost:8000/docs`
 
-### Frontend won't start?
 ```bash
+# Start a council session
+curl -X POST "http://localhost:8000/api/council/chat/start" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Your question here"}'
+
+# Run full debate
+curl -X POST "http://localhost:8000/api/debate/run" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Your question here"}'
+```
+
+---
+
+## Troubleshooting
+
+**Frontend won't start?**
+```bat
 cd frontend
-rm -rf node_modules package-lock.json
 npm install
 npm run dev
 ```
 
-### Backend errors?
-```bash
-cd backend
-pip install -r requirements.docker.txt
-python test_council.py
+**Backend errors on startup?**
+```bat
+setup-backend.bat
 ```
 
-### API not working?
-- Check backend is running on port 8000
-- Verify `http://localhost:8000/api/council/health`
-- Check browser console for errors
+**API key errors?** Check `.env` is in the `OmniMind-AI/` root (not inside `backend/`).
 
-## 📱 What You'll See
+**Port conflicts?** Ensure ports 3000 and 8000 are free.
 
-### Chat Interface
-- **Left sidebar**: Agent list and status
-- **Main area**: ChatGPT-like conversation
-- **Input box**: Type questions and get instant responses
-
-### Agent Responses
-Each agent responds with their unique perspective:
+**Health check:**
 ```
-🧠 Analyst: "Let me break this down logically..."
-🔍 Researcher: "Based on current market data..."
-⚠️ Critic: "The main risks I see are..."
-💭 Debater: "However, consider this alternative..."
-✅ Verifier: "Synthesizing all viewpoints..."
+http://localhost:8000/health
+http://localhost:8000/api/council/health
 ```
-
-### Final Consensus
-After all agents respond, you get a comprehensive final answer combining all perspectives.
-
-## 🎉 Success!
-
-You now have a **ChatGPT-like multi-agent AI system** running locally!
-
-- **Ask complex questions** and get multi-perspective answers
-- **Watch AI agents debate** in real-time
-- **Get comprehensive insights** from 5 different AI specialists
-
-**Ready to start your first AI council discussion?** 🧠💭⚡

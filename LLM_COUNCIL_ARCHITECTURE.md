@@ -1,463 +1,291 @@
-# 🧠 Multi-Provider LLM Council - Architecture Documentation
+# LLM Council — Architecture Documentation
 
-## 📋 Overview
+## Overview
 
-The Multi-Provider LLM Council is an advanced 7-agent debate system that leverages three different AI providers (OpenAI, Google, Groq) to create diverse perspectives and comprehensive analysis through structured multi-model discussions.
+The LLM Council is a 7-agent debate system that routes each agent to a different AI provider (OpenAI, Google Gemini, Groq) to generate diverse, multi-perspective analysis on any question. Agents respond sequentially, each building on prior context, and a final consensus is produced by the Verifier.
 
-## 🏗️ Enhanced Multi-Provider Architecture
+---
 
-### High-Level Architecture
+## High-Level Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
 │                        Frontend Layer                           │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
-│  │   Chat UI       │  │  Agent Display  │  │  Real-time      │ │
-│  │   (ChatGPT-like)│  │  Components     │  │  Updates        │ │
-│  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
+│   MultiAgentChat  ──  [Debate 4]  [Council 7]  toggle          │
+│   LLMCouncil.tsx — per-agent status, provider badge, responses  │
 └─────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                      API Gateway Layer                         │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
-│  │   FastAPI       │  │   WebSocket     │  │   REST          │ │
-│  │   Routes        │  │   Streaming     │  │   Endpoints     │ │
-│  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
+│                      FastAPI Backend                            │
+│   POST /api/council/chat/start                                  │
+│   POST /api/council/chat/run-all/{session_id}                   │
+│   POST /api/council/chat/{session_id}/agent/{agent_key}         │
+│   GET  /api/council/agents                                      │
+│   GET  /api/council/health                                      │
 └─────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                Multi-Provider Council Engine                    │
+│                  LLM Council Engine                             │
+│   backend/services/llm_council.py                               │
 │                                                                 │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │                Agent Orchestrator                       │   │
-│  │  • Multi-Provider Session Management                    │   │
-│  │  • Cross-Model Agent Coordination                       │   │
-│  │  • Provider-Aware Context Passing                       │   │
-│  │  • Multi-Model Consensus Building                       │   │
-│  └─────────────────────────────────────────────────────────┘   │
-│                                                                 │
-│  ┌─────────────────────────────────────────────────────────┐   │
-│  │              7 Multi-Provider Agents                    │   │
-│  │                                                         │   │
-│  │  OpenAI GPT-5.4:        Google Gemini Pro:             │   │
-│  │  🧠 Analyst             ⚠️ Critic                       │   │
-│  │  🔍 Researcher          🎯 Strategist                   │   │
-│  │                                                         │   │
-│  │  Groq Llama 3.1:        Hybrid (Best Available):       │   │
-│  │  💭 Debater             ✅ Verifier                     │   │
-│  │  🔗 Synthesizer                                         │   │
-│  │                                                         │   │
-│  └─────────────────────────────────────────────────────────┘   │
+│   Session Management  →  Agent Orchestration  →  Consensus      │
+│   Provider-aware context passing between agents                 │
 └─────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
 ┌─────────────────────────────────────────────────────────────────┐
-│                    External AI Providers                        │
-│  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐ │
-│  │   OpenAI        │  │   Google        │  │   Groq          │ │
-│  │   GPT-5.4       │  │   Gemini Pro    │  │   Llama 3.1     │ │
-│  └─────────────────┘  └─────────────────┘  └─────────────────┘ │
-│  ┌─────────────────┐  ┌─────────────────┐                     │
-│  │   Tavily        │  │   Database      │                     │
-│  │   Search API    │  │   Storage       │                     │
-│  └─────────────────┘  └─────────────────┘                     │
+│                    7 Agents — 3 Providers                       │
+│                                                                 │
+│   OpenAI GPT-4o:          Google Gemini 1.5 Flash:             │
+│   🧠 Analyst              ⚠️ Critic                             │
+│   🔍 Researcher           🎯 Strategist                         │
+│                                                                 │
+│   Groq Llama 3.1 70B:     Hybrid (best available):             │
+│   💭 Debater              ✅ Verifier                           │
+│   🔗 Synthesizer                                                │
+└─────────────────────────────────────────────────────────────────┘
+                                │
+                                ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                   External Providers                            │
+│   OpenAI GPT-4o  │  Google Gemini 1.5 Flash  │  Groq Llama 3.1 │
+│   Tavily Search API  │  SQLite (local storage)                  │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
-## 🤖 Enhanced Agent Specifications
+---
 
-### OpenAI GPT-5.4 Agents
+## Agent Specifications
 
-#### 1. 🧠 Analyst Agent
-- **Provider**: OpenAI GPT-5.4
-- **Role**: Logical Reasoning Specialist
-- **Function**: Advanced systematic analysis with GPT-5.4's enhanced reasoning
-- **Approach**: Multi-layered logical frameworks, causal analysis, structured thinking
-- **Output**: Comprehensive logical breakdowns with confidence scoring
+### OpenAI GPT-4o Agents
 
-#### 2. 🔍 Researcher Agent  
-- **Provider**: OpenAI GPT-5.4 + Tavily Search
-- **Role**: Web Research Specialist
-- **Function**: Real-time information gathering with advanced synthesis
-- **Tools**: Tavily Search API + GPT-5.4 analysis
-- **Approach**: Multi-source verification, trend analysis, data correlation
-- **Output**: Evidence-based insights with source attribution
+#### 🧠 Analyst
+- Provider: OpenAI GPT-4o
+- Role: Logical Reasoning Specialist
+- Approach: Multi-layered logical frameworks, causal analysis, structured thinking
+- Output: Comprehensive logical breakdowns with confidence scoring
 
-### Google Gemini Pro Agents
+#### 🔍 Researcher
+- Provider: OpenAI GPT-4o + Tavily Search
+- Role: Evidence-Based Research Specialist
+- Approach: Real-time web search, multi-source verification, trend analysis
+- Output: Evidence-based insights with source attribution
 
-#### 3. ⚠️ Critic Agent
-- **Provider**: Google Gemini Pro
-- **Role**: Critical Analysis Specialist
-- **Function**: Deep flaw detection using Gemini's analytical capabilities
-- **Approach**: Multi-dimensional risk assessment, assumption validation
-- **Output**: Structured criticism with improvement pathways
+### Google Gemini 1.5 Flash Agents
 
-#### 4. 🎯 Strategist Agent
-- **Provider**: Google Gemini Pro
-- **Role**: Strategic Planning Specialist
-- **Function**: Comprehensive strategy development with Gemini's planning strengths
-- **Approach**: Multi-phase roadmapping, resource optimization, scenario planning
-- **Output**: Detailed strategic frameworks with implementation timelines
+#### ⚠️ Critic
+- Provider: Google Gemini 1.5 Flash
+- Role: Critical Analysis Specialist
+- Approach: Multi-dimensional risk assessment, assumption validation, flaw detection
+- Output: Structured criticism with improvement pathways
 
-### Groq Llama 3.1 Agents
+#### 🎯 Strategist
+- Provider: Google Gemini 1.5 Flash
+- Role: Strategic Planning Specialist
+- Approach: Multi-phase roadmapping, resource optimization, scenario planning
+- Output: Detailed strategic frameworks with implementation timelines
 
-#### 5. 💭 Debater Agent
-- **Provider**: Groq Llama 3.1
-- **Role**: Alternative Viewpoint Specialist
-- **Function**: High-speed counter-argument generation
-- **Approach**: Rapid perspective switching, contrarian analysis, creative alternatives
-- **Output**: Fast, diverse counter-arguments with novel approaches
+### Groq Llama 3.1 70B Agents
 
-#### 6. 🔗 Synthesizer Agent
-- **Provider**: Groq Llama 3.1
-- **Role**: Data Synthesis Specialist
-- **Function**: Rapid pattern recognition and data integration
-- **Approach**: Cross-model insight combination, pattern detection, unified frameworks
-- **Output**: Synthesized insights bridging different AI perspectives
+#### 💭 Debater
+- Provider: Groq Llama 3.1 70B
+- Role: Alternative Viewpoint Specialist
+- Approach: Rapid perspective switching, contrarian analysis, creative alternatives
+- Output: Counter-arguments with novel approaches
+
+#### 🔗 Synthesizer
+- Provider: Groq Llama 3.1 70B
+- Role: Data Synthesis Specialist
+- Approach: Cross-model insight combination, pattern detection, unified frameworks
+- Output: Synthesized insights bridging different AI perspectives
 
 ### Hybrid Agent
 
-#### 7. ✅ Verifier Agent
-- **Provider**: Best Available Model (OpenAI > Gemini > Groq)
-- **Role**: Fact Verification & Consensus Builder
-- **Function**: Multi-provider validation and final synthesis
-- **Approach**: Cross-model verification, reliability scoring, consensus building
-- **Output**: Verified conclusions with multi-provider confidence ratings
+#### ✅ Verifier
+- Provider: Best Available (OpenAI → Gemini → Groq fallback)
+- Role: Fact Verification & Consensus Builder
+- Approach: Cross-model validation, reliability scoring, consensus building
+- Output: Verified conclusions with multi-provider confidence ratings
 
-## 🔄 Discussion Flow
+---
 
-### Sequential Processing Model
+## Discussion Flow
 
 ```
 User Question
      ↓
-┌─────────────────────────────────────────────────────────────┐
-│                 Session Initialization                      │
-│  • Create unique session ID                                 │
-│  • Store question context                                   │
-│  • Initialize agent states                                  │
-└─────────────────────────────────────────────────────────────┘
+Session Initialization
+  • Create unique session ID
+  • Store question context
+  • Initialize agent states
      ↓
-┌─────────────────────────────────────────────────────────────┐
-│                    Agent Execution                          │
-│                                                             │
-│  Step 1: 🧠 Analyst                                        │
-│  ├─ Analyzes question structure                            │
-│  ├─ Identifies key components                               │
-│  └─ Provides logical framework                              │
-│                                                             │
-│  Step 2: 🔍 Researcher                                     │
-│  ├─ Searches web for current data                          │
-│  ├─ Gathers factual evidence                               │
-│  └─ Cites reliable sources                                  │
-│                                                             │
-│  Step 3: ⚠️ Critic                                         │
-│  ├─ Reviews previous analyses                               │
-│  ├─ Identifies potential flaws                              │
-│  └─ Highlights risks and concerns                           │
-│                                                             │
-│  Step 4: 💭 Debater                                        │
-│  ├─ Considers alternative viewpoints                        │
-│  ├─ Presents counter-arguments                              │
-│  └─ Explores different approaches                           │
-│                                                             │
-│  Step 5: ✅ Verifier                                       │
-│  ├─ Synthesizes all perspectives                            │
-│  ├─ Validates key claims                                    │
-│  └─ Builds final consensus                                  │
-└─────────────────────────────────────────────────────────────┘
+Step 1: 🧠 Analyst (OpenAI GPT-4o)
+  • Analyzes question structure
+  • Identifies key components
+  • Provides logical framework
      ↓
-┌─────────────────────────────────────────────────────────────┐
-│                 Consensus Generation                        │
-│  • Combines all agent insights                              │
-│  • Weighs different perspectives                            │
-│  • Generates comprehensive final answer                     │
-│  • Provides confidence scoring                              │
-└─────────────────────────────────────────────────────────────┘
+Step 2: � Researcher (OpenAI + Tavily)
+  • Searches web for current data
+  • Gathers factual evidence
+  • Cites reliable sources
+     ↓
+Step 3: ⚠️ Critic (Gemini 1.5 Flash)
+  • Reviews previous analyses
+  • Identifies potential flaws
+  • Highlights risks and concerns
+     ↓
+Step 4: 🎯 Strategist (Gemini 1.5 Flash)
+  • Builds on research and critique
+  • Develops strategic options
+  • Provides implementation roadmap
+     ↓
+Step 5: 💭 Debater (Groq Llama 3.1)
+  • Presents counter-arguments
+  • Explores alternative approaches
+  • Challenges assumptions
+     ↓
+Step 6: 🔗 Synthesizer (Groq Llama 3.1)
+  • Combines all perspectives
+  • Identifies patterns across agents
+  • Builds unified framework
+     ↓
+Step 7: ✅ Verifier (Best Available)
+  • Validates key claims
+  • Resolves contradictions
+  • Generates final consensus
      ↓
 Final Answer to User
 ```
 
-## 🛠️ Technical Implementation
+---
 
-### Backend Components
+## Technical Implementation
 
-#### 1. LLM Council Service (`llm_council.py`)
+### Backend (`llm_council.py`)
+
 ```python
 class LLMCouncilChat:
-    - session_management()
-    - agent_orchestration()
-    - context_passing()
-    - consensus_building()
+    def __init__(self):
+        # Initializes OpenAI, Gemini, Groq clients
+        # Falls back gracefully if any key is missing
+
+    async def start_session(question: str) -> ChatSession
+    async def run_agent(session_id: str, agent_key: str) -> ChatMessage
+    async def run_all_agents(session_id: str) -> ChatSession
+    async def build_consensus(session_id: str) -> str
 ```
 
-#### 2. API Routes (`council.py`)
+### Provider Initialization
+
 ```python
-Endpoints:
-- POST /api/council/chat/start
-- POST /api/council/chat/add-agent  
-- POST /api/council/chat/run-all/{session_id}
-- GET /api/council/chat/{session_id}
-- GET /api/council/agents
-- GET /api/council/health
+# OpenAI GPT-4o
+llms['openai'] = ChatOpenAI(model="gpt-4o", temperature=0.7)
+
+# Google Gemini 1.5 Flash
+llms['gemini'] = ChatGoogleGenerativeAI(model="gemini-1.5-flash", temperature=0.7)
+
+# Groq Llama 3.1 70B
+llms['groq'] = ChatGroq(model="llama-3.1-70b-versatile", temperature=0.7)
 ```
 
-#### 3. Data Models
+### Data Models
+
 ```python
 class ChatMessage:
-    - agent: str
-    - role: str  
-    - message: str
-    - timestamp: datetime
-    - confidence: float
+    agent: str
+    role: str
+    message: str
+    timestamp: datetime
+    provider: str
+    confidence: float
 
 class ChatSession:
-    - session_id: str
-    - question: str
-    - messages: List[ChatMessage]
-    - status: str
-    - final_answer: str
+    session_id: str
+    question: str
+    messages: List[ChatMessage]
+    status: str  # created | running | completed
+    final_answer: str
 ```
 
-### Frontend Components
+---
 
-#### 1. Chat Interface (`Dashboard.tsx`)
-- ChatGPT-like conversation UI
-- Real-time message streaming
-- Agent identification and roles
-- Progress indicators
+## Environment Variables
 
-#### 2. API Integration (`api.ts`)
-- RESTful API communication
-- Error handling and retries
-- Session state management
-
-## 🔧 Multi-Provider Configuration
-
-### Environment Variables
 ```bash
-# OpenAI GPT-5.4 Configuration
-OPENAI_API_KEY=your_openai_api_key_here
+# OpenAI (Analyst, Researcher)
+OPENAI_API_KEY=your_openai_key
 
-# Google Gemini Pro Configuration  
-GOOGLE_API_KEY=your_google_gemini_api_key_here
+# Google Gemini (Critic, Strategist)
+GOOGLE_API_KEY=your_google_key
 
-# Groq Llama 3.1 Configuration
-GROQ_API_KEY=your_groq_api_key_here
+# Groq (Debater, Synthesizer)
+GROQ_API_KEY=your_groq_key
 
-# Web Research Integration  
-TAVILY_API_KEY=your_tavily_api_key_here
+# Web Research (Researcher agent)
+TAVILY_API_KEY=your_tavily_key
 
-# Model Configuration
+# Model settings
 LLM_TEMPERATURE=0.7
 LLM_MAX_TOKENS=2048
 ```
 
-### Multi-Provider Agent Configuration
-```python
-agents = {
-    "analyst": {
-        "name": "Analyst",
-        "role": "Logical Reasoning Specialist", 
-        "emoji": "🧠",
-        "provider": "openai",
-        "model": "GPT-5.4",
-        "prompt": "Advanced systematic analysis..."
-    },
-    "critic": {
-        "name": "Critic",
-        "role": "Critical Analysis Specialist",
-        "emoji": "⚠️", 
-        "provider": "gemini",
-        "model": "Gemini Pro",
-        "prompt": "Deep critical evaluation..."
-    },
-    "debater": {
-        "name": "Debater",
-        "role": "Alternative Viewpoint Specialist",
-        "emoji": "💭",
-        "provider": "groq", 
-        "model": "Llama 3.1",
-        "prompt": "Rapid counter-argument generation..."
-    },
-    # ... additional agents
-}
+Minimum to run: any one of the three provider keys. Agents without a valid key fall back to a template response.
+
+---
+
+## API Reference
+
+### Start Session
+```http
+POST /api/council/chat/start
+{"question": "Should I invest in renewable energy stocks?"}
+
+→ {"session_id": "abc123", "status": "created", "agents": [...]}
 ```
 
-### Provider Initialization
-```python
-# OpenAI GPT-5.4
-self.llms['openai'] = ChatOpenAI(
-    model="gpt-5.4",
-    temperature=0.7,
-    api_key=os.getenv("OPENAI_API_KEY")
-)
+### Run All Agents
+```http
+POST /api/council/chat/run-all/abc123
 
-# Google Gemini Pro
-self.llms['gemini'] = ChatGoogleGenerativeAI(
-    model="gemini-pro", 
-    temperature=0.7,
-    google_api_key=os.getenv("GOOGLE_API_KEY")
-)
-
-# Groq Llama 3.1
-self.llms['groq'] = ChatGroq(
-    model="llama-3.1-70b-versatile",
-    temperature=0.7,
-    groq_api_key=os.getenv("GROQ_API_KEY")
-)
+→ {"session_id": "abc123", "status": "completed", "messages": [...], "final_answer": "..."}
 ```
 
-## 📊 Performance Metrics
+### Run Single Agent
+```http
+POST /api/council/chat/abc123/agent/analyst
 
-### Response Time Targets
-- **Individual Agent**: < 5 seconds
-- **Full Council Discussion**: < 30 seconds  
-- **Session Initialization**: < 1 second
-- **API Response**: < 500ms
+→ {"agent": "analyst", "message": "...", "provider": "openai"}
+```
 
-### Quality Metrics
-- **Consensus Confidence**: 0.0 - 1.0 scale
-- **Source Reliability**: Verified citations
-- **Logical Consistency**: Cross-agent validation
-- **Perspective Diversity**: Multi-viewpoint coverage
+### Get Session
+```http
+GET /api/council/chat/abc123
 
-## 🔒 Security & Privacy
+→ {"session_id": "abc123", "messages": [...], "final_answer": "...", "status": "completed"}
+```
 
-### Data Protection
-- No persistent storage of conversation content
-- Session-based temporary data only
-- API key encryption and secure storage
-- Rate limiting and abuse prevention
+---
 
-### Access Control
-- User authentication required
-- Session isolation
-- API endpoint protection
-- Input validation and sanitization
+## Deployment
 
-## 🚀 Deployment Architecture
-
-### Development Environment
+### Local Development
 ```
 Frontend (localhost:3000) ↔ Backend (localhost:8000)
                                     ↕
-                            External APIs (OpenAI, Tavily)
+                     External APIs (OpenAI, Gemini, Groq, Tavily)
+                                    ↕
+                            SQLite (backend/omnimind.db)
 ```
 
-### Production Environment
+Start with: `start-full-system.bat`
+
+### Production
 ```
-Load Balancer → Frontend (Vercel/CDN)
-                    ↓
-               Backend API (Docker Containers)
-                    ↓
-            External Services (OpenAI, Tavily)
-                    ↓
-           Monitoring & Logging (Analytics)
+Frontend (Vercel / CDN)
+    ↓
+Backend API (Docker / Cloud)
+    ↓
+External LLM APIs + PostgreSQL
 ```
-
-## 🧪 Testing Strategy
-
-### Unit Tests
-- Individual agent response validation
-- API endpoint functionality
-- Session management logic
-- Error handling scenarios
-
-### Integration Tests  
-- Full council discussion flow
-- External API integration
-- Frontend-backend communication
-- Real-time streaming functionality
-
-### Performance Tests
-- Concurrent session handling
-- Response time optimization
-- Memory usage monitoring
-- API rate limit compliance
-
-## 📈 Scalability Considerations
-
-### Horizontal Scaling
-- Stateless session design
-- Load balancer distribution
-- Container orchestration
-- Database connection pooling
-
-### Optimization Strategies
-- Response caching for similar queries
-- Parallel agent processing
-- Efficient context management
-- Resource usage monitoring
-
-## 🔮 Future Enhancements
-
-### Planned Features
-1. **Custom Agent Creation**: User-defined agent personalities
-2. **Voting System**: Agent consensus scoring mechanisms  
-3. **Memory Integration**: Cross-session learning capabilities
-4. **Advanced Analytics**: Discussion pattern analysis
-5. **Multi-language Support**: International deployment
-6. **Voice Integration**: Audio input/output capabilities
-
-### Technical Roadmap
-- WebSocket real-time streaming
-- Advanced caching strategies
-- Machine learning optimization
-- Enhanced security measures
-- Mobile application development
-
----
-
-## 📚 API Reference
-
-### Start Chat Session
-```http
-POST /api/council/chat/start
-Content-Type: application/json
-
-{
-  "question": "Should I invest in renewable energy stocks?"
-}
-
-Response:
-{
-  "session_id": "abc123",
-  "question": "Should I invest in renewable energy stocks?",
-  "status": "created",
-  "agents": [...]
-}
-```
-
-### Run Full Council
-```http
-POST /api/council/chat/run-all/{session_id}
-
-Response:
-{
-  "session_id": "abc123",
-  "status": "completed", 
-  "messages": [...],
-  "final_answer": "Based on our analysis..."
-}
-```
-
-### Get Session Status
-```http
-GET /api/council/chat/{session_id}
-
-Response:
-{
-  "session_id": "abc123",
-  "question": "...",
-  "messages": [...],
-  "final_answer": "...",
-  "status": "completed"
-}
-```
-
----
-
-**The LLM Council represents the next evolution in AI-powered decision making, combining multiple specialized perspectives into a single, comprehensive intelligence system.** 🧠💭⚡

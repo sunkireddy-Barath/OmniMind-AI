@@ -1,134 +1,154 @@
-# OmniMind AI - System Architecture
+# OmniMind AI — System Architecture
 
 ## Overview
-OmniMind AI is a full-stack autonomous AI platform that uses collaborative intelligent agents to solve complex real-world problems through structured decision intelligence and simulation.
 
-## Architecture Components
+OmniMind AI is a full-stack autonomous AI platform with two debate modes (LLM Council and Multi-Agent Debate), a RAG knowledge base, and a Next.js frontend. It runs fully locally with SQLite — no Docker, PostgreSQL, or Redis required for development.
 
-### Frontend Layer (Next.js 14)
-- **Framework**: Next.js 14 with App Router
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS
-- **UI Components**: Headless UI, Heroicons, Lucide React
-- **Animations**: Framer Motion
-- **Charts**: Recharts
-- **State Management**: Zustand
-- **Forms**: React Hook Form with Zod validation
+---
 
-### Backend Layer (FastAPI)
-- **Framework**: FastAPI with Python 3.11
-- **Database**: PostgreSQL with SQLAlchemy ORM
-- **Caching**: Redis
-- **Vector Database**: Qdrant
-- **Task Queue**: Celery with Redis broker
-- **Authentication**: JWT tokens
+## Architecture Diagram
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  Frontend  —  Next.js 14 + TypeScript + Tailwind CSS    │
+│  MultiAgentChat  ←→  Debate Mode  ←→  Council Mode      │
+└────────────────────────┬────────────────────────────────┘
+                         │ HTTP / REST
+┌────────────────────────▼────────────────────────────────┐
+│  Backend API  —  FastAPI (Python 3.13) + Uvicorn        │
+│  /api/council/*   /api/debate/*   /api/queries/*        │
+│  /api/agents/*    /api/simulations/*                    │
+└──────┬──────────────────────────┬───────────────────────┘
+       │                          │
+┌──────▼──────────┐   ┌───────────▼──────────────────────┐
+│  LLM Council    │   │  Multi-Agent Debate               │
+│  7 Agents       │   │  4 Agents + Moderator             │
+│  3 Providers    │   │  4 Providers                      │
+└──────┬──────────┘   └───────────┬──────────────────────┘
+       │                          │
+┌──────▼──────────────────────────▼──────────────────────┐
+│  LLM Providers                                          │
+│  OpenAI GPT-4o  │  Gemini 1.5 Flash  │  Groq Llama 3.1 │
+│  OpenRouter Mixtral  │  Tavily Search                   │
+└─────────────────────────────────────────────────────────┘
+       │
+┌──────▼──────────────────────────────────────────────────┐
+│  Data Layer                                             │
+│  SQLite (local dev)  │  Sentence Transformers (RAG)     │
+│  In-memory vector KB  │  Redis (optional cache)         │
+│  Qdrant (optional vector DB)                            │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## Layer Details
+
+### Frontend (Next.js 14)
+- Framework: Next.js 14 with App Router
+- Language: TypeScript
+- Styling: Tailwind CSS
+- Animations: Framer Motion
+- Charts: Recharts
+- Key components: `MultiAgentChat`, `LLMCouncil`, `AgentCard`, `ConsensusPanel`
+
+### Backend (FastAPI)
+- Framework: FastAPI with Python 3.13
+- Server: Uvicorn
+- Database: SQLite locally (auto-created), PostgreSQL in production
+- ORM: SQLAlchemy async
+- Auth: JWT tokens (optional for local dev)
 
 ### AI Layer
-- **LLM Integration**: OpenAI GPT models
-- **Multi-Agent System**: Custom orchestration engine
-- **RAG Pipeline**: Sentence Transformers + Vector Search
-- **Agent Types**: Planner, Research, Finance, Strategy, Risk, Policy
+
+#### LLM Council (7 agents)
+| Agent | Provider | Model |
+|-------|----------|-------|
+| 🧠 Analyst | OpenAI | GPT-4o |
+| 🔍 Researcher | OpenAI + Tavily | GPT-4o |
+| ⚠️ Critic | Google | Gemini 1.5 Flash |
+| 🎯 Strategist | Google | Gemini 1.5 Flash |
+| 💭 Debater | Groq | Llama 3.1 70B |
+| 🔗 Synthesizer | Groq | Llama 3.1 70B |
+| ✅ Verifier | Best Available | Hybrid |
+
+#### Multi-Agent Debate (4 agents)
+| Agent | Provider | Role |
+|-------|----------|------|
+| Priya | Tavily + OpenAI | Research |
+| Arjun | OpenRouter (Mixtral) | Risk |
+| Kavya | OpenAI | Finance |
+| Ravi | Gemini 1.5 Flash | Strategy |
 
 ### Data Layer
-- **Primary Database**: PostgreSQL for structured data
-- **Vector Database**: Qdrant for embeddings and semantic search
-- **Cache**: Redis for session data and temporary results
-- **File Storage**: Local/Cloud storage for documents
+- SQLite: default local database (`backend/omnimind.db`, auto-created)
+- PostgreSQL: production database (set `DATABASE_URL` in `.env`)
+- In-memory KB: 12 documents across 5 collections, cosine similarity search
+- Qdrant: optional vector database (system falls back to in-memory if unreachable)
+- Redis: optional cache for session data (system works without it)
 
-## System Flow
+---
 
-### 1. Query Processing
-```
-User Query → Query Interface → Backend API → Agent Orchestrator
-```
+## System Flows
 
-### 2. Agent Workflow
+### Query Processing
 ```
-Problem Decomposition → Agent Creation → Parallel Execution → Results Aggregation
+User Query → MultiAgentChat UI → Backend API → Agent Orchestrator → LLM Providers
 ```
 
-### 3. Knowledge Retrieval
+### Council Flow
 ```
-Query → Embedding Generation → Vector Search → Document Retrieval → Context Injection
-```
-
-### 4. Simulation Engine
-```
-Agent Results → Scenario Generation → Parameter Modeling → Outcome Prediction
+Question → Session Init → 7 Agents (sequential) → Consensus → Response
 ```
 
-### 5. Consensus Generation
+### Debate Flow
 ```
-Agent Outputs + Simulations → Debate Engine → Consensus Algorithm → Final Recommendation
+Query → Priya (research) → Arjun (risk) → Kavya (finance) → Moderated debate → Ravi (consensus)
 ```
 
-## Key Features
-
-### Multi-Agent Collaboration
-- Dynamic agent creation based on problem domain
-- Specialized system prompts for each agent type
-- Parallel execution with result aggregation
-- Inter-agent communication and debate
-
-### Retrieval-Augmented Generation (RAG)
-- Domain-specific knowledge bases
-- Vector similarity search
-- Context-aware document retrieval
-- Real-time knowledge updates
-
-### Scenario Simulation
-- Parameter-based modeling
-- Risk assessment calculations
-- ROI and timeline projections
-- Comparative analysis
-
-### Explainable AI
-- Visual workflow representation
-- Agent contribution tracking
-- Decision path visualization
-- Confidence scoring
-
-## Deployment Architecture
-
-### Development Environment
+### RAG Flow
 ```
-Frontend (localhost:3000) ↔ Backend (localhost:8000) ↔ PostgreSQL (localhost:5432)
+Query → Embedding → Vector Search (in-memory or Qdrant) → Context Injection → LLM
+```
+
+---
+
+## Local Development Setup
+
+No Docker required. SQLite is used automatically.
+
+```
+Frontend (localhost:3000) ↔ Backend (localhost:8000)
                                     ↕
-                            Redis (localhost:6379) + Qdrant (localhost:6333)
+                     External APIs (OpenAI, Gemini, Groq, Tavily)
+                                    ↕
+                            SQLite (backend/omnimind.db)
 ```
 
-### Production Environment (DigitalOcean)
+Start with: `start-full-system.bat`
+
+---
+
+## Production Setup
+
 ```
-Load Balancer → Frontend (Vercel/DO App Platform)
+Load Balancer → Frontend (Vercel / CDN)
                     ↓
-               Backend API (DO Droplets)
+               Backend API (Docker Containers)
                     ↓
-            Managed PostgreSQL (DO Database)
+            PostgreSQL (Managed DB)
                     ↓
-        Redis Cluster + Qdrant (DO Droplets)
+        Redis + Qdrant (optional services)
                     ↓
-           GPU Compute (DO Gradient AI)
+           External LLM APIs
 ```
 
-## Security Considerations
+---
+
+## Security
 - JWT-based authentication
 - API rate limiting
-- Input validation and sanitization
+- Input validation via Pydantic
 - CORS configuration
-- Environment variable management
-- Database connection pooling
-
-## Scalability Features
-- Horizontal scaling of backend services
-- Database read replicas
-- Redis clustering
-- Async processing with Celery
-- CDN for static assets
-- Container orchestration with Docker
-
-## Monitoring & Observability
-- Application performance monitoring
-- Error tracking and logging
-- Database query optimization
-- API response time monitoring
-- Resource usage tracking
+- Environment variable management (never commit `.env`)
+- `backend/venv` and `backend/omnimind.db` excluded from git

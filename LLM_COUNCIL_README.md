@@ -1,193 +1,157 @@
-# 🧠 LLM Council - Multi-Agent Chat System
+# LLM Council — Multi-Provider 7-Agent System
 
-A powerful 5-agent debate system integrated into OmniMind-AI where specialized AI agents discuss and debate complex questions to reach consensus.
+A 7-agent debate system integrated into OmniMind-AI where specialized AI agents from three different providers discuss and debate complex questions to reach consensus.
 
-## 🤖 The 5 Agents
+---
 
-| Agent | Role | Emoji | Specialty |
-|-------|------|-------|-----------|
-| **Analyst** | Logical Reasoning | 🧠 | Breaks down problems systematically |
-| **Researcher** | Web Research | 🔍 | Finds current facts using Tavily search |
-| **Critic** | Critical Analysis | ⚠️ | Identifies flaws and risks |
-| **Debater** | Alternative Views | 💭 | Presents counter-arguments |
-| **Verifier** | Fact Checking | ✅ | Validates and synthesizes final answer |
+## The 7 Agents
 
-## 🚀 Quick Start
+| Agent | Provider | Model | Role |
+|-------|----------|-------|------|
+| 🧠 Analyst | OpenAI | GPT-4o | Logical reasoning & structured frameworks |
+| 🔍 Researcher | OpenAI + Tavily | GPT-4o | Evidence-based research with live web search |
+| ⚠️ Critic | Google | Gemini 1.5 Flash | Risk identification & assumption challenging |
+| 🎯 Strategist | Google | Gemini 1.5 Flash | Strategic planning & implementation roadmaps |
+| � Debater t| Groq | Llama 3.1 70B | Counter-arguments & alternative perspectives |
+| 🔗 Synthesizer | Groq | Llama 3.1 70B | Pattern recognition & unified insights |
+| ✅ Verifier | Best Available | Hybrid | Fact checking & final consensus |
 
-### 1. Set up API Keys
+---
 
-```bash
-# Required for full functionality
-export OPENAI_API_KEY="your-openai-key"
-export TAVILY_API_KEY="your-tavily-key"  # Optional, for web research
-```
+## Quick Start
 
-### 2. Test the System
+### 1. Set API Keys
 
-```bash
-cd backend
-python test_council.py
-```
-
-### 3. Start the Backend
+Edit `.env` in the project root:
 
 ```bash
-cd backend
-uvicorn main:app --reload --port 8000
+OPENAI_API_KEY=your_openai_key
+GOOGLE_API_KEY=your_google_key
+GROQ_API_KEY=your_groq_key
+TAVILY_API_KEY=your_tavily_key
 ```
 
-## 📡 API Endpoints
+Minimum to get started: any one provider key. Agents without a key fall back to template responses.
 
-### Start a Chat Session
+### 2. Start the System
+
+```bat
+start-full-system.bat
+```
+
+Opens backend on `localhost:8000` and frontend on `localhost:3000`.
+
+### 3. Use the UI
+
+In the frontend, open the **Multi-Agent Chat** panel and click the **Council 7** toggle in the header.
+
+---
+
+## API Usage
+
+### Start a Session
 ```bash
-POST /api/council/chat/start
-{
-  "question": "Should I invest in renewable energy stocks?"
-}
+curl -X POST "http://localhost:8000/api/council/chat/start" \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Should I invest in AI stocks in 2026?"}'
 ```
 
-### Add Individual Agent
+### Run All 7 Agents
 ```bash
-POST /api/council/chat/add-agent
-{
-  "session_id": "abc123",
-  "agent": "analyst"  # or researcher, critic, debater, verifier
-}
+curl -X POST "http://localhost:8000/api/council/chat/run-all/{session_id}"
 ```
 
-### Run Full Council Discussion
+### Run a Single Agent
 ```bash
-POST /api/council/chat/run-all/{session_id}
+curl -X POST "http://localhost:8000/api/council/chat/{session_id}/agent/analyst"
 ```
-
-### Get Chat Session
-```bash
-GET /api/council/chat/{session_id}
-```
-
-## 🔧 Usage Examples
 
 ### Python Example
 ```python
 import requests
 
-# Start session
-response = requests.post("http://localhost:8000/api/council/chat/start", 
+r = requests.post("http://localhost:8000/api/council/chat/start",
     json={"question": "Will AGI happen before 2035?"})
-session_id = response.json()["session_id"]
+session_id = r.json()["session_id"]
 
-# Run full council
 result = requests.post(f"http://localhost:8000/api/council/chat/run-all/{session_id}")
-chat_data = result.json()
-
-print("Final Answer:", chat_data["final_answer"])
+print(result.json()["final_answer"])
 ```
 
-### cURL Example
-```bash
-# Start chat
-curl -X POST "http://localhost:8000/api/council/chat/start" \
-  -H "Content-Type: application/json" \
-  -d '{"question": "What are the pros and cons of remote work?"}'
+---
 
-# Run full council (replace SESSION_ID)
-curl -X POST "http://localhost:8000/api/council/chat/run-all/SESSION_ID"
-```
+## API Endpoints
 
-## 🏗️ Architecture
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/council/chat/start` | Start new session |
+| POST | `/api/council/chat/run-all/{id}` | Run all 7 agents |
+| POST | `/api/council/chat/{id}/agent/{key}` | Run single agent |
+| GET | `/api/council/chat/{id}` | Get session state |
+| GET | `/api/council/agents` | List agents + provider status |
+| GET | `/api/council/health` | System health + key status |
+
+---
+
+## Discussion Flow
 
 ```
 User Question
      ↓
-Chat Session Created
+🧠 Analyst (OpenAI) — logical framework
      ↓
-┌─────────────────────────────────────┐
-│  🧠 Analyst → 🔍 Researcher         │
-│       ↓            ↓                │
-│  ⚠️ Critic ← 💭 Debater ← ✅ Verifier │
-└─────────────────────────────────────┘
+🔍 Researcher (OpenAI + Tavily) — evidence & sources
      ↓
-Final Consensus Generated
+⚠️ Critic (Gemini) — risks & flaws
+     ↓
+🎯 Strategist (Gemini) — strategic options
+     ↓
+💭 Debater (Groq) — counter-arguments
+     ↓
+� Synthesizer (Groq) — unified insights
+     ↓
+✅ Verifier (Best Available) — final consensus
 ```
 
-## 🎯 Features
+---
 
-- **Multi-Agent Discussions**: 5 specialized agents with different perspectives
-- **Web Research**: Real-time search integration via Tavily API
-- **Fallback Mode**: Works without API keys (limited functionality)
-- **Chat Interface**: Step-by-step conversation flow
-- **Individual Agents**: Add specific agents to ongoing discussions
-- **Full Council**: Run all agents in sequence automatically
-- **Session Management**: Persistent chat sessions with history
-
-## 🔍 Example Output
+## Example Output
 
 ```
 Question: "Should I start a tech startup in 2026?"
 
-🧠 Analyst: Based on market analysis, tech startups in 2026 face both opportunities and challenges...
+🧠 Analyst: "Let me break this down. The key variables are market timing, capital requirements, and competitive moat..."
 
-🔍 Researcher: Recent data shows that 73% of startups fail within 10 years, but AI and climate tech sectors show 40% growth...
+🔍 Researcher: "Current data shows AI and climate tech sectors growing at 40% YoY. Funding rounds in these areas are up 23% from 2025..."
 
-⚠️ Critic: The main risks include market saturation, funding challenges, and regulatory uncertainty...
+⚠️ Critic: "The risks: 90% startup failure rate, funding winter in non-AI sectors, regulatory uncertainty in EU markets..."
 
-💭 Debater: However, consider the alternative perspective - waiting might mean missing the AI revolution window...
+🎯 Strategist: "A phased approach — validate in 3 months, MVP in 6, Series A target at 18 months — reduces burn and de-risks..."
 
-✅ Verifier: Synthesizing all viewpoints, the decision depends on your specific niche, funding, and risk tolerance...
+💭 Debater: "Waiting has its own cost. The AI tooling window is open now. First-mover advantage in niche verticals is real..."
 
-🎯 Final Consensus: Starting a tech startup in 2026 can be viable if you focus on emerging niches like AI tools, climate tech, or healthcare innovation. Key success factors include...
+� Synthesizer: "Across all perspectives: niche AI tooling + 18-month runway + early validation = viable path..."
+
+✅ Verifier: "Consensus: viable if focused on AI/climate niches with validated demand. Key risk is runway — secure 18 months minimum before launch."
 ```
-
-## 🛠️ Configuration
-
-### Environment Variables
-```bash
-# Core LLM (Required for full functionality)
-OPENAI_API_KEY=your_openai_key
-
-# Web Research (Optional)
-TAVILY_API_KEY=your_tavily_key
-
-# Existing OmniMind-AI config
-DATABASE_URL=postgresql+asyncpg://...
-REDIS_URL=redis://...
-```
-
-### Fallback Mode
-- System works without API keys
-- Provides template responses
-- Useful for testing and development
-
-## 🧪 Testing
-
-```bash
-# Test individual components
-python test_council.py
-
-# Test API endpoints
-curl http://localhost:8000/api/council/health
-
-# Check agent list
-curl http://localhost:8000/api/council/agents
-```
-
-## 🔗 Integration
-
-The LLM Council integrates seamlessly with the existing OmniMind-AI platform:
-
-- Uses the same FastAPI backend
-- Shares database and Redis connections
-- Compatible with existing authentication
-- Can be extended with more agents or features
-
-## 📈 Next Steps
-
-1. **Frontend Integration**: Add React components for chat interface
-2. **WebSocket Support**: Real-time agent responses
-3. **Agent Customization**: User-defined agent personalities
-4. **Voting System**: Agent consensus scoring
-5. **Memory**: Cross-session learning and context
 
 ---
 
-**Ready to start debating with AI agents? Fire up the backend and ask your first question!** 🚀
+## Fallback Mode
+
+The system works without any API keys — agents return template responses. Useful for testing the UI and API flow without incurring costs.
+
+---
+
+## Testing
+
+```bash
+cd backend
+python test_council.py
+
+# Health check
+curl http://localhost:8000/api/council/health
+
+# Agent list
+curl http://localhost:8000/api/council/agents
+```

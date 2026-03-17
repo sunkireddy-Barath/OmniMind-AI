@@ -1,189 +1,208 @@
 # Getting Started with OmniMind AI
 
 ## Prerequisites
+
 - Node.js 18+ and npm
 - Python 3.11+
-- PostgreSQL 15+
-- Redis 7+
-- Docker and Docker Compose (optional)
+- API keys (see Environment Variables section)
 
-## Quick Start with Docker
+No Docker, PostgreSQL, Redis, or Qdrant required for local development. The system uses SQLite automatically.
 
-1. **Clone the repository**
+---
+
+## Quick Start (Windows)
+
+### 1. Configure API Keys
+
+Copy `.env.example` to `.env` in the project root and fill in your keys:
+
 ```bash
-git clone <repository-url>
-cd omnimind-ai
+OPENAI_API_KEY=your_openai_key
+GOOGLE_API_KEY=your_google_key
+GEMINI_API_KEY=your_gemini_key
+GROQ_API_KEY=your_groq_key
+TAVILY_API_KEY=your_tavily_key
+OPENROUTER_API_KEY=your_openrouter_key
 ```
 
-2. **Set up environment variables**
-```bash
-cp .env.example .env
-# Edit .env with your configuration
+Minimum to get started: `GOOGLE_API_KEY` + `GEMINI_API_KEY` + `TAVILY_API_KEY` + `OPENROUTER_API_KEY`.
+
+### 2. Launch Everything
+
+```bat
+start-full-system.bat
 ```
 
-3. **Start all services**
+This script:
+- Creates a Python venv if it doesn't exist
+- Installs all backend dependencies from `requirements.txt`
+- Starts the backend in a separate window (port 8000)
+- Starts the frontend in a separate window (port 3000)
+
+### 3. Open the App
+
+```
+http://localhost:3000
+```
+
+---
+
+## Manual Setup
+
+### Backend
+
+```bat
+setup-backend.bat    # First-time setup (venv + deps)
+start-backend.bat    # Start backend server
+```
+
+Or manually:
+
+```bash
+cd OmniMind-AI/backend
+python -m venv venv
+venv\Scripts\activate
+python -m pip install -r ../requirements.txt
+uvicorn main:app --reload --port 8000
+```
+
+### Frontend
+
+```bat
+start-frontend.bat
+```
+
+Or manually:
+
+```bash
+cd OmniMind-AI/frontend
+npm install
+npm run dev
+```
+
+---
+
+## Environment Variables
+
+| Variable | Provider | Required For |
+|----------|----------|-------------|
+| `OPENAI_API_KEY` | OpenAI | Analyst, Researcher agents |
+| `GOOGLE_API_KEY` | Google | Critic, Strategist (Council) |
+| `GEMINI_API_KEY` | Google | Ravi (Debate strategy agent) |
+| `GROQ_API_KEY` | Groq | Debater, Synthesizer (Council) |
+| `TAVILY_API_KEY` | Tavily | Researcher (live web search) |
+| `OPENROUTER_API_KEY` | OpenRouter | Arjun (Risk agent, Mixtral) |
+| `DATABASE_URL` | — | Optional — defaults to SQLite |
+
+The `.env` file goes in the `OmniMind-AI/` root directory (not inside `backend/`).
+
+---
+
+## URLs
+
+| URL | Description |
+|-----|-------------|
+| `http://localhost:3000` | Frontend app |
+| `http://localhost:8000` | Backend API |
+| `http://localhost:8000/docs` | Swagger UI |
+| `http://localhost:8000/health` | System health |
+| `http://localhost:8000/api/council/health` | Council health + key status |
+
+---
+
+## Usage
+
+### Multi-Agent Chat
+1. Open `http://localhost:3000`
+2. Click **Multi-Agent Chat** in the sidebar
+3. Toggle **Debate 4** or **Council 7** in the header
+4. Type a question and press Enter
+
+### Example Questions
+- "How can I start an organic farming business in Tamil Nadu?"
+- "What's the best strategy to launch a tech startup with $50K budget?"
+- "Should I invest in AI stocks in 2026?"
+- "Will renewable energy replace fossil fuels by 2030?"
+
+### API Usage
+
+```bash
+# Start a council session
+curl -X POST http://localhost:8000/api/council/chat/start \
+  -H "Content-Type: application/json" \
+  -d '{"question": "Your question here"}'
+
+# Run full debate
+curl -X POST http://localhost:8000/api/debate/run \
+  -H "Content-Type: application/json" \
+  -d '{"query": "Your question here"}'
+```
+
+---
+
+## Project Structure
+
+```
+OmniMind-AI/
+├── backend/
+│   ├── api/routes/          # FastAPI route handlers
+│   ├── core/
+│   │   ├── config.py        # Pydantic settings (reads .env)
+│   │   └── database.py      # SQLite/PostgreSQL async engine
+│   ├── services/
+│   │   ├── llm_council.py   # 7-agent council
+│   │   ├── multi_agent_debate.py  # 4-agent debate
+│   │   └── rag_service.py   # Vector search + in-memory KB
+│   └── main.py
+├── frontend/
+│   └── src/
+│       ├── app/             # Next.js App Router pages
+│       └── components/
+│           ├── ai/          # MultiAgentChat, LLMCouncil, etc.
+│           └── sections/    # Landing page sections
+├── requirements.txt         # Python dependencies
+├── .env.example             # Environment variable template
+├── .env                     # Your local config (not committed)
+├── start-full-system.bat    # One-click launcher
+├── setup-backend.bat        # Backend setup only
+├── start-backend.bat        # Backend server only
+└── start-frontend.bat       # Frontend server only
+```
+
+---
+
+## Troubleshooting
+
+**Backend won't start?**
+Run `setup-backend.bat` to reinstall dependencies.
+
+**`ModuleNotFoundError` on startup?**
+The venv may be missing a package. Run `setup-backend.bat` again.
+
+**API key errors?**
+Verify `.env` is in `OmniMind-AI/` root, not inside `backend/`.
+
+**Port conflicts?**
+Ensure ports 3000 and 8000 are free before starting.
+
+**Frontend build errors?**
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+**Database errors?**
+The system auto-creates `backend/omnimind.db` on first run. If it's corrupted, delete it and restart.
+
+---
+
+## Docker (Optional)
+
+If you prefer Docker:
+
 ```bash
 docker-compose up -d
 ```
 
-4. **Access the application**
-- Frontend: http://localhost:3000
-- Backend API: http://localhost:8000
-- API Documentation: http://localhost:8000/docs
-
-## Manual Setup
-
-### Frontend Setup
-```bash
-cd frontend
-
-# Install dependencies
-npm install
-
-# Start development server
-npm run dev
-```
-
-### Backend Setup
-```bash
-cd backend
-
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements.txt
-
-# Start the server
-uvicorn main:app --reload
-```
-
-### Database Setup
-```bash
-# Create PostgreSQL database
-createdb omnimind
-
-# Run migrations (when available)
-alembic upgrade head
-```
-
-## Configuration
-
-### Environment Variables
-Copy `.env.example` to `.env` and configure:
-
-- `OPENAI_API_KEY`: Your OpenAI API key for LLM integration
-- `DATABASE_URL`: PostgreSQL connection string
-- `REDIS_URL`: Redis connection string
-- `QDRANT_URL`: Qdrant vector database URL
-
-### API Keys
-1. **OpenAI API Key**: Required for LLM functionality
-   - Sign up at https://platform.openai.com
-   - Generate API key in your dashboard
-   - Add to `.env` file
-
-2. **Database Credentials**: Set up your database connections
-
-## Usage
-
-### Basic Query Flow
-1. Open the application at http://localhost:3000
-2. Enter a complex problem in the query interface
-3. Watch as AI agents collaborate to analyze the problem
-4. Review simulation results and consensus recommendations
-
-### Example Queries
-- "How can I start an organic farming business in Tamil Nadu?"
-- "What's the best strategy to launch a tech startup with $50K budget?"
-- "How should I plan my career transition from engineering to data science?"
-
-### API Usage
-The backend provides RESTful APIs for programmatic access:
-
-```bash
-# Create a new query
-curl -X POST http://localhost:8000/api/queries \
-  -H "Content-Type: application/json" \
-  -d '{"query": "Your complex problem here"}'
-
-# Get query status
-curl http://localhost:8000/api/queries/{query_id}
-```
-
-## Development
-
-### Frontend Development
-```bash
-cd frontend
-
-# Run development server with hot reload
-npm run dev
-
-# Build for production
-npm run build
-
-# Run type checking
-npm run type-check
-
-# Run linting
-npm run lint
-```
-
-### Backend Development
-```bash
-cd backend
-
-# Run with auto-reload
-uvicorn main:app --reload
-
-# Run tests
-pytest
-
-# Format code
-black .
-isort .
-
-# Type checking
-mypy .
-```
-
-## Project Structure
-```
-omnimind-ai/
-├── frontend/                 # Next.js Frontend
-│   ├── src/
-│   │   ├── app/             # Next.js App Router
-│   │   ├── components/      # React Components
-│   │   └── lib/            # Utilities
-│   └── package.json
-├── backend/                  # FastAPI Backend
-│   ├── api/                 # API routes
-│   ├── core/                # Configuration
-│   ├── models/              # Data models
-│   ├── services/            # Business logic
-│   └── main.py
-└── docs/                    # Documentation
-```
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Port conflicts**: Ensure ports 3000, 8000, 5432, 6379, 6333 are available
-2. **Database connection**: Verify PostgreSQL is running and credentials are correct
-3. **API key errors**: Ensure OpenAI API key is valid and has sufficient credits
-4. **Memory issues**: Vector operations require adequate RAM (8GB+ recommended)
-
-### Logs
-- Frontend logs: Check browser console and terminal
-- Backend logs: Check uvicorn output
-- Database logs: Check PostgreSQL logs
-- Docker logs: `docker-compose logs [service-name]`
-
-## Next Steps
-- Explore the API documentation at http://localhost:8000/docs
-- Review the architecture documentation in `/docs/architecture.md`
-- Check out example use cases and scenarios
-- Customize agent prompts and behaviors
+This starts backend, frontend, PostgreSQL, Redis, and Qdrant. See `docker-compose.yml` for configuration.
