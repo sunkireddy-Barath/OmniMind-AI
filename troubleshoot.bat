@@ -121,11 +121,8 @@ REM Common solutions
 echo 🛠️  Common Solutions:
 echo.
 echo ❌ If backend won't start:
-echo    1. cd backend
-echo    2. python -m venv venv
-echo    3. venv\Scripts\activate
-echo    4. pip install -r requirements.docker.txt
-echo    5. python -m uvicorn main:app --reload
+echo    Simply run: backend.bat
+echo    (handles venv creation, deps install, and server start)
 echo.
 echo ❌ If frontend won't start:
 echo    1. Run frontend-setup.bat
