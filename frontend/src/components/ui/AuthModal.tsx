@@ -1,10 +1,15 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { XMarkIcon, EnvelopeIcon, LockClosedIcon, UserIcon } from '@heroicons/react/24/outline';
-import { SparklesIcon, Zap } from 'lucide-react';
-import toast from 'react-hot-toast';
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  XMarkIcon,
+  EnvelopeIcon,
+  LockClosedIcon,
+  UserIcon,
+} from "@heroicons/react/24/outline";
+import { SparklesIcon, Zap } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -12,13 +17,17 @@ interface AuthModalProps {
   onSuccess: (user: { name: string; email: string }) => void;
 }
 
-export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps) {
+export default function AuthModal({
+  isOpen,
+  onClose,
+  onSuccess,
+}: AuthModalProps) {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
+    name: "",
+    email: "",
+    password: "",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -26,11 +35,13 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
     setIsLoading(true);
 
     // Simulate authentication
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
+    await new Promise((resolve) => setTimeout(resolve, 1500));
+
     setIsLoading(false);
-    toast.success(isLogin ? 'Successfully logged in.' : 'Account created successfully.');
-    onSuccess({ name: formData.name || 'User', email: formData.email });
+    toast.success(
+      isLogin ? "Successfully logged in." : "Account created successfully.",
+    );
+    onSuccess({ name: formData.name || "User", email: formData.email });
     onClose();
   };
 
@@ -45,12 +56,12 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
             className="absolute inset-0 bg-[var(--bg-main)]/80 backdrop-blur-xl"
             onClick={onClose}
           />
-          
+
           <motion.div
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            transition={{ type: "spring", damping: 25, stiffness: 300 }}
             className="relative w-full max-w-lg bg-[var(--bg-main)] border border-blue-600/20 rounded-[2.5rem] shadow-2xl overflow-hidden"
           >
             {/* Background Effects */}
@@ -70,10 +81,12 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                   <SparklesIcon className="w-8 h-8 text-black" />
                 </div>
                 <h2 className="text-3xl font-bold text-[var(--text-primary)] tracking-tight mb-2">
-                  {isLogin ? 'Sign In' : 'Create Account'}
+                  {isLogin ? "Sign In" : "Create Account"}
                 </h2>
                 <p className="text-[var(--text-secondary)] text-sm font-medium">
-                  {isLogin ? 'Enter your details to continue' : 'Get started with OmniMind today'}
+                  {isLogin
+                    ? "Enter your details to continue"
+                    : "Get started with OmniMind today"}
                 </p>
               </div>
 
@@ -87,11 +100,13 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                       required
                       className="w-full bg-[var(--glass-bg)] border border-[var(--border-primary)] rounded-2xl px-12 py-4 text-[var(--text-primary)] placeholder-[var(--text-secondary)]/30 focus:outline-none focus:ring-1 focus:ring-blue-600/50 focus:border-blue-600/50 transition-all font-medium"
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
                     />
                   </div>
                 )}
-                
+
                 <div className="relative">
                   <EnvelopeIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-secondary)]/30" />
                   <input
@@ -100,7 +115,9 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                     required
                     className="w-full bg-[var(--glass-bg)] border border-[var(--border-primary)] rounded-2xl px-12 py-4 text-[var(--text-primary)] placeholder-[var(--text-secondary)]/30 focus:outline-none focus:ring-1 focus:ring-blue-600/50 focus:border-blue-600/50 transition-all font-medium"
                     value={formData.email}
-                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, email: e.target.value })
+                    }
                   />
                 </div>
 
@@ -112,12 +129,17 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                     required
                     className="w-full bg-[var(--glass-bg)] border border-[var(--border-primary)] rounded-2xl px-12 py-4 text-[var(--text-primary)] placeholder-[var(--text-secondary)]/30 focus:outline-none focus:ring-1 focus:ring-blue-600/50 focus:border-blue-600/50 transition-all font-medium"
                     value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, password: e.target.value })
+                    }
                   />
                 </div>
 
                 <motion.button
-                  whileHover={{ scale: 1.02, boxShadow: "0 0 40px rgba(59, 130, 246, 0.4)" }}
+                  whileHover={{
+                    scale: 1.02,
+                    boxShadow: "0 0 40px rgba(59, 130, 246, 0.4)",
+                  }}
                   whileTap={{ scale: 0.98 }}
                   disabled={isLoading}
                   className="btn-primary w-full py-5 flex items-center justify-center gap-3 text-xs font-black uppercase tracking-[0.2em] disabled:opacity-50"
@@ -128,19 +150,21 @@ export default function AuthModal({ isOpen, onClose, onSuccess }: AuthModalProps
                   ) : (
                     <>
                       <Zap className="w-4 h-4" />
-                      {isLogin ? 'Sign In' : 'Create Account'}
+                      {isLogin ? "Sign In" : "Create Account"}
                     </>
                   )}
                 </motion.button>
               </form>
 
               <div className="mt-8 text-center text-xs font-medium text-[var(--text-secondary)]">
-                {isLogin ? "Don't have an account?" : "Already have an account?"}
+                {isLogin
+                  ? "Don't have an account?"
+                  : "Already have an account?"}
                 <button
                   onClick={() => setIsLogin(!isLogin)}
                   className="ml-2 text-blue-600 hover:underline transition-colors"
                 >
-                  {isLogin ? 'Sign Up' : 'Sign In'}
+                  {isLogin ? "Sign Up" : "Sign In"}
                 </button>
               </div>
             </div>

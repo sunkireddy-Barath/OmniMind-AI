@@ -72,13 +72,13 @@ Both modes are accessible from a single **MultiAgentChat** UI via toggle buttons
 
 | Agent | Provider | Model | Role |
 |-------|----------|-------|------|
-| 🧠 Analyst | OpenAI | GPT-4o | Logical reasoning |
-| 🔍 Researcher | OpenAI + Tavily | GPT-4o | Evidence + web search |
-| ⚠️ Critic | Google | Gemini 1.5 Flash | Risk & flaw detection |
-| 🎯 Strategist | Google | Gemini 1.5 Flash | Strategic planning |
-| 💭 Debater | Groq | Llama 3.1 70B | Counter-arguments |
-| 🔗 Synthesizer | Groq | Llama 3.1 70B | Pattern synthesis |
-| ✅ Verifier | Best Available | Hybrid | Fact check + consensus |
+| ANALYST Analyst | OpenAI | GPT-4o | Logical reasoning |
+| RESEARCHER Researcher | OpenAI + Tavily | GPT-4o | Evidence + web search |
+| WARN Critic | Google | Gemini 1.5 Flash | Risk & flaw detection |
+| CONSENSUS Strategist | Google | Gemini 1.5 Flash | Strategic planning |
+| DEBATER Debater | Groq | Llama 3.1 70B | Counter-arguments |
+| SYNTH Synthesizer | Groq | Llama 3.1 70B | Pattern synthesis |
+| OK Verifier | Best Available | Hybrid | Fact check + consensus |
 
 ---
 

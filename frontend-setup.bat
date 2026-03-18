@@ -1,30 +1,30 @@
 @echo off
 cd /d "%~dp0"
-echo 🚀 OmniMind AI Frontend Setup
+echo START OmniMind AI Frontend Setup
 echo ================================
 
 REM Check if we're in the right directory
 if not exist "frontend\package.json" (
-    echo ❌ Please run this from the OmniMind-AI root directory
+    echo NO Please run this from the OmniMind-AI root directory
     echo    Expected structure: OmniMind-AI\frontend\package.json
     pause
     exit /b 1
 )
 
-echo ✅ Found frontend directory
+echo OK Found frontend directory
 echo.
 
 REM Check if Node.js is installed
 node --version >nul 2>&1
 if %errorlevel% neq 0 (
-    echo ❌ Node.js is not installed or not in PATH
+    echo NO Node.js is not installed or not in PATH
     echo    Please install Node.js from: https://nodejs.org/
     echo    Recommended version: 18.x or higher
     pause
     exit /b 1
 )
 
-echo ✅ Node.js is installed
+echo OK Node.js is installed
 node --version
 
 REM Check if npm is available
@@ -36,18 +36,18 @@ if %errorlevel% neq 0 (
 REM Navigate to frontend directory
 cd frontend
 
-echo 📦 Installing frontend dependencies...
+echo  Installing frontend dependencies...
 echo    This may take a few minutes...
 echo.
 
 REM Clean install to avoid conflicts
 if exist "node_modules" (
-    echo 🧹 Cleaning existing node_modules...
+    echo  Cleaning existing node_modules...
     rmdir /s /q node_modules
 )
 
 if exist "package-lock.json" (
-    echo 🧹 Removing package-lock.json...
+    echo  Removing package-lock.json...
     del package-lock.json
 )
 
@@ -55,35 +55,35 @@ REM Install dependencies
 npm install
 
 if %errorlevel% neq 0 (
-    echo ❌ Failed to install dependencies
+    echo NO Failed to install dependencies
     echo    Try running: npm install --legacy-peer-deps
     echo    Or: npm install --force
     pause
     exit /b 1
 )
 
-echo ✅ Dependencies installed successfully
+echo OK Dependencies installed successfully
 echo.
 
 REM Check if .env.local exists, create if not
 if not exist ".env.local" (
-    echo 📝 Creating .env.local file...
+    echo  Creating .env.local file...
     echo # Frontend environment variables > .env.local
     echo NEXT_PUBLIC_API_URL=http://localhost:8000 >> .env.local
-    echo ✅ Created .env.local with default API URL
+    echo OK Created .env.local with default API URL
 ) else (
-    echo ✅ .env.local already exists
+    echo OK .env.local already exists
 )
 
 echo.
-echo 🎯 Frontend setup completed successfully!
+echo CONSENSUS Frontend setup completed successfully!
 echo.
-echo 📋 Next steps:
+echo INFO Next steps:
 echo    1. Make sure backend is running on port 8000
 echo    2. Run: npm run dev (to start development server)
 echo    3. Open: http://localhost:3000
 echo.
-echo 🔧 Available commands:
+echo  Available commands:
 echo    npm run dev     - Start development server
 echo    npm run build   - Build for production
 echo    npm run start   - Start production server

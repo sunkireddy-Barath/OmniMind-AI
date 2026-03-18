@@ -1,40 +1,44 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import { CheckCircleIcon, ExclamationTriangleIcon, InformationCircleIcon } from '@heroicons/react/24/outline';
-import { ConsensusResponse } from '@/lib/api';
+import { motion } from "framer-motion";
+import {
+  CheckCircleIcon,
+  ExclamationTriangleIcon,
+  InformationCircleIcon,
+} from "@heroicons/react/24/outline";
+import { ConsensusResponse } from "@/lib/api";
 
 const defaultConsensusData = {
   recommendation: "Medium Scale Organic Farming",
   confidence: 87,
   keyInsights: [
     {
-      type: 'positive',
-      text: 'Strong market demand for organic produce in Tamil Nadu',
-      agent: 'Research Agent'
+      type: "positive",
+      text: "Strong market demand for organic produce in Tamil Nadu",
+      agent: "Research Agent",
     },
     {
-      type: 'warning',
-      text: 'Initial capital requirement higher than expected',
-      agent: 'Finance Agent'
+      type: "warning",
+      text: "Initial capital requirement higher than expected",
+      agent: "Finance Agent",
     },
     {
-      type: 'info',
-      text: 'Government subsidies available for organic certification',
-      agent: 'Policy Agent'
+      type: "info",
+      text: "Government subsidies available for organic certification",
+      agent: "Policy Agent",
     },
     {
-      type: 'positive',
-      text: 'Diversified crop strategy reduces weather risks',
-      agent: 'Risk Agent'
-    }
+      type: "positive",
+      text: "Diversified crop strategy reduces weather risks",
+      agent: "Risk Agent",
+    },
   ],
   nextSteps: [
-    'Secure land lease agreements',
-    'Apply for organic certification',
-    'Establish supply chain partnerships',
-    'Set up irrigation infrastructure'
-  ]
+    "Secure land lease agreements",
+    "Apply for organic certification",
+    "Establish supply chain partnerships",
+    "Set up irrigation infrastructure",
+  ],
 };
 
 interface ConsensusPanelProps {
@@ -48,9 +52,9 @@ const insightIcons = {
 };
 
 const insightColors = {
-  positive: 'text-green-600 bg-green-500/5 border-green-500/10',
-  warning: 'text-amber-600 bg-amber-500/5 border-amber-500/10',
-  info: 'text-blue-600 bg-blue-500/5 border-blue-500/10',
+  positive: "text-green-600 bg-green-500/5 border-green-500/10",
+  warning: "text-amber-600 bg-amber-500/5 border-amber-500/10",
+  info: "text-blue-600 bg-blue-500/5 border-blue-500/10",
 };
 
 export default function ConsensusPanel({ consensus }: ConsensusPanelProps) {
@@ -72,15 +76,17 @@ export default function ConsensusPanel({ consensus }: ConsensusPanelProps) {
       {/* Consensus Recommendation */}
       <div className="card p-6">
         <div className="flex items-center justify-between mb-8">
-          <h2 className="text-lg font-semibold">
-            Strategic Insights
-          </h2>
+          <h2 className="text-lg font-semibold">Strategic Insights</h2>
         </div>
-        
+
         <div className="mb-8 text-center">
           <div className="inline-flex flex-col items-center">
-            <span className="text-4xl font-bold">{consensusData.confidence}%</span>
-            <span className="text-[10px] font-medium text-[var(--text-secondary)]">Confidence Level</span>
+            <span className="text-4xl font-bold">
+              {consensusData.confidence}%
+            </span>
+            <span className="text-[10px] font-medium text-[var(--text-secondary)]">
+              Confidence Level
+            </span>
           </div>
         </div>
 
@@ -96,12 +102,11 @@ export default function ConsensusPanel({ consensus }: ConsensusPanelProps) {
 
       {/* Key Insights */}
       <div className="card p-6">
-        <h3 className="text-md font-semibold mb-6">
-          Key Analysis
-        </h3>
+        <h3 className="text-md font-semibold mb-6">Key Analysis</h3>
         <div className="space-y-4">
           {consensusData.keyInsights.map((insight, index) => {
-            const Icon = insightIcons[insight.type as keyof typeof insightIcons];
+            const Icon =
+              insightIcons[insight.type as keyof typeof insightIcons];
             return (
               <div
                 key={index}
@@ -112,8 +117,12 @@ export default function ConsensusPanel({ consensus }: ConsensusPanelProps) {
                     <Icon className="h-4 w-4" />
                   </div>
                   <div className="flex-1">
-                    <p className="text-xs font-medium leading-relaxed mb-1">{insight.text}</p>
-                    <p className="text-[10px] text-[var(--text-secondary)] font-medium">Source: {insight.agent}</p>
+                    <p className="text-xs font-medium leading-relaxed mb-1">
+                      {insight.text}
+                    </p>
+                    <p className="text-[10px] text-[var(--text-secondary)] font-medium">
+                      Source: {insight.agent}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -124,9 +133,7 @@ export default function ConsensusPanel({ consensus }: ConsensusPanelProps) {
 
       {/* Next Steps */}
       <div className="card p-6">
-        <h3 className="text-md font-semibold mb-6">
-          Proposed Action Plan
-        </h3>
+        <h3 className="text-md font-semibold mb-6">Proposed Action Plan</h3>
         <div className="space-y-4">
           {consensusData.nextSteps.map((step, index) => (
             <div
@@ -136,7 +143,9 @@ export default function ConsensusPanel({ consensus }: ConsensusPanelProps) {
               <div className="w-8 h-8 bg-zinc-100 dark:bg-zinc-800 border border-[var(--border-primary)] text-[var(--text-secondary)] rounded-lg flex items-center justify-center text-xs font-medium">
                 {index + 1}
               </div>
-              <span className="text-xs font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">{step}</span>
+              <span className="text-xs font-medium text-[var(--text-secondary)] group-hover:text-[var(--text-primary)] transition-colors">
+                {step}
+              </span>
             </div>
           ))}
         </div>

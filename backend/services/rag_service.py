@@ -319,7 +319,7 @@ class RAGService:
         """Search using pgvector in PostgreSQL."""
         from core.database import AsyncSessionLocal
         from models.entities import KnowledgeDocumentEntity
-        from sqlalchemy import select, func
+        from sqlalchemy import select
 
         q_vec = await self._embed(query)
         

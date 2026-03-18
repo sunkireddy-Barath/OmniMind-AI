@@ -2,7 +2,15 @@
 
 import React, { useState } from "react";
 import AppLayout from "@/components/layout/AppLayout";
-import { Send, Terminal, Loader2, Info, Target, TrendingUp, Compass } from "lucide-react";
+import {
+  Send,
+  Terminal,
+  Loader2,
+  Info,
+  Target,
+  TrendingUp,
+  Compass,
+} from "lucide-react";
 
 export default function SimulationsPage() {
   const [query, setQuery] = useState("");
@@ -13,9 +21,12 @@ export default function SimulationsPage() {
     if (!query) return;
     setLoading(true);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/intel/simulate?query=${encodeURIComponent(query)}`, {
-        method: "POST",
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/intel/simulate?query=${encodeURIComponent(query)}`,
+        {
+          method: "POST",
+        },
+      );
       const data = await response.json();
       setResult(data);
     } catch (error) {
@@ -29,8 +40,13 @@ export default function SimulationsPage() {
     <AppLayout>
       <div className="max-w-6xl mx-auto p-6">
         <header className="mb-10">
-          <h1 className="text-4xl font-bold text-white mb-2">AI Scenario Simulation</h1>
-          <p className="text-zinc-400 text-lg">Ask "what-if" questions and explore predicted outcomes powered by Gradient AI.</p>
+          <h1 className="text-4xl font-bold text-white mb-2">
+            AI Scenario Simulation
+          </h1>
+          <p className="text-zinc-400 text-lg">
+            Ask "what-if" questions and explore predicted outcomes powered by
+            Gradient AI.
+          </p>
         </header>
 
         <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-6 mb-8 backdrop-blur-xl">
@@ -47,7 +63,11 @@ export default function SimulationsPage() {
               disabled={loading}
               className="bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white px-8 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all active:scale-95"
             >
-              {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Send className="w-5 h-5" />}
+              {loading ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <Send className="w-5 h-5" />
+              )}
               {loading ? "Simulating..." : "Simulate"}
             </button>
           </div>
@@ -58,9 +78,11 @@ export default function SimulationsPage() {
             <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-8 backdrop-blur-xl">
               <div className="flex items-center gap-2 mb-6 text-blue-400">
                 <Terminal className="w-6 h-6" />
-                <h2 className="text-xl font-bold uppercase tracking-wider">Simulation Report</h2>
+                <h2 className="text-xl font-bold uppercase tracking-wider">
+                  Simulation Report
+                </h2>
               </div>
-              
+
               <div className="prose prose-invert max-w-none">
                 <div className="whitespace-pre-wrap text-zinc-300 leading-relaxed text-lg">
                   {result.analysis}
@@ -69,10 +91,15 @@ export default function SimulationsPage() {
 
               {result.sources && (
                 <div className="mt-10 pt-6 border-t border-zinc-800">
-                  <h3 className="text-sm font-semibold text-zinc-500 uppercase tracking-widest mb-4">Evidence Sources</h3>
+                  <h3 className="text-sm font-semibold text-zinc-500 uppercase tracking-widest mb-4">
+                    Evidence Sources
+                  </h3>
                   <div className="flex flex-wrap gap-2">
                     {result.sources.map((source: string, i: number) => (
-                      <span key={i} className="bg-zinc-800/50 border border-zinc-700 text-zinc-400 px-3 py-1 rounded-full text-xs">
+                      <span
+                        key={i}
+                        className="bg-zinc-800/50 border border-zinc-700 text-zinc-400 px-3 py-1 rounded-full text-xs"
+                      >
                         {source}
                       </span>
                     ))}
@@ -86,15 +113,32 @@ export default function SimulationsPage() {
         {!result && !loading && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { icon: <Compass className="w-6 h-6" />, title: "Market Volatility", desc: "Simulate shifts in global commodity prices and trade policies." },
-              { icon: <Target className="w-6 h-6" />, title: "Policy Impact", desc: "Predict how new regulations or subsidies will affect your sector." },
-              { icon: <TrendingUp className="w-6 h-6" />, title: "Growth Forecasts", desc: "Explore outcomes of varying investment levels in renewable energy." },
+              {
+                icon: <Compass className="w-6 h-6" />,
+                title: "Market Volatility",
+                desc: "Simulate shifts in global commodity prices and trade policies.",
+              },
+              {
+                icon: <Target className="w-6 h-6" />,
+                title: "Policy Impact",
+                desc: "Predict how new regulations or subsidies will affect your sector.",
+              },
+              {
+                icon: <TrendingUp className="w-6 h-6" />,
+                title: "Growth Forecasts",
+                desc: "Explore outcomes of varying investment levels in renewable energy.",
+              },
             ].map((card, i) => (
-              <div key={i} className="p-6 rounded-2xl bg-zinc-900/30 border border-zinc-800 hover:border-zinc-700 transition-colors group">
+              <div
+                key={i}
+                className="p-6 rounded-2xl bg-zinc-900/30 border border-zinc-800 hover:border-zinc-700 transition-colors group"
+              >
                 <div className="w-12 h-12 rounded-xl bg-zinc-800 flex items-center justify-center mb-4 group-hover:bg-blue-900/20 group-hover:text-blue-400 transition-colors">
                   {card.icon}
                 </div>
-                <h3 className="text-xl font-bold text-white mb-2">{card.title}</h3>
+                <h3 className="text-xl font-bold text-white mb-2">
+                  {card.title}
+                </h3>
                 <p className="text-zinc-500">{card.desc}</p>
               </div>
             ))}

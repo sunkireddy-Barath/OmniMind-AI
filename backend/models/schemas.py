@@ -46,6 +46,44 @@ class QueryRequest(BaseModel):
     query: str = Field(..., min_length=20, max_length=2000)
     user_id: Optional[str] = None
     context: Dict[str, Any] = Field(default_factory=dict)
+    expert_types: Optional[List[AgentType]] = None
+
+
+class CouncilProvider(str, Enum):
+    OPENAI = "openai"
+    GEMINI = "gemini"
+    GROQ = "groq"
+    HYBRID = "hybrid"
+
+
+class CouncilAgentBase(BaseModel):
+    name: str = Field(..., min_length=2, max_length=80)
+    role: str = Field(..., min_length=3, max_length=160)
+    emoji: str = Field(default="AI", max_length=4)
+    provider: CouncilProvider
+    model: str = Field(..., min_length=2, max_length=80)
+    prompt: str = Field(..., min_length=10, max_length=4000)
+    color: str = Field(default="#111111", min_length=4, max_length=12)
+    priority: int = Field(default=100, ge=1, le=999)
+
+
+class CouncilAgentCreate(CouncilAgentBase):
+    key: str = Field(..., min_length=2, max_length=40, pattern=r"^[a-z0-9_-]+$")
+
+
+class CouncilAgentUpdate(BaseModel):
+    name: Optional[str] = Field(default=None, min_length=2, max_length=80)
+    role: Optional[str] = Field(default=None, min_length=3, max_length=160)
+    emoji: Optional[str] = Field(default=None, max_length=4)
+    provider: Optional[CouncilProvider] = None
+    model: Optional[str] = Field(default=None, min_length=2, max_length=80)
+    prompt: Optional[str] = Field(default=None, min_length=10, max_length=4000)
+    color: Optional[str] = Field(default=None, min_length=4, max_length=12)
+    priority: Optional[int] = Field(default=None, ge=1, le=999)
+
+
+class CouncilAgentOrderRequest(BaseModel):
+    agent_order: List[str] = Field(default_factory=list)
 
 
 class AgentCreate(BaseModel):

@@ -1,11 +1,11 @@
-'use client';
+"use client";
 
-import { CheckIcon } from '@heroicons/react/24/outline';
+import { CheckIcon } from "@heroicons/react/24/outline";
 
 interface Step {
   id: number;
   name: string;
-  status: 'completed' | 'active' | 'pending';
+  status: "completed" | "active" | "pending";
 }
 
 interface WorkflowProgressProps {
@@ -13,7 +13,10 @@ interface WorkflowProgressProps {
   currentStep: number;
 }
 
-export default function WorkflowProgress({ steps, currentStep }: WorkflowProgressProps) {
+export default function WorkflowProgress({
+  steps,
+  currentStep,
+}: WorkflowProgressProps) {
   return (
     <div className="w-full">
       <div className="flex items-center justify-between">
@@ -23,8 +26,8 @@ export default function WorkflowProgress({ steps, currentStep }: WorkflowProgres
               <div
                 className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                   step.id <= currentStep
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-gray-200 text-gray-500'
+                    ? "bg-primary-600 text-white"
+                    : "bg-gray-200 text-gray-500"
                 }`}
               >
                 {step.id < currentStep ? (
@@ -34,9 +37,13 @@ export default function WorkflowProgress({ steps, currentStep }: WorkflowProgres
                 )}
               </div>
               <div className="mt-2 text-xs text-center max-w-20">
-                <div className={`font-medium ${
-                  step.id <= currentStep ? 'text-primary-600' : 'text-gray-500'
-                }`}>
+                <div
+                  className={`font-medium ${
+                    step.id <= currentStep
+                      ? "text-primary-600"
+                      : "text-gray-500"
+                  }`}
+                >
                   {step.name}
                 </div>
               </div>
@@ -44,7 +51,7 @@ export default function WorkflowProgress({ steps, currentStep }: WorkflowProgres
             {index < steps.length - 1 && (
               <div
                 className={`flex-1 h-0.5 mx-4 ${
-                  step.id < currentStep ? 'bg-primary-600' : 'bg-gray-200'
+                  step.id < currentStep ? "bg-primary-600" : "bg-gray-200"
                 }`}
               />
             )}

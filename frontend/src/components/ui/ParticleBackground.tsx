@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef } from "react";
 
 interface Particle {
   x: number;
@@ -21,7 +21,7 @@ export default function ParticleBackground() {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
     const resizeCanvas = () => {
@@ -31,14 +31,17 @@ export default function ParticleBackground() {
 
     const createParticles = () => {
       const particles: Particle[] = [];
-      const particleCount = Math.min(100, Math.floor((canvas.width * canvas.height) / 15000));
-      
+      const particleCount = Math.min(
+        100,
+        Math.floor((canvas.width * canvas.height) / 15000),
+      );
+
       const colors = [
-        'rgba(59, 130, 246, 0.4)',   // Blue
-        'rgba(148, 163, 184, 0.4)',  // Slate
-        'rgba(255, 255, 255, 0.1)',  // White
-        'rgba(59, 130, 246, 0.15)',  // Subtle Blue
-        'rgba(9, 9, 11, 0.8)',       // Zinc
+        "rgba(59, 130, 246, 0.4)", // Blue
+        "rgba(148, 163, 184, 0.4)", // Slate
+        "rgba(255, 255, 255, 0.1)", // White
+        "rgba(59, 130, 246, 0.15)", // Subtle Blue
+        "rgba(9, 9, 11, 0.8)", // Zinc
       ];
 
       for (let i = 0; i < particleCount; i++) {
@@ -52,13 +55,13 @@ export default function ParticleBackground() {
           color: colors[Math.floor(Math.random() * colors.length)],
         });
       }
-      
+
       particlesRef.current = particles;
     };
 
     const drawParticles = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
+
       particlesRef.current.forEach((particle, index) => {
         // Update position
         particle.x += particle.vx;
@@ -71,24 +74,28 @@ export default function ParticleBackground() {
         // Draw particle
         ctx.beginPath();
         const gradient = ctx.createRadialGradient(
-          particle.x, particle.y, 0,
-          particle.x, particle.y, particle.size
+          particle.x,
+          particle.y,
+          0,
+          particle.x,
+          particle.y,
+          particle.size,
         );
         gradient.addColorStop(0, particle.color);
-        gradient.addColorStop(1, 'transparent');
-        
+        gradient.addColorStop(1, "transparent");
+
         ctx.arc(particle.x, particle.y, particle.size * 2, 0, Math.PI * 2);
         ctx.fillStyle = gradient;
         ctx.fill();
 
         // Draw connections to nearby particles with gold tint
-        particlesRef.current.slice(index + 1).forEach(otherParticle => {
+        particlesRef.current.slice(index + 1).forEach((otherParticle) => {
           const dx = particle.x - otherParticle.x;
           const dy = particle.y - otherParticle.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
 
           if (distance < 150) {
-            const opacity = (150 - distance) / 150 * 0.1;
+            const opacity = ((150 - distance) / 150) * 0.1;
             ctx.beginPath();
             ctx.moveTo(particle.x, particle.y);
             ctx.lineTo(otherParticle.x, otherParticle.y);
@@ -114,10 +121,10 @@ export default function ParticleBackground() {
       createParticles();
     };
 
-    window.addEventListener('resize', handleResize);
+    window.addEventListener("resize", handleResize);
 
     return () => {
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("resize", handleResize);
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
@@ -128,7 +135,7 @@ export default function ParticleBackground() {
     <canvas
       ref={canvasRef}
       className="fixed inset-0 pointer-events-none z-0"
-      style={{ background: 'transparent' }}
+      style={{ background: "transparent" }}
     />
   );
 }

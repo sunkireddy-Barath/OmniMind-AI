@@ -1,6 +1,6 @@
 import os
 import logging
-from typing import List, Dict, Any
+from typing import List
 try:
     import PyPDF2
 except ImportError:
@@ -10,7 +10,6 @@ try:
 except ImportError:
     DocxDocument = None  # type: ignore
 import csv
-import io
 
 logger = logging.getLogger(__name__)
 

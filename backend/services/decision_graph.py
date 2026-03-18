@@ -5,7 +5,7 @@ LangGraph decision workflow:
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Awaitable, Callable, TypedDict
+from typing import Awaitable, Callable, TypedDict
 
 from langgraph.graph import END, StateGraph
 
@@ -25,8 +25,8 @@ from models.schemas import (
 from services.llm_service import AGENT_META, LLMService
 from services.rag_service import RAGService
 
-# Expert agents in order — maps agent_type key → index in snapshot.agents
-EXPERT_TYPES = ["research", "risk", "finance", "strategy", "policy"]
+# Default expert agents in order.
+DEFAULT_EXPERT_TYPES = ["research", "risk", "finance", "strategy", "policy"]
 
 
 class DecisionState(TypedDict, total=False):
@@ -76,6 +76,13 @@ class DecisionGraph:
                 return a
         return None
 
+    def _expert_types_for_snapshot(self, snapshot: QueryResponse) -> list[str]:
+        configured = snapshot.context.get("expert_types") if snapshot.context else None
+        if not configured:
+            return DEFAULT_EXPERT_TYPES
+        normalized = [str(x) for x in configured if str(x) in set(DEFAULT_EXPERT_TYPES)]
+        return normalized or DEFAULT_EXPERT_TYPES
+
     # ── Stage 1: Planner ────────────────────────────────────────────────────
 
     async def _planner_node(self, state: DecisionState) -> DecisionState:
@@ -120,11 +127,10 @@ class DecisionGraph:
 
     async def _experts_node(self, state: DecisionState) -> DecisionState:
         snapshot = state["snapshot"]
-        docs = state.get("retrieved_docs", [])
         planner_output = state.get("planner_output", "")
         expert_outputs: dict[str, str] = {}
 
-        for agent_type in EXPERT_TYPES:
+        for agent_type in self._expert_types_for_snapshot(snapshot):
             agent = self._agent_by_type(snapshot, agent_type)
             meta = AGENT_META.get(agent_type, {})
             display_name = meta.get("name", agent_type)

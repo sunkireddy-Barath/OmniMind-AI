@@ -39,12 +39,12 @@ The LLM Council is a 7-agent debate system that routes each agent to a different
 │                    7 Agents — 3 Providers                       │
 │                                                                 │
 │   OpenAI GPT-4o:          Google Gemini 1.5 Flash:             │
-│   🧠 Analyst              ⚠️ Critic                             │
-│   🔍 Researcher           🎯 Strategist                         │
+│   ANALYST Analyst              WARN Critic                             │
+│   RESEARCHER Researcher           CONSENSUS Strategist                         │
 │                                                                 │
 │   Groq Llama 3.1 70B:     Hybrid (best available):             │
-│   💭 Debater              ✅ Verifier                           │
-│   🔗 Synthesizer                                                │
+│   DEBATER Debater              OK Verifier                           │
+│   SYNTH Synthesizer                                                │
 └─────────────────────────────────────────────────────────────────┘
                                 │
                                 ▼
@@ -61,13 +61,13 @@ The LLM Council is a 7-agent debate system that routes each agent to a different
 
 ### OpenAI GPT-4o Agents
 
-#### 🧠 Analyst
+#### ANALYST Analyst
 - Provider: OpenAI GPT-4o
 - Role: Logical Reasoning Specialist
 - Approach: Multi-layered logical frameworks, causal analysis, structured thinking
 - Output: Comprehensive logical breakdowns with confidence scoring
 
-#### 🔍 Researcher
+#### RESEARCHER Researcher
 - Provider: OpenAI GPT-4o + Tavily Search
 - Role: Evidence-Based Research Specialist
 - Approach: Real-time web search, multi-source verification, trend analysis
@@ -75,13 +75,13 @@ The LLM Council is a 7-agent debate system that routes each agent to a different
 
 ### Google Gemini 1.5 Flash Agents
 
-#### ⚠️ Critic
+#### WARN Critic
 - Provider: Google Gemini 1.5 Flash
 - Role: Critical Analysis Specialist
 - Approach: Multi-dimensional risk assessment, assumption validation, flaw detection
 - Output: Structured criticism with improvement pathways
 
-#### 🎯 Strategist
+#### CONSENSUS Strategist
 - Provider: Google Gemini 1.5 Flash
 - Role: Strategic Planning Specialist
 - Approach: Multi-phase roadmapping, resource optimization, scenario planning
@@ -89,13 +89,13 @@ The LLM Council is a 7-agent debate system that routes each agent to a different
 
 ### Groq Llama 3.1 70B Agents
 
-#### 💭 Debater
+#### DEBATER Debater
 - Provider: Groq Llama 3.1 70B
 - Role: Alternative Viewpoint Specialist
 - Approach: Rapid perspective switching, contrarian analysis, creative alternatives
 - Output: Counter-arguments with novel approaches
 
-#### 🔗 Synthesizer
+#### SYNTH Synthesizer
 - Provider: Groq Llama 3.1 70B
 - Role: Data Synthesis Specialist
 - Approach: Cross-model insight combination, pattern detection, unified frameworks
@@ -103,7 +103,7 @@ The LLM Council is a 7-agent debate system that routes each agent to a different
 
 ### Hybrid Agent
 
-#### ✅ Verifier
+#### OK Verifier
 - Provider: Best Available (OpenAI → Gemini → Groq fallback)
 - Role: Fact Verification & Consensus Builder
 - Approach: Cross-model validation, reliability scoring, consensus building
@@ -121,7 +121,7 @@ Session Initialization
   • Store question context
   • Initialize agent states
      ↓
-Step 1: 🧠 Analyst (OpenAI GPT-4o)
+Step 1: ANALYST Analyst (OpenAI GPT-4o)
   • Analyzes question structure
   • Identifies key components
   • Provides logical framework
@@ -131,27 +131,27 @@ Step 2: � Researcher (OpenAI + Tavily)
   • Gathers factual evidence
   • Cites reliable sources
      ↓
-Step 3: ⚠️ Critic (Gemini 1.5 Flash)
+Step 3: WARN Critic (Gemini 1.5 Flash)
   • Reviews previous analyses
   • Identifies potential flaws
   • Highlights risks and concerns
      ↓
-Step 4: 🎯 Strategist (Gemini 1.5 Flash)
+Step 4: CONSENSUS Strategist (Gemini 1.5 Flash)
   • Builds on research and critique
   • Develops strategic options
   • Provides implementation roadmap
      ↓
-Step 5: 💭 Debater (Groq Llama 3.1)
+Step 5: DEBATER Debater (Groq Llama 3.1)
   • Presents counter-arguments
   • Explores alternative approaches
   • Challenges assumptions
      ↓
-Step 6: 🔗 Synthesizer (Groq Llama 3.1)
+Step 6: SYNTH Synthesizer (Groq Llama 3.1)
   • Combines all perspectives
   • Identifies patterns across agents
   • Builds unified framework
      ↓
-Step 7: ✅ Verifier (Best Available)
+Step 7: OK Verifier (Best Available)
   • Validates key claims
   • Resolves contradictions
   • Generates final consensus

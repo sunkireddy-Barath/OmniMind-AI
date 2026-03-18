@@ -1,7 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
-import { Search, Loader2, BookOpen, FileText, BarChart, Lightbulb, CheckCircle, Target } from "lucide-react";
+import {
+  Search,
+  Loader2,
+  BookOpen,
+  FileText,
+  BarChart,
+  Lightbulb,
+  CheckCircle,
+  Target,
+} from "lucide-react";
 
 export default function ResearchAgent() {
   const [query, setQuery] = useState("");
@@ -12,9 +21,12 @@ export default function ResearchAgent() {
     if (!query) return;
     setLoading(true);
     try {
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/intel/research?query=${encodeURIComponent(query)}`, {
-        method: "POST",
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/intel/research?query=${encodeURIComponent(query)}`,
+        {
+          method: "POST",
+        },
+      );
       const data = await response.json();
       setResult(data);
     } catch (error) {
@@ -27,8 +39,12 @@ export default function ResearchAgent() {
   return (
     <div className="p-8 max-w-7xl mx-auto">
       <header className="mb-10">
-        <h1 className="text-3xl font-bold tracking-tight mb-2">Autonomous Research</h1>
-        <p className="text-[var(--text-secondary)] text-sm">Deep analysis on complex topics with evidence-based insights.</p>
+        <h1 className="text-3xl font-bold tracking-tight mb-2">
+          Autonomous Research
+        </h1>
+        <p className="text-[var(--text-secondary)] text-sm">
+          Deep analysis on complex topics with evidence-based insights.
+        </p>
       </header>
 
       <div className="bg-[var(--glass-bg)] border border-[var(--border-primary)] rounded-2xl p-6 mb-8 backdrop-blur-xl">
@@ -45,7 +61,11 @@ export default function ResearchAgent() {
             disabled={loading}
             className="bg-purple-600 hover:bg-purple-500 disabled:opacity-50 text-white px-8 py-3 rounded-xl font-semibold flex items-center gap-2 transition-all active:scale-95 shadow-md"
           >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
+            {loading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <Search className="w-5 h-5" />
+            )}
             {loading ? "Searching..." : "Research"}
           </button>
         </div>
@@ -57,9 +77,11 @@ export default function ResearchAgent() {
             <div className="bg-purple-500/10 p-2 rounded-lg text-purple-400">
               <BookOpen className="w-6 h-6" />
             </div>
-            <h2 className="text-xl font-bold text-[var(--text-primary)]">Research Report: {result.topic}</h2>
+            <h2 className="text-xl font-bold text-[var(--text-primary)]">
+              Research Report: {result.topic}
+            </h2>
           </div>
-          
+
           <div className="prose prose-invert max-w-none">
             <div className="whitespace-pre-wrap text-[var(--text-secondary)] leading-relaxed text-lg space-y-6">
               {result.report}

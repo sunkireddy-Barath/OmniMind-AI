@@ -4,9 +4,10 @@ Multi-provider chat: OpenAI GPT-5.4 + Google Gemini Pro + Groq Llama 3.1
 """
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List, Dict, Any
+from typing import List, Dict
 
-from services.llm_council import llm_council_chat, ChatMessage, ChatSession
+from services.llm_council import llm_council_chat, ChatMessage
+from models.schemas import CouncilAgentCreate, CouncilAgentOrderRequest, CouncilAgentUpdate
 
 router = APIRouter()
 
@@ -27,6 +28,10 @@ class ChatResponse(BaseModel):
     messages: List[ChatMessage]
     final_answer: str = ""
     agents_available: List[Dict[str, str]]
+
+
+class RunAllRequest(BaseModel):
+    agent_order: List[str] = []
 
 
 # ── Health & Meta ──────────────────────────────────────────────────────────────
@@ -63,6 +68,37 @@ async def list_agents():
         "total": len(agents),
         "providers": ["OpenAI GPT-5.4", "Google Gemini Pro", "Groq Llama 3.1"],
     }
+
+
+@router.post("/agents/register")
+async def register_agent(payload: CouncilAgentCreate):
+    agent = llm_council_chat.upsert_agent(payload.key, payload.model_dump())
+    return {"message": f"Agent '{payload.key}' saved", "agent": agent}
+
+
+@router.put("/agents/{agent_key}")
+async def update_agent(agent_key: str, payload: CouncilAgentUpdate):
+    if agent_key not in llm_council_chat.agents:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    current = llm_council_chat.agents[agent_key].copy()
+    updates = payload.model_dump(exclude_none=True)
+    current.update(updates)
+    agent = llm_council_chat.upsert_agent(agent_key, current)
+    return {"message": f"Agent '{agent_key}' updated", "agent": agent}
+
+
+@router.delete("/agents/{agent_key}")
+async def delete_agent(agent_key: str):
+    removed = llm_council_chat.remove_agent(agent_key)
+    if not removed:
+        raise HTTPException(status_code=404, detail="Agent not found")
+    return {"message": f"Agent '{agent_key}' deleted"}
+
+
+@router.post("/agents/reorder")
+async def reorder_agents(payload: CouncilAgentOrderRequest):
+    order = llm_council_chat.reorder_agents(payload.agent_order)
+    return {"message": "Agent order updated", "order": order}
 
 
 # ── Session Management ─────────────────────────────────────────────────────────
@@ -115,10 +151,11 @@ async def add_agent_to_chat(request: AgentChatRequest):
 
 
 @router.post("/chat/run-all/{session_id}", response_model=ChatResponse)
-async def run_all_agents(session_id: str):
+async def run_all_agents(session_id: str, payload: RunAllRequest | None = None):
     """Run all 7 agents in sequence and return the full council discussion."""
     try:
-        session = await llm_council_chat.run_full_council(session_id)
+        order = payload.agent_order if payload else None
+        session = await llm_council_chat.run_full_council(session_id, order)
         return ChatResponse(
             session_id=session.session_id,
             status=session.status,

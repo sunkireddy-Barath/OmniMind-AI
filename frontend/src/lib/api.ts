@@ -5,6 +5,30 @@ export interface QueryRequest {
   query: string;
   user_id?: string;
   context?: Record<string, any>;
+  expert_types?: string[];
+}
+
+export interface CouncilAgent {
+  key: string;
+  name: string;
+  role: string;
+  emoji: string;
+  provider: 'openai' | 'gemini' | 'groq' | 'hybrid' | string;
+  model: string;
+  color?: string;
+  priority?: number;
+}
+
+export interface CouncilAgentPayload {
+  key: string;
+  name: string;
+  role: string;
+  emoji: string;
+  provider: 'openai' | 'gemini' | 'groq' | 'hybrid' | string;
+  model: string;
+  prompt: string;
+  color?: string;
+  priority?: number;
 }
 
 export type AgentStatus = 'pending' | 'active' | 'completed' | 'failed';
@@ -241,6 +265,45 @@ class ApiClient {
       }
     };
     return socket;
+  }
+
+  // Council endpoints
+  async listCouncilAgents(): Promise<{ agents: CouncilAgent[]; total: number }> {
+    return this.request<{ agents: CouncilAgent[]; total: number }>('/api/council/agents');
+  }
+
+  async registerCouncilAgent(payload: CouncilAgentPayload): Promise<{ message: string; agent: CouncilAgent }> {
+    return this.request<{ message: string; agent: CouncilAgent }>('/api/council/agents/register', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async updateCouncilAgent(key: string, payload: Partial<CouncilAgentPayload>): Promise<{ message: string; agent: CouncilAgent }> {
+    return this.request<{ message: string; agent: CouncilAgent }>(`/api/council/agents/${key}`, {
+      method: 'PUT',
+      body: JSON.stringify(payload),
+    });
+  }
+
+  async deleteCouncilAgent(key: string): Promise<{ message: string }> {
+    return this.request<{ message: string }>(`/api/council/agents/${key}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async reorderCouncilAgents(agentOrder: string[]): Promise<{ message: string; order: string[] }> {
+    return this.request<{ message: string; order: string[] }>('/api/council/agents/reorder', {
+      method: 'POST',
+      body: JSON.stringify({ agent_order: agentOrder }),
+    });
+  }
+
+  async runCouncil(sessionId: string, agentOrder?: string[]): Promise<any> {
+    return this.request<any>(`/api/council/chat/run-all/${sessionId}`, {
+      method: 'POST',
+      body: JSON.stringify({ agent_order: agentOrder || [] }),
+    });
   }
 }
 

@@ -1,13 +1,9 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
-from typing import List, Dict, Any
+from fastapi import APIRouter, UploadFile, File, HTTPException
 import os
 import shutil
-import uuid
 from services.document_service import document_service
 from services.rag_service import RAGService
 from services.llm_service import LLMService
-from core.database import get_db
-from sqlalchemy.ext.asyncio import AsyncSession
 
 router = APIRouter()
 rag_service = RAGService()

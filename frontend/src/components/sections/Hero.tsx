@@ -1,25 +1,53 @@
-'use client';
+"use client";
 
-import { motion, useInView } from 'framer-motion';
-import { useRef } from 'react';
-import { ArrowRightIcon, PlayIcon, SparklesIcon } from '@heroicons/react/24/outline';
-import { Users, Brain, Target, Zap, Rocket, Shield } from 'lucide-react';
-import CountUp from 'react-countup';
+import { motion, useInView } from "framer-motion";
+import { useRef } from "react";
+import {
+  ArrowRightIcon,
+  PlayIcon,
+  SparklesIcon,
+} from "@heroicons/react/24/outline";
+import { Users, Brain, Target, Zap, Rocket, Shield } from "lucide-react";
+import CountUp from "react-countup";
 
 const stats = [
-  { icon: Users, value: 5, suffix: '+', label: 'AI Experts', color: 'text-blue-600' },
-  { icon: Brain, value: 95, suffix: '%', label: 'Precision', color: 'text-slate-400' },
-  { icon: Target, value: 10, suffix: 'x', label: 'Decision Speed', color: 'text-blue-600' },
-  { icon: Zap, value: 24, suffix: '/7', label: 'Reliability', color: 'text-slate-400' },
+  {
+    icon: Users,
+    value: 5,
+    suffix: "+",
+    label: "AI Experts",
+    color: "text-blue-600",
+  },
+  {
+    icon: Brain,
+    value: 95,
+    suffix: "%",
+    label: "Precision",
+    color: "text-slate-400",
+  },
+  {
+    icon: Target,
+    value: 10,
+    suffix: "x",
+    label: "Decision Speed",
+    color: "text-blue-600",
+  },
+  {
+    icon: Zap,
+    value: 24,
+    suffix: "/7",
+    label: "Reliability",
+    color: "text-slate-400",
+  },
 ];
 
 const floatingElements = [
-  { icon: Brain, delay: 0, x: '10%', y: '20%' },
-  { icon: Target, delay: 1, x: '80%', y: '30%' },
-  { icon: Users, delay: 2, x: '15%', y: '70%' },
-  { icon: Zap, delay: 3, x: '85%', y: '80%' },
-  { icon: Rocket, delay: 4, x: '50%', y: '15%' },
-  { icon: Shield, delay: 5, x: '70%', y: '60%' },
+  { icon: Brain, delay: 0, x: "10%", y: "20%" },
+  { icon: Target, delay: 1, x: "80%", y: "30%" },
+  { icon: Users, delay: 2, x: "15%", y: "70%" },
+  { icon: Zap, delay: 3, x: "85%", y: "80%" },
+  { icon: Rocket, delay: 4, x: "50%", y: "15%" },
+  { icon: Shield, delay: 5, x: "70%", y: "60%" },
 ];
 
 interface HeroProps {
@@ -31,11 +59,14 @@ export default function Hero({ onGetStarted }: HeroProps) {
   const isInView = useInView(ref, { once: true });
 
   return (
-    <section ref={ref} className="relative overflow-hidden pt-32 pb-24 sm:pt-40 sm:pb-32 bg-[var(--bg-main)]">
+    <section
+      ref={ref}
+      className="relative overflow-hidden pt-32 pb-24 sm:pt-40 sm:pb-32 bg-[var(--bg-main)]"
+    >
       {/* Background effects */}
       <div className="absolute inset-0 opacity-50" />
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full h-full bg-[radial-gradient(circle_at_50%_-20%,rgba(59,130,246,0.05)_0%,transparent_50%)]" />
-      
+
       {/* Floating background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {floatingElements.map((element, index) => (
@@ -51,7 +82,7 @@ export default function Hero({ onGetStarted }: HeroProps) {
           </motion.div>
         ))}
       </div>
-      
+
       <div className="relative mx-auto max-w-7xl px-6 lg:px-8">
         <div className="mx-auto max-w-4xl text-center">
           <motion.div
@@ -103,8 +134,9 @@ export default function Hero({ onGetStarted }: HeroProps) {
               transition={{ delay: 0.9, duration: 0.8 }}
               className="mt-12 text-lg leading-8 text-[var(--text-secondary)] max-w-2xl mx-auto font-medium"
             >
-              Elevate your strategic decision intelligence with our collective of AI agents. 
-              Precision-engineered for complex problem solving and real-world results.
+              Elevate your strategic decision intelligence with our collective
+              of AI agents. Precision-engineered for complex problem solving and
+              real-world results.
             </motion.p>
           </motion.div>
 
@@ -124,7 +156,7 @@ export default function Hero({ onGetStarted }: HeroProps) {
               Get Started
               <ArrowRightIcon className="w-5 h-5" />
             </motion.button>
-            
+
             <motion.button
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
@@ -153,7 +185,9 @@ export default function Hero({ onGetStarted }: HeroProps) {
                 className="flex flex-col items-center group cursor-pointer"
               >
                 <div className="flex items-center justify-center w-20 h-20 rounded-full bg-white/5 backdrop-blur-xl border border-white/5 mb-6 group-hover:border-blue-500/50 transition-all duration-500 shadow-2xl">
-                  <stat.icon className={`w-8 h-8 ${stat.color} group-hover:scale-110 transition-transform duration-500`} />
+                  <stat.icon
+                    className={`w-8 h-8 ${stat.color} group-hover:scale-110 transition-transform duration-500`}
+                  />
                 </div>
                 <div className="text-4xl font-bold text-[var(--text-primary)] mb-2 tracking-tight">
                   {isInView && (
@@ -165,7 +199,9 @@ export default function Hero({ onGetStarted }: HeroProps) {
                     />
                   )}
                 </div>
-                <div className="text-[10px] text-blue-600/60 font-semibold uppercase tracking-wider">{stat.label}</div>
+                <div className="text-[10px] text-blue-600/60 font-semibold uppercase tracking-wider">
+                  {stat.label}
+                </div>
               </motion.div>
             ))}
           </motion.div>
@@ -181,11 +217,11 @@ export default function Hero({ onGetStarted }: HeroProps) {
           <div className="relative">
             {/* Glow effect */}
             <div className="absolute -inset-10 bg-blue-600/5 rounded-[4rem] blur-[100px]" />
-            
+
             <div className="relative card p-12 sm:p-20 group">
-               {/* Border glow on hover */}
-               <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-blue-600/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
-               <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-blue-600/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+              {/* Border glow on hover */}
+              <div className="absolute inset-x-0 top-0 h-[1px] bg-gradient-to-r from-transparent via-blue-600/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
+              <div className="absolute inset-x-0 bottom-0 h-[1px] bg-gradient-to-r from-transparent via-blue-600/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-1000" />
 
               <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
                 <motion.div
@@ -196,9 +232,12 @@ export default function Hero({ onGetStarted }: HeroProps) {
                     <div className="absolute inset-0 bg-blue-600 opacity-0 group-hover/item:opacity-10 transition-opacity" />
                     <Brain className="w-12 h-12 text-blue-600" />
                   </div>
-                  <h3 className="font-bold text-[var(--text-primary)] mb-4 text-xl tracking-tight uppercase">Analysis</h3>
+                  <h3 className="font-bold text-[var(--text-primary)] mb-4 text-xl tracking-tight uppercase">
+                    Analysis
+                  </h3>
                   <p className="text-[var(--text-secondary)] text-sm leading-relaxed font-medium">
-                    AI agents orchestrate high-fidelity intelligence architectures for your most complex challenges.
+                    AI agents orchestrate high-fidelity intelligence
+                    architectures for your most complex challenges.
                   </p>
                 </motion.div>
 
@@ -210,9 +249,12 @@ export default function Hero({ onGetStarted }: HeroProps) {
                     <div className="absolute inset-0 bg-blue-600 opacity-0 group-hover/item:opacity-10 transition-opacity" />
                     <Target className="w-12 h-12 text-blue-600" />
                   </div>
-                  <h3 className="font-bold text-[var(--text-primary)] mb-4 text-xl tracking-tight uppercase">Simulation</h3>
+                  <h3 className="font-bold text-[var(--text-primary)] mb-4 text-xl tracking-tight uppercase">
+                    Simulation
+                  </h3>
                   <p className="text-[var(--text-secondary)] text-sm leading-relaxed font-medium">
-                    Navigate the future with precision using advanced synthetic scenario intelligence.
+                    Navigate the future with precision using advanced synthetic
+                    scenario intelligence.
                   </p>
                 </motion.div>
 
@@ -224,9 +266,12 @@ export default function Hero({ onGetStarted }: HeroProps) {
                     <div className="absolute inset-0 bg-blue-600 opacity-0 group-hover/item:opacity-10 transition-opacity" />
                     <Users className="w-12 h-12 text-blue-600" />
                   </div>
-                  <h3 className="font-bold text-[var(--text-primary)] mb-4 text-xl tracking-tight uppercase">Consensus</h3>
+                  <h3 className="font-bold text-[var(--text-primary)] mb-4 text-xl tracking-tight uppercase">
+                    Consensus
+                  </h3>
                   <p className="text-[var(--text-secondary)] text-sm leading-relaxed font-medium">
-                    Reliable recommendations forged through collaborative AI collaboration and debate.
+                    Reliable recommendations forged through collaborative AI
+                    collaboration and debate.
                   </p>
                 </motion.div>
               </div>

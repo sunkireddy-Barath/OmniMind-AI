@@ -34,63 +34,17 @@ class DecisionRuntime:
 
     def _build_initial_snapshot(self, session_id: str, query: str, context: dict[str, Any]) -> QueryResponse:
         now = datetime.utcnow()
-        # Named personas from master spec — order matches EXPERT_TYPES in decision_graph.py
+        expert_types = context.get("expert_types") or ["research", "risk", "finance", "strategy", "policy"]
+        expert_types = [e for e in expert_types if e in {"research", "risk", "finance", "strategy", "policy"}]
+        if not expert_types:
+            expert_types = ["research", "risk", "finance", "strategy", "policy"]
+
         agents = [
             AgentResponse(
                 id=f"{session_id}-planner",
                 name="Planner",
                 agent_type=AgentType.PLANNER,
                 role="Problem decomposition and planning",
-                status=AgentStatus.PENDING,
-                progress=0,
-                created_at=now,
-                updated_at=now,
-            ),
-            AgentResponse(
-                id=f"{session_id}-research",
-                name="Priya",
-                agent_type=AgentType.RESEARCH,
-                role="Research & Intelligence Agent",
-                status=AgentStatus.PENDING,
-                progress=0,
-                created_at=now,
-                updated_at=now,
-            ),
-            AgentResponse(
-                id=f"{session_id}-risk",
-                name="Arjun",
-                agent_type=AgentType.RISK,
-                role="Risk Analyst Agent",
-                status=AgentStatus.PENDING,
-                progress=0,
-                created_at=now,
-                updated_at=now,
-            ),
-            AgentResponse(
-                id=f"{session_id}-finance",
-                name="Kavya",
-                agent_type=AgentType.FINANCE,
-                role="Financial Strategy Agent",
-                status=AgentStatus.PENDING,
-                progress=0,
-                created_at=now,
-                updated_at=now,
-            ),
-            AgentResponse(
-                id=f"{session_id}-strategy",
-                name="Ravi",
-                agent_type=AgentType.STRATEGY,
-                role="Strategy & Execution Agent",
-                status=AgentStatus.PENDING,
-                progress=0,
-                created_at=now,
-                updated_at=now,
-            ),
-            AgentResponse(
-                id=f"{session_id}-policy",
-                name="Meera",
-                agent_type=AgentType.POLICY,
-                role="Policy & Government Schemes Agent",
                 status=AgentStatus.PENDING,
                 progress=0,
                 created_at=now,
@@ -127,6 +81,32 @@ class DecisionRuntime:
                 updated_at=now,
             ),
         ]
+
+        expert_map = {
+            "research": ("Priya", AgentType.RESEARCH, "Research & Intelligence Agent"),
+            "risk": ("Arjun", AgentType.RISK, "Risk Analyst Agent"),
+            "finance": ("Kavya", AgentType.FINANCE, "Financial Strategy Agent"),
+            "strategy": ("Ravi", AgentType.STRATEGY, "Strategy & Execution Agent"),
+            "policy": ("Meera", AgentType.POLICY, "Policy & Government Schemes Agent"),
+        }
+
+        expert_agents = []
+        for expert in expert_types:
+            name, agent_type, role = expert_map[expert]
+            expert_agents.append(
+                AgentResponse(
+                    id=f"{session_id}-{expert}",
+                    name=name,
+                    agent_type=agent_type,
+                    role=role,
+                    status=AgentStatus.PENDING,
+                    progress=0,
+                    created_at=now,
+                    updated_at=now,
+                )
+            )
+
+        agents = [agents[0], *expert_agents, *agents[1:]]
 
         steps = [
             WorkflowStep(id=1, name="Planner", stage=WorkflowStage.PLANNER, status=AgentStatus.PENDING),

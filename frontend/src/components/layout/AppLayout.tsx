@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Brain, 
-  MessageSquare, 
-  Database, 
-  PlayCircle, 
-  BarChart3, 
-  Settings, 
+import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Brain,
+  MessageSquare,
+  Database,
+  PlayCircle,
+  BarChart3,
+  Settings,
   LogOut,
   ChevronLeft,
   ChevronRight,
@@ -19,8 +19,8 @@ import {
   ShieldCheck,
   Zap,
   LayoutDashboard,
-} from 'lucide-react';
-import { useTheme } from '@/context/ThemeContext';
+} from "lucide-react";
+import { useTheme } from "@/context/ThemeContext";
 
 interface AppLayoutProps {
   user?: { name: string; email: string };
@@ -30,26 +30,26 @@ interface AppLayoutProps {
   setActiveTab?: (tab: string) => void;
 }
 
-export default function AppLayout({ 
-  user = { name: 'Guest', email: 'guest@omnimind.ai' }, 
-  onSignOut = () => {}, 
-  children, 
-  activeTab = 'dashboard', 
-  setActiveTab = () => {} 
+export default function AppLayout({
+  user = { name: "Guest", email: "guest@omnimind.ai" },
+  onSignOut = () => {},
+  children,
+  activeTab = "dashboard",
+  setActiveTab = () => {},
 }: AppLayoutProps) {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const { theme, setTheme } = useTheme();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-  const isDarkTheme = theme === 'dark';
+  const isDarkTheme = theme === "dark";
 
   const menuItems = [
-    { id: 'dashboard', name: 'Dashboard', icon: LayoutDashboard },
-    { id: 'chat', name: 'Multi Agent Chat', icon: MessageSquare },
-    { id: 'rag', name: 'RAG Knowledge Base', icon: Database },
-    { id: 'sim', name: 'Scenario Planner', icon: PlayCircle },
-    { id: 'consensus', name: 'Strategic Insights', icon: ShieldCheck },
-    { id: 'analytics', name: 'Activity Reports', icon: BarChart3 },
+    { id: "dashboard", name: "Dashboard", icon: LayoutDashboard },
+    { id: "chat", name: "Multi Agent Chat", icon: MessageSquare },
+    { id: "rag", name: "RAG Knowledge Base", icon: Database },
+    { id: "sim", name: "Scenario Planner", icon: PlayCircle },
+    { id: "consensus", name: "Strategic Insights", icon: ShieldCheck },
+    { id: "analytics", name: "Activity Reports", icon: BarChart3 },
   ];
 
   return (
@@ -65,7 +65,11 @@ export default function AppLayout({
           onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
           className="absolute -right-3 top-20 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-zinc-950 shadow-lg border border-zinc-950 z-50 hover:scale-110 transition-transform"
         >
-          {isSidebarCollapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
+          {isSidebarCollapsed ? (
+            <ChevronRight size={14} />
+          ) : (
+            <ChevronLeft size={14} />
+          )}
         </button>
 
         {/* Brand */}
@@ -91,12 +95,19 @@ export default function AppLayout({
               key={item.id}
               onClick={() => setActiveTab(item.id)}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${
-                activeTab === item.id 
-                  ? 'bg-blue-600/10 text-blue-600' 
-                  : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]'
+                activeTab === item.id
+                  ? "bg-blue-600/10 text-blue-600"
+                  : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]"
               }`}
             >
-              <item.icon size={18} className={activeTab === item.id ? 'text-blue-600' : 'group-hover:text-[var(--text-primary)] transition-colors'} />
+              <item.icon
+                size={18}
+                className={
+                  activeTab === item.id
+                    ? "text-blue-600"
+                    : "group-hover:text-[var(--text-primary)] transition-colors"
+                }
+              />
               {!isSidebarCollapsed && (
                 <span className="text-sm font-medium whitespace-nowrap">
                   {item.name}
@@ -126,7 +137,8 @@ export default function AppLayout({
         <header className="h-16 bg-[var(--bg-main)] border-b border-[var(--border-primary)] px-8 flex items-center justify-between z-20">
           <div className="flex items-center gap-4">
             <h2 className="text-sm font-medium text-[var(--text-secondary)]">
-              {menuItems.find(i => i.id === activeTab)?.name || 'Welcome Center'}
+              {menuItems.find((i) => i.id === activeTab)?.name ||
+                "Welcome Center"}
             </h2>
           </div>
 
@@ -134,14 +146,14 @@ export default function AppLayout({
             {/* Theme Toggle */}
             <div className="flex items-center gap-1 p-1 bg-[var(--glass-bg)] rounded-lg border border-[var(--border-primary)]">
               <button
-                onClick={() => setTheme('light')}
-                className={`p-1.5 rounded-md transition-all ${theme === 'light' ? 'bg-[var(--bg-sidebar)] text-blue-600 shadow-sm' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+                onClick={() => setTheme("light")}
+                className={`p-1.5 rounded-md transition-all ${theme === "light" ? "bg-[var(--bg-sidebar)] text-blue-600 shadow-sm" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"}`}
               >
                 <Sun size={14} />
               </button>
               <button
-                onClick={() => setTheme('dark')}
-                className={`p-1.5 rounded-md transition-all ${theme === 'dark' ? 'bg-[var(--bg-sidebar)] text-blue-600 shadow-sm' : 'text-[var(--text-secondary)] hover:text-[var(--text-primary)]'}`}
+                onClick={() => setTheme("dark")}
+                className={`p-1.5 rounded-md transition-all ${theme === "dark" ? "bg-[var(--bg-sidebar)] text-blue-600 shadow-sm" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"}`}
               >
                 <Moon size={14} />
               </button>
@@ -151,9 +163,11 @@ export default function AppLayout({
             <div className="relative flex items-center gap-3 pl-4 border-l border-[var(--border-primary)]">
               <div className="text-right hidden sm:block">
                 <p className="text-xs font-medium">{user.name}</p>
-                <p className="text-[10px] text-[var(--text-secondary)]">Member</p>
+                <p className="text-[10px] text-[var(--text-secondary)]">
+                  Member
+                </p>
               </div>
-              <div 
+              <div
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="relative cursor-pointer"
               >
@@ -165,9 +179,9 @@ export default function AppLayout({
               <AnimatePresence>
                 {isProfileOpen && (
                   <>
-                    <div 
-                      className="fixed inset-0 z-40 bg-transparent" 
-                      onClick={() => setIsProfileOpen(false)} 
+                    <div
+                      className="fixed inset-0 z-40 bg-transparent"
+                      onClick={() => setIsProfileOpen(false)}
                     />
                     <motion.div
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
@@ -176,17 +190,26 @@ export default function AppLayout({
                       className="absolute right-0 top-16 w-56 bg-[var(--bg-sidebar)] backdrop-blur-2xl border border-blue-600/20 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] p-2 z-50 overflow-hidden"
                     >
                       <div className="px-4 py-3 mb-2 border-b border-blue-600/10">
-                        <p className="text-[10px] font-bold text-blue-600 uppercase tracking-tighter truncate">{user.name}</p>
-                        <p className="text-[8px] font-medium text-[var(--text-secondary)] uppercase tracking-widest truncate">{user.email}</p>
+                        <p className="text-[10px] font-bold text-blue-600 uppercase tracking-tighter truncate">
+                          {user.name}
+                        </p>
+                        <p className="text-[8px] font-medium text-[var(--text-secondary)] uppercase tracking-widest truncate">
+                          {user.email}
+                        </p>
                       </div>
-                      <button 
+                      <button
                         className="w-full flex items-center gap-3 px-4 py-4 rounded-2xl hover:bg-blue-600/5 text-[var(--text-secondary)] hover:text-blue-600 transition-all duration-300 group"
                         onClick={() => setIsProfileOpen(false)}
                       >
-                        <Settings size={18} className="group-hover:rotate-45 transition-transform duration-500" />
-                        <span className="text-[10px] font-bold uppercase tracking-widest">Profile Settings</span>
+                        <Settings
+                          size={18}
+                          className="group-hover:rotate-45 transition-transform duration-500"
+                        />
+                        <span className="text-[10px] font-bold uppercase tracking-widest">
+                          Profile Settings
+                        </span>
                       </button>
-                      <button 
+                      <button
                         className="w-full flex items-center gap-3 px-4 py-4 rounded-2xl hover:bg-red-500/5 text-[var(--text-secondary)] hover:text-red-500 transition-all duration-300"
                         onClick={() => {
                           setIsProfileOpen(false);
@@ -194,7 +217,9 @@ export default function AppLayout({
                         }}
                       >
                         <LogOut size={18} />
-                        <span className="text-[10px] font-bold uppercase tracking-widest">Sign Out Session</span>
+                        <span className="text-[10px] font-bold uppercase tracking-widest">
+                          Sign Out Session
+                        </span>
                       </button>
                     </motion.div>
                   </>
@@ -205,18 +230,18 @@ export default function AppLayout({
         </header>
 
         {/* Viewport */}
-        <main className={`flex-1 relative scrollbar-hide ${activeTab === 'chat' ? 'overflow-hidden' : 'overflow-y-auto overflow-x-hidden'}`}>
+        <main
+          className={`flex-1 relative scrollbar-hide ${activeTab === "chat" ? "overflow-hidden" : "overflow-y-auto overflow-x-hidden"}`}
+        >
           {/* Background decoration */}
-          {activeTab !== 'chat' && (
+          {activeTab !== "chat" && (
             <>
               <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/5 blur-[120px] rounded-full -mr-64 -mt-64 pointer-events-none" />
               <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-600/5 blur-[120px] rounded-full -ml-64 -mb-64 pointer-events-none" />
             </>
           )}
-          
-          <div className="relative z-10">
-            {children}
-          </div>
+
+          <div className="relative z-10">{children}</div>
         </main>
       </div>
     </div>

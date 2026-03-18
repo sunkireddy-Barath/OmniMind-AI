@@ -1,149 +1,149 @@
 @echo off
-echo 🔧 OmniMind AI - System Troubleshooting
+echo  OmniMind AI - System Troubleshooting
 echo ========================================
 
-echo 📋 System Check Report
+echo INFO System Check Report
 echo.
 
 REM Check directory structure
-echo 🗂️  Directory Structure:
+echo ️  Directory Structure:
 if exist "backend\main.py" (
-    echo ✅ Backend found
+    echo OK Backend found
 ) else (
-    echo ❌ Backend missing
+    echo NO Backend missing
 )
 
 if exist "frontend\package.json" (
-    echo ✅ Frontend found
+    echo OK Frontend found
 ) else (
-    echo ❌ Frontend missing
+    echo NO Frontend missing
 )
 
 if exist "backend\requirements.docker.txt" (
-    echo ✅ Backend requirements found
+    echo OK Backend requirements found
 ) else (
-    echo ❌ Backend requirements missing
+    echo NO Backend requirements missing
 )
 
 if exist "frontend\node_modules" (
-    echo ✅ Frontend dependencies installed
+    echo OK Frontend dependencies installed
 ) else (
-    echo ⚠️  Frontend dependencies missing - run frontend-setup.bat
+    echo WARN  Frontend dependencies missing - run frontend-setup.bat
 )
 
 echo.
 
 REM Check Node.js and Python
-echo 🐍 Runtime Environments:
+echo  Runtime Environments:
 python --version >nul 2>&1
 if %errorlevel% equ 0 (
-    echo ✅ Python installed:
+    echo OK Python installed:
     python --version
 ) else (
-    echo ❌ Python not found - install Python 3.11+
+    echo NO Python not found - install Python 3.11+
 )
 
 node --version >nul 2>&1
 if %errorlevel% equ 0 (
-    echo ✅ Node.js installed:
+    echo OK Node.js installed:
     node --version
 ) else (
-    echo ❌ Node.js not found - install Node.js 18+
+    echo NO Node.js not found - install Node.js 18+
 )
 
 npm --version >nul 2>&1
 if %errorlevel% equ 0 (
-    echo ✅ npm available:
+    echo OK npm available:
     npm --version
 ) else (
-    echo ❌ npm not found
+    echo NO npm not found
 )
 
 echo.
 
 REM Check API Keys
-echo 🔑 API Configuration:
+echo  API Configuration:
 if "%OPENAI_API_KEY%"=="" (
-    echo ❌ OPENAI_API_KEY not set
+    echo NO OPENAI_API_KEY not set
 ) else (
-    echo ✅ OPENAI_API_KEY configured (length: %OPENAI_API_KEY:~0,10%...)
+    echo OK OPENAI_API_KEY configured (length: %OPENAI_API_KEY:~0,10%...)
 )
 
 if "%GOOGLE_API_KEY%"=="" (
-    echo ⚠️  GOOGLE_API_KEY not set (optional)
+    echo WARN  GOOGLE_API_KEY not set (optional)
 ) else (
-    echo ✅ GOOGLE_API_KEY configured
+    echo OK GOOGLE_API_KEY configured
 )
 
 if "%GROQ_API_KEY%"=="" (
-    echo ⚠️  GROQ_API_KEY not set (optional)
+    echo WARN  GROQ_API_KEY not set (optional)
 ) else (
-    echo ✅ GROQ_API_KEY configured
+    echo OK GROQ_API_KEY configured
 )
 
 if "%TAVILY_API_KEY%"=="" (
-    echo ⚠️  TAVILY_API_KEY not set (optional)
+    echo WARN  TAVILY_API_KEY not set (optional)
 ) else (
-    echo ✅ TAVILY_API_KEY configured
+    echo OK TAVILY_API_KEY configured
 )
 
 echo.
 
 REM Check services
-echo 🌐 Service Connectivity:
+echo  Service Connectivity:
 curl -s http://localhost:8000/health >nul 2>&1
 if %errorlevel% equ 0 (
-    echo ✅ Backend running on port 8000
+    echo OK Backend running on port 8000
 ) else (
-    echo ❌ Backend not responding on port 8000
+    echo NO Backend not responding on port 8000
 )
 
 curl -s http://localhost:3000 >nul 2>&1
 if %errorlevel% equ 0 (
-    echo ✅ Frontend running on port 3000
+    echo OK Frontend running on port 3000
 ) else (
-    echo ❌ Frontend not responding on port 3000
+    echo NO Frontend not responding on port 3000
 )
 
 echo.
 
 REM Check backend dependencies
-echo 📦 Backend Dependencies:
+echo  Backend Dependencies:
 if exist "backend\venv" (
-    echo ✅ Virtual environment found
+    echo OK Virtual environment found
 ) else (
-    echo ⚠️  Virtual environment not found
+    echo WARN  Virtual environment not found
 )
 
 echo.
 
 REM Common solutions
-echo 🛠️  Common Solutions:
+echo ️  Common Solutions:
 echo.
-echo ❌ If backend won't start:
+echo NO If backend won't start:
 echo    Simply run: backend.bat
 echo    (handles venv creation, deps install, and server start)
 echo.
-echo ❌ If frontend won't start:
+echo NO If frontend won't start:
 echo    1. Run frontend-setup.bat
 echo    2. cd frontend
 echo    3. npm run dev
 echo.
-echo ❌ If API keys missing:
+echo NO If API keys missing:
 echo    1. Get OpenAI API key from: https://platform.openai.com/
 echo    2. Get Tavily API key from: https://tavily.com/
 echo    3. Set environment variables:
 echo       set OPENAI_API_KEY=your_key_here
 echo       set TAVILY_API_KEY=your_key_here
 echo.
-echo ❌ If ports are busy:
+echo NO If ports are busy:
 echo    1. Check what's using ports 3000/8000:
 echo       netstat -ano | findstr :3000
 echo       netstat -ano | findstr :8000
 echo    2. Kill processes or use different ports
 echo.
 
-echo 📞 Need Help?
+echo  Need Help?
 echo    1. Check logs in terminal windows
 echo    2. Verify all API keys are set correctly
 echo    3. Ensure Python 3.11+ and Node.js 18+ installed

@@ -1,41 +1,82 @@
-'use client';
+"use client";
 
-import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  Trophy, 
-  Target, 
-  Cpu, 
-  LayoutDashboard, 
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Trophy,
+  Target,
+  Cpu,
+  LayoutDashboard,
   ChevronRight,
   TrendingUp,
   ShieldCheck,
   Zap,
-  Sparkles
-} from 'lucide-react';
-import ConsensusPanel from '../ai/ConsensusPanel';
-import SimulationResults from '../ai/SimulationResults';
-import MultiAgentChat from '../ai/MultiAgentChat';
-import ScenarioSimulation from '../intel/ScenarioSimulation';
-import ResearchAgent from '../intel/ResearchAgent';
-import DocumentIntelligence from '../intel/DocumentIntelligence';
+  Sparkles,
+} from "lucide-react";
+import ConsensusPanel from "../ai/ConsensusPanel";
+import SimulationResults from "../ai/SimulationResults";
+import MultiAgentChat from "../ai/MultiAgentChat";
+import ScenarioSimulation from "../intel/ScenarioSimulation";
+import ResearchAgent from "../intel/ResearchAgent";
+import DocumentIntelligence from "../intel/DocumentIntelligence";
 
 interface DashboardProps {
   user: { name: string; email: string };
   activeTab?: string;
 }
 
-export default function Dashboard({ user, activeTab = 'dashboard' }: DashboardProps) {
+export default function Dashboard({
+  user,
+  activeTab = "dashboard",
+}: DashboardProps) {
   const stats = [
-    { name: 'Active Users', value: '1,248', icon: Cpu, trend: '+12% this month' },
-    { name: 'Project Success', value: '98.4%', icon: Target, trend: 'Sustained peak' },
-    { name: 'Revenue Growth', value: '14.2M', icon: TrendingUp, trend: 'Steady' },
-    { name: 'System Stability', value: '99.99%', icon: ShieldCheck, trend: 'Reliable' },
+    {
+      name: "Active Users",
+      value: "1,248",
+      icon: Cpu,
+      trend: "+12% this month",
+    },
+    {
+      name: "Project Success",
+      value: "98.4%",
+      icon: Target,
+      trend: "Sustained peak",
+    },
+    {
+      name: "Revenue Growth",
+      value: "14.2M",
+      icon: TrendingUp,
+      trend: "Steady",
+    },
+    {
+      name: "System Stability",
+      value: "99.99%",
+      icon: ShieldCheck,
+      trend: "Reliable",
+    },
   ];
 
   const recentHistory = [
-    { id: '1', title: 'Urban Development Strategy', date: '2 hours ago', status: 'Completed', agents: 5 },
-    { id: '2', title: 'Global Supply Optimization', date: '5 hours ago', status: 'In Review', agents: 8 },
-    { id: '3', title: 'Fusion Reactor Efficiency', date: '1 day ago', status: 'Completed', agents: 12 },
+    {
+      id: "1",
+      title: "Urban Development Strategy",
+      date: "2 hours ago",
+      status: "Completed",
+      agents: 5,
+    },
+    {
+      id: "2",
+      title: "Global Supply Optimization",
+      date: "5 hours ago",
+      status: "In Review",
+      agents: 8,
+    },
+    {
+      id: "3",
+      title: "Fusion Reactor Efficiency",
+      date: "1 day ago",
+      status: "Completed",
+      agents: 12,
+    },
   ];
 
   const renderOverview = () => (
@@ -50,15 +91,11 @@ export default function Dashboard({ user, activeTab = 'dashboard' }: DashboardPr
           <p className="text-[var(--text-secondary)] text-xs font-medium mb-1">
             Overview
           </p>
-          <h1 className="text-3xl font-bold tracking-tight">
-            Dashboard
-          </h1>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
         </div>
-        
+
         <div className="flex gap-3">
-          <button className="btn-secondary px-6 text-sm">
-            Settings
-          </button>
+          <button className="btn-secondary px-6 text-sm">Settings</button>
           <button className="btn-primary px-6 text-sm flex items-center gap-2">
             <Zap className="w-4 h-4" />
             New Project
@@ -84,7 +121,9 @@ export default function Dashboard({ user, activeTab = 'dashboard' }: DashboardPr
                 {stat.trend}
               </span>
             </div>
-            <p className="text-xs font-medium text-[var(--text-secondary)] mb-1">{stat.name}</p>
+            <p className="text-xs font-medium text-[var(--text-secondary)] mb-1">
+              {stat.name}
+            </p>
             <h3 className="text-2xl font-bold">{stat.value}</h3>
           </motion.div>
         ))}
@@ -110,7 +149,9 @@ export default function Dashboard({ user, activeTab = 'dashboard' }: DashboardPr
               {recentHistory.map((item, index) => (
                 <div key={item.id} className="group cursor-pointer">
                   <div className="flex justify-between items-start mb-1">
-                    <h3 className="text-sm font-medium group-hover:text-blue-600 transition-colors">{item.title}</h3>
+                    <h3 className="text-sm font-medium group-hover:text-blue-600 transition-colors">
+                      {item.title}
+                    </h3>
                     <ChevronRight className="w-4 h-4 text-[var(--text-secondary)] group-hover:translate-x-1 transition-transform" />
                   </div>
                   <div className="flex items-center gap-3 text-[10px] text-[var(--text-secondary)]">
@@ -134,29 +175,15 @@ export default function Dashboard({ user, activeTab = 'dashboard' }: DashboardPr
     </div>
   );
 
-  const renderPlaceholder = (title: string, subtitle: string) => (
+  const renderEmptyState = (title: string, subtitle: string) => (
     <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 text-center bg-[var(--bg-main)] rounded-2xl border border-[var(--border-primary)] m-8">
       <div className="w-16 h-16 rounded-2xl bg-blue-600/10 flex items-center justify-center mb-6">
         <Sparkles className="text-blue-600 w-8 h-8" />
       </div>
       <h2 className="text-2xl font-semibold mb-2">{title}</h2>
-      <p className="text-[var(--text-secondary)] text-sm mb-10 max-w-sm">{subtitle}</p>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full max-w-xl">
-        <div className="card p-6 border-dashed">
-          <div className="w-8 h-8 rounded-lg bg-blue-600/5 flex items-center justify-center mb-3 mx-auto">
-            <Zap className="text-blue-600 w-4 h-4" />
-          </div>
-          <p className="text-[10px] font-semibold text-[var(--text-secondary)] mb-1 uppercase tracking-wider">Status</p>
-          <p className="text-sm font-semibold">Updating</p>
-        </div>
-        <div className="card p-6 border-dashed">
-           <div className="w-8 h-8 rounded-lg bg-blue-600/5 flex items-center justify-center mb-3 mx-auto">
-            <ShieldCheck className="text-blue-600 w-4 h-4" />
-          </div>
-          <p className="text-[10px] font-semibold text-[var(--text-secondary)] mb-1 uppercase tracking-wider">Security</p>
-          <p className="text-sm font-semibold">Verified</p>
-        </div>
-      </div>
+      <p className="text-[var(--text-secondary)] text-sm max-w-md">
+        {subtitle}
+      </p>
     </div>
   );
 
@@ -164,21 +191,24 @@ export default function Dashboard({ user, activeTab = 'dashboard' }: DashboardPr
     <div className="min-h-full">
       <AnimatePresence mode="wait">
         <motion.div
-           key={activeTab}
-           initial={{ opacity: 0, y: 10 }}
-           animate={{ opacity: 1, y: 0 }}
-           exit={{ opacity: 0, y: -10 }}
-           transition={{ duration: 0.4 }}
+          key={activeTab}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -10 }}
+          transition={{ duration: 0.4 }}
         >
-          {activeTab === 'dashboard' && renderOverview()}
-          {activeTab === 'chat' && <MultiAgentChat />}
-          {activeTab === 'rag' && <DocumentIntelligence />}
-          {activeTab === 'sim' && <ScenarioSimulation />}
-          {activeTab === 'analytics' && <ResearchAgent />}
-          {activeTab === 'consensus' && renderPlaceholder('Strategic Insights', 'Gathering expert opinions for comprehensive analysis.')}
+          {activeTab === "dashboard" && renderOverview()}
+          {activeTab === "chat" && <MultiAgentChat />}
+          {activeTab === "rag" && <DocumentIntelligence />}
+          {activeTab === "sim" && <ScenarioSimulation />}
+          {activeTab === "analytics" && <ResearchAgent />}
+          {activeTab === "consensus" &&
+            renderEmptyState(
+              "Strategic Insights",
+              "No consensus artifacts are available yet. Run a council session to generate this view.",
+            )}
         </motion.div>
       </AnimatePresence>
     </div>
   );
 }
-

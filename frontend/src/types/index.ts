@@ -2,7 +2,7 @@ export interface Agent {
   id: string;
   name: string;
   role: string;
-  status: 'completed' | 'active' | 'pending' | 'failed';
+  status: "completed" | "active" | "pending" | "failed";
   progress: number;
   output?: string;
   created_at?: string;
@@ -12,7 +12,7 @@ export interface Agent {
 export interface WorkflowStep {
   id: number;
   name: string;
-  status: 'completed' | 'active' | 'pending';
+  status: "completed" | "active" | "pending";
 }
 
 export interface SimulationScenario {
@@ -26,7 +26,7 @@ export interface SimulationScenario {
 }
 
 export interface ConsensusInsight {
-  type: 'positive' | 'warning' | 'info';
+  type: "positive" | "warning" | "info";
   text: string;
   agent_name: string;
   confidence?: number;

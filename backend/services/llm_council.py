@@ -3,15 +3,15 @@ LLM Council Chat System - Multi-Provider 7 Agents
 OpenAI GPT-4o + Google Gemini Pro + Groq Llama 3.1
 """
 import os
-import asyncio
 import uuid
+import json
+from pathlib import Path
 from typing import Dict, List, Any, Optional
 from datetime import datetime
+from pydantic import BaseModel
 
 from dotenv import load_dotenv
 load_dotenv()  # ensure .env is loaded before reading keys
-
-from pydantic import BaseModel
 
 # Pull keys from settings (which reads .env) with os.getenv fallback
 try:
@@ -42,6 +42,7 @@ except ImportError:
 
 
 class ChatMessage(BaseModel):
+    agent_key: str = ""
     agent: str
     role: str
     message: str
@@ -71,6 +72,12 @@ class LLMCouncilChat:
     def __init__(self):
         self.sessions: Dict[str, ChatSession] = {}
         self.llms: Dict[str, Any] = {}
+        self.registry_path = Path(
+            os.getenv(
+                "COUNCIL_AGENT_REGISTRY_PATH",
+                str(Path(__file__).resolve().parents[1] / "data" / "council_agents.json"),
+            )
+        )
 
         if LANGCHAIN_AVAILABLE:
             if _OPENAI_KEY:
@@ -118,64 +125,154 @@ class LLMCouncilChat:
             except Exception:
                 pass
 
-        self.agents = {
+        self.agents = self._default_agents()
+        self._load_registry()
+
+    def _default_agents(self) -> Dict[str, Dict[str, Any]]:
+        return {
             "analyst": {
                 "name": "Analyst",
                 "role": "Logical Reasoning Specialist",
-                "emoji": "🧠",
+                "emoji": "ANALYST",
                 "provider": "openai",
                 "model": "GPT-5.4",
+                "color": "#111111",
+                "priority": 10,
                 "prompt": "You are an analytical AI powered by GPT-5.4. Break down problems logically and provide structured reasoning with clear frameworks.",
             },
             "researcher": {
                 "name": "Researcher",
                 "role": "Research Specialist",
-                "emoji": "🔍",
+                "emoji": "RESEARCHER",
                 "provider": "openai",
                 "model": "GPT-5.4",
+                "color": "#222222",
+                "priority": 20,
                 "prompt": "You are a research agent powered by GPT-5.4. Find facts, analyze data, and provide evidence-based insights.",
             },
             "critic": {
                 "name": "Critic",
                 "role": "Critical Analyst",
-                "emoji": "⚠️",
+                "emoji": "WARN",
                 "provider": "gemini",
                 "model": "Gemini Pro",
+                "color": "#333333",
+                "priority": 30,
                 "prompt": "You are a critical analysis agent powered by Google Gemini Pro. Find flaws, identify risks, and challenge assumptions constructively.",
             },
             "strategist": {
                 "name": "Strategist",
                 "role": "Strategic Planner",
-                "emoji": "🎯",
+                "emoji": "CONSENSUS",
                 "provider": "gemini",
                 "model": "Gemini Pro",
+                "color": "#444444",
+                "priority": 40,
                 "prompt": "You are a strategic planning agent powered by Google Gemini Pro. Develop comprehensive strategies and implementation plans.",
             },
             "debater": {
                 "name": "Debater",
                 "role": "Alternative Viewpoints",
-                "emoji": "💭",
+                "emoji": "DEBATER",
                 "provider": "groq",
                 "model": "Llama 3.1",
+                "color": "#555555",
+                "priority": 50,
                 "prompt": "You are a debate agent powered by Groq Llama 3.1. Present counter-arguments and alternative perspectives.",
             },
             "synthesizer": {
                 "name": "Synthesizer",
                 "role": "Data Synthesis",
-                "emoji": "🔗",
+                "emoji": "SYNTH",
                 "provider": "groq",
                 "model": "Llama 3.1",
+                "color": "#666666",
+                "priority": 60,
                 "prompt": "You are a synthesis agent powered by Groq Llama 3.1. Combine viewpoints, identify patterns, and create unified insights.",
             },
             "verifier": {
                 "name": "Verifier",
                 "role": "Fact Checker & Consensus Builder",
-                "emoji": "✅",
+                "emoji": "OK",
                 "provider": "hybrid",
                 "model": "Best Available",
+                "color": "#000000",
+                "priority": 70,
                 "prompt": "You are a verification agent. Check facts, validate claims, and build final consensus from all perspectives.",
             },
         }
+
+    def _load_registry(self) -> None:
+        if not self.registry_path.exists():
+            return
+        try:
+            loaded = json.loads(self.registry_path.read_text(encoding="utf-8"))
+            if isinstance(loaded, dict):
+                for key, config in loaded.items():
+                    if key in self.agents:
+                        self.agents[key].update(config)
+                    elif isinstance(config, dict):
+                        self.agents[key] = config
+        except Exception:
+            # If registry file is corrupted, fallback to defaults without blocking startup.
+            return
+
+    def _save_registry(self) -> None:
+        serializable = {
+            key: {
+                "name": a.get("name", ""),
+                "role": a.get("role", ""),
+                "emoji": a.get("emoji", "AI"),
+                "provider": a.get("provider", "hybrid"),
+                "model": a.get("model", "Best Available"),
+                "prompt": a.get("prompt", ""),
+                "color": a.get("color", "#111111"),
+                "priority": int(a.get("priority", 100)),
+            }
+            for key, a in self.agents.items()
+        }
+        self.registry_path.parent.mkdir(parents=True, exist_ok=True)
+        self.registry_path.write_text(json.dumps(serializable, indent=2), encoding="utf-8")
+
+    def _normalized_order(self, requested_order: Optional[List[str]] = None) -> List[str]:
+        if requested_order:
+            ordered = [k for k in requested_order if k in self.agents]
+            extras = [k for k in self.agents if k not in ordered]
+            extras.sort(key=lambda k: (int(self.agents[k].get("priority", 999)), k))
+            return ordered + extras
+
+        keys = list(self.agents.keys())
+        keys.sort(key=lambda k: (int(self.agents[k].get("priority", 999)), k))
+        return keys
+
+    def upsert_agent(self, key: str, config: Dict[str, Any]) -> Dict[str, Any]:
+        clean = {
+            "name": config.get("name", "Custom Agent"),
+            "role": config.get("role", "Custom Specialist"),
+            "emoji": config.get("emoji", "AI"),
+            "provider": config.get("provider", "hybrid"),
+            "model": config.get("model", "Best Available"),
+            "prompt": config.get("prompt", "You are a helpful specialist agent."),
+            "color": config.get("color", "#111111"),
+            "priority": int(config.get("priority", 100)),
+        }
+        self.agents[key] = clean
+        self._save_registry()
+        return {"key": key, **clean}
+
+    def remove_agent(self, key: str) -> bool:
+        if key not in self.agents:
+            return False
+        del self.agents[key]
+        self._save_registry()
+        return True
+
+    def reorder_agents(self, agent_order: List[str]) -> List[str]:
+        order = self._normalized_order(agent_order)
+        for idx, key in enumerate(order, start=1):
+            self.agents[key]["priority"] = idx * 10
+        self._save_registry()
+        return order
 
     def _get_llm(self, provider: str):
         """Get LLM for a provider, falling back to any available."""
@@ -202,7 +299,7 @@ class LLMCouncilChat:
         if not llm:
             return (
                 f"{agent['emoji']} {agent['name']} ({agent['model']}): "
-                f"Unavailable — set the corresponding API key to activate this agent."
+                f"Provider unavailable: set API credentials for provider '{agent['provider']}'."
             )
 
         prompt = f"""{agent['prompt']}
@@ -246,6 +343,7 @@ Respond as the {agent['role']} using {agent['model']}. Be concise and insightful
         response = await self.run_agent_response(agent_key, session.question, context)
 
         message = ChatMessage(
+            agent_key=agent_key,
             agent=self.agents[agent_key]["name"],
             role=self.agents[agent_key]["role"],
             message=response,
@@ -254,12 +352,12 @@ Respond as the {agent['role']} using {agent['model']}. Be concise and insightful
         session.messages.append(message)
         return message
 
-    async def run_full_council(self, session_id: str) -> ChatSession:
+    async def run_full_council(self, session_id: str, agent_order: Optional[List[str]] = None) -> ChatSession:
         session = self.sessions.get(session_id)
         if not session:
             raise ValueError(f"Session '{session_id}' not found")
 
-        for agent_key in ["analyst", "researcher", "critic", "strategist", "debater", "synthesizer", "verifier"]:
+        for agent_key in self._normalized_order(agent_order):
             await self.add_agent_message(session_id, agent_key)
 
         await self._generate_consensus(session_id)
@@ -273,10 +371,7 @@ Respond as the {agent['role']} using {agent['model']}. Be concise and insightful
 
         best_llm = self._get_llm("hybrid")
         if not best_llm:
-            session.final_answer = (
-                "🎯 Final Consensus: All 7 agents have responded. "
-                "Set API keys for an AI-generated consensus summary."
-            )
+            session.final_answer = "Consensus unavailable: no LLM providers are configured."
             return
 
         discussion = "\n\n".join(f"{m.agent}: {m.message}" for m in session.messages)
@@ -290,12 +385,12 @@ Synthesize all perspectives into a balanced, actionable final answer:"""
         try:
             response = await best_llm.ainvoke(prompt)
             active = next(iter(self.llms), "unknown")
-            session.final_answer = f"🎯 Multi-Provider Consensus ({active.upper()}): {response.content}"
+            session.final_answer = f"Multi-Provider Consensus ({active.upper()}): {response.content}"
         except Exception as e:
-            session.final_answer = f"🎯 Consensus Error: {e}"
+            session.final_answer = f"Consensus Error: {e}"
 
     def get_agent_list(self) -> List[Dict[str, str]]:
-        return [
+        listed = [
             {
                 "key": key,
                 "name": a["name"],
@@ -303,9 +398,13 @@ Synthesize all perspectives into a balanced, actionable final answer:"""
                 "emoji": a["emoji"],
                 "provider": a["provider"],
                 "model": a["model"],
+                "color": a.get("color", "#111111"),
+                "priority": int(a.get("priority", 100)),
             }
             for key, a in self.agents.items()
         ]
+        listed.sort(key=lambda a: (a["priority"], a["key"]))
+        return listed
 
     def get_provider_status(self) -> Dict[str, bool]:
         return {

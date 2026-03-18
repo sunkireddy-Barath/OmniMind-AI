@@ -192,7 +192,7 @@ async def seed():
             source=doc["source"],
             collection=doc["collection"],
         )
-        status = "✓" if success else "✗"
+        status = "" if success else ""
         print(f"  {status} [{doc['collection']}] {doc['title']}")
         if success:
             ok += 1

@@ -1,10 +1,16 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Bars3Icon, XMarkIcon, SparklesIcon, SunIcon, MoonIcon } from '@heroicons/react/24/outline';
-import { Brain, Zap, Target, Users } from 'lucide-react';
-import { useTheme } from '@/context/ThemeContext';
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import {
+  Bars3Icon,
+  XMarkIcon,
+  SparklesIcon,
+  SunIcon,
+  MoonIcon,
+} from "@heroicons/react/24/outline";
+import { Brain, Zap, Target, Users } from "lucide-react";
+import { useTheme } from "@/context/ThemeContext";
 
 interface HeaderProps {
   onSignIn: () => void;
@@ -13,15 +19,20 @@ interface HeaderProps {
   onSignOut: () => void;
 }
 
-export default function Header({ onSignIn, onSignUp, user, onSignOut }: HeaderProps) {
+export default function Header({
+  onSignIn,
+  onSignUp,
+  user,
+  onSignOut,
+}: HeaderProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { theme, toggleTheme } = useTheme();
 
   const navItems = [
-    { name: 'Features', href: '#features' },
-    { name: 'How It Works', href: '#how-it-works' },
-    { name: 'Use Cases', href: '#use-cases' },
-    { name: 'Pricing', href: '#pricing' },
+    { name: "Features", href: "#features" },
+    { name: "How It Works", href: "#how-it-works" },
+    { name: "Use Cases", href: "#use-cases" },
+    { name: "Pricing", href: "#pricing" },
   ];
 
   return (
@@ -32,11 +43,11 @@ export default function Header({ onSignIn, onSignUp, user, onSignOut }: HeaderPr
       className="fixed top-0 left-0 right-0 z-50 bg-[var(--bg-main)]/60 backdrop-blur-2xl border-b border-blue-600/10"
     >
       <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8">
-        <motion.div
-           whileHover={{ scale: 1.02 }}
-           className="flex lg:flex-none"
-        >
-          <a href="/" className="-m-1.5 p-1.5 flex items-center space-x-3 group">
+        <motion.div whileHover={{ scale: 1.02 }} className="flex lg:flex-none">
+          <a
+            href="/"
+            className="-m-1.5 p-1.5 flex items-center space-x-3 group"
+          >
             <div className="relative">
               <motion.div
                 animate={{ rotate: 360 }}
@@ -64,7 +75,7 @@ export default function Header({ onSignIn, onSignUp, user, onSignOut }: HeaderPr
             </div>
           </a>
         </motion.div>
-        
+
         <div className="flex lg:hidden">
           <button
             type="button"
@@ -74,7 +85,7 @@ export default function Header({ onSignIn, onSignUp, user, onSignOut }: HeaderPr
             <Bars3Icon className="h-6 w-6" />
           </button>
         </div>
-        
+
         <div className="hidden lg:flex lg:gap-x-12 items-center lg:ml-12">
           {navItems.map((item, index) => (
             <motion.a
@@ -89,12 +100,12 @@ export default function Header({ onSignIn, onSignUp, user, onSignOut }: HeaderPr
               <motion.div
                 className="absolute -bottom-1 left-0 h-[1px] bg-blue-600 rounded-full"
                 initial={{ width: 0 }}
-                whileHover={{ width: '100%' }}
+                whileHover={{ width: "100%" }}
                 transition={{ duration: 0.3 }}
               />
             </motion.a>
           ))}
-          
+
           {/* Theme Toggle Button */}
           <motion.button
             whileHover={{ scale: 1.1 }}
@@ -102,10 +113,14 @@ export default function Header({ onSignIn, onSignUp, user, onSignOut }: HeaderPr
             onClick={toggleTheme}
             className="p-2 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-primary)] text-blue-600 hover:border-blue-600/30 transition-all"
           >
-            {theme === 'dark' ? <SunIcon className="w-4 h-4" /> : <MoonIcon className="w-4 h-4" />}
+            {theme === "dark" ? (
+              <SunIcon className="w-4 h-4" />
+            ) : (
+              <MoonIcon className="w-4 h-4" />
+            )}
           </motion.button>
         </div>
-        
+
         <div className="hidden lg:flex lg:flex-1 lg:justify-end lg:items-center lg:gap-x-6">
           {!user ? (
             <>
@@ -118,7 +133,10 @@ export default function Header({ onSignIn, onSignUp, user, onSignOut }: HeaderPr
                 Sign In
               </motion.button>
               <motion.button
-                whileHover={{ scale: 1.05, boxShadow: "0 0 25px rgba(59, 130, 246, 0.4)" }}
+                whileHover={{
+                  scale: 1.05,
+                  boxShadow: "0 0 25px rgba(59, 130, 246, 0.4)",
+                }}
                 whileTap={{ scale: 0.95 }}
                 className="btn-primary flex items-center gap-2 text-xs uppercase tracking-widest px-8"
                 onClick={onSignUp}
@@ -134,11 +152,15 @@ export default function Header({ onSignIn, onSignUp, user, onSignOut }: HeaderPr
                   {user.name.charAt(0)}
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-[10px] font-black text-white uppercase tracking-wider">{user.name}</span>
-                  <span className="text-[8px] font-bold text-blue-600/60 uppercase tracking-widest">Active Member</span>
+                  <span className="text-[10px] font-black text-white uppercase tracking-wider">
+                    {user.name}
+                  </span>
+                  <span className="text-[8px] font-bold text-blue-600/60 uppercase tracking-widest">
+                    Active Member
+                  </span>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={onSignOut}
                 className="text-[10px] font-black text-white/30 uppercase tracking-[0.2em] hover:text-red-500/80 transition-colors"
               >
@@ -161,17 +183,20 @@ export default function Header({ onSignIn, onSignUp, user, onSignOut }: HeaderPr
               onClick={() => setMobileMenuOpen(false)}
             />
             <motion.div
-              initial={{ x: '100%' }}
+              initial={{ x: "100%" }}
               animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 30, stiffness: 300 }}
+              exit={{ x: "100%" }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
               className="fixed inset-y-0 right-0 z-50 w-full overflow-y-auto bg-[var(--bg-sidebar)] px-6 py-6 sm:max-w-sm border-l border-blue-600/10 shadow-2xl"
             >
               <div className="flex items-center justify-between">
-                <a href="/" className="-m-1.5 p-1.5 flex items-center space-x-3">
+                <a
+                  href="/"
+                  className="-m-1.5 p-1.5 flex items-center space-x-3"
+                >
                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-600 to-blue-800 p-[1px]">
                     <div className="w-full h-full rounded-full bg-[var(--bg-main)] flex items-center justify-center p-2">
-                       <Brain className="w-full h-full text-blue-600" />
+                      <Brain className="w-full h-full text-blue-600" />
                     </div>
                   </div>
                   <span className="text-xl font-black text-[var(--text-primary)]">
@@ -183,7 +208,11 @@ export default function Header({ onSignIn, onSignUp, user, onSignOut }: HeaderPr
                     onClick={toggleTheme}
                     className="p-2 rounded-xl bg-[var(--glass-bg)] border border-[var(--border-primary)] text-blue-600"
                   >
-                    {theme === 'dark' ? <SunIcon className="w-5 h-5" /> : <MoonIcon className="w-5 h-5" />}
+                    {theme === "dark" ? (
+                      <SunIcon className="w-5 h-5" />
+                    ) : (
+                      <MoonIcon className="w-5 h-5" />
+                    )}
                   </button>
                   <button
                     type="button"
@@ -194,7 +223,7 @@ export default function Header({ onSignIn, onSignUp, user, onSignOut }: HeaderPr
                   </button>
                 </div>
               </div>
-              
+
               <div className="mt-12 flow-root">
                 <div className="-my-6">
                   <div className="space-y-4 py-6">
@@ -215,15 +244,21 @@ export default function Header({ onSignIn, onSignUp, user, onSignOut }: HeaderPr
                   <div className="py-6 mt-8 border-t border-white/5 space-y-4">
                     {!user ? (
                       <>
-                        <button 
+                        <button
                           className="btn-secondary w-full justify-center"
-                          onClick={() => { setMobileMenuOpen(false); onSignIn(); }}
+                          onClick={() => {
+                            setMobileMenuOpen(false);
+                            onSignIn();
+                          }}
                         >
                           Sign In
                         </button>
-                        <button 
+                        <button
                           className="btn-primary w-full justify-center flex items-center gap-2"
-                          onClick={() => { setMobileMenuOpen(false); onSignUp(); }}
+                          onClick={() => {
+                            setMobileMenuOpen(false);
+                            onSignUp();
+                          }}
                         >
                           <Zap className="w-4 h-4" />
                           Get Started
@@ -236,12 +271,19 @@ export default function Header({ onSignIn, onSignUp, user, onSignOut }: HeaderPr
                             {user.name.charAt(0)}
                           </div>
                           <div>
-                            <p className="text-sm font-black text-white italic">{user.name}</p>
-                            <p className="text-[10px] font-bold text-blue-600/60 uppercase">Active Member</p>
+                            <p className="text-sm font-black text-white italic">
+                              {user.name}
+                            </p>
+                            <p className="text-[10px] font-bold text-blue-600/60 uppercase">
+                              Active Member
+                            </p>
                           </div>
                         </div>
-                        <button 
-                          onClick={() => { setMobileMenuOpen(false); onSignOut(); }}
+                        <button
+                          onClick={() => {
+                            setMobileMenuOpen(false);
+                            onSignOut();
+                          }}
                           className="btn-secondary w-full justify-center text-red-500/80 border-red-500/10"
                         >
                           Sign Out

@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from services.multi_agent_debate import MultiAgentDebateService
-from typing import Dict, Any
 
 router = APIRouter()
 debate_service = MultiAgentDebateService()

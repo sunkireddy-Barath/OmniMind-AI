@@ -18,9 +18,13 @@ async def create_query(
 ):
     """Create a new query and start agent processing"""
 
+    context = query_request.context or {}
+    if query_request.expert_types:
+        context["expert_types"] = [e.value for e in query_request.expert_types]
+
     snapshot = await runtime.create_session(
         query=query_request.query,
-        context=query_request.context or {},
+        context=context,
     )
     background_tasks.add_task(runtime.run_session, snapshot.id)
     return snapshot

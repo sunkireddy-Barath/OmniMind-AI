@@ -8,13 +8,13 @@ A 7-agent debate system integrated into OmniMind-AI where specialized AI agents 
 
 | Agent | Provider | Model | Role |
 |-------|----------|-------|------|
-| 🧠 Analyst | OpenAI | GPT-4o | Logical reasoning & structured frameworks |
-| 🔍 Researcher | OpenAI + Tavily | GPT-4o | Evidence-based research with live web search |
-| ⚠️ Critic | Google | Gemini 1.5 Flash | Risk identification & assumption challenging |
-| 🎯 Strategist | Google | Gemini 1.5 Flash | Strategic planning & implementation roadmaps |
+| ANALYST Analyst | OpenAI | GPT-4o | Logical reasoning & structured frameworks |
+| RESEARCHER Researcher | OpenAI + Tavily | GPT-4o | Evidence-based research with live web search |
+| WARN Critic | Google | Gemini 1.5 Flash | Risk identification & assumption challenging |
+| CONSENSUS Strategist | Google | Gemini 1.5 Flash | Strategic planning & implementation roadmaps |
 | � Debater t| Groq | Llama 3.1 70B | Counter-arguments & alternative perspectives |
-| 🔗 Synthesizer | Groq | Llama 3.1 70B | Pattern recognition & unified insights |
-| ✅ Verifier | Best Available | Hybrid | Fact checking & final consensus |
+| SYNTH Synthesizer | Groq | Llama 3.1 70B | Pattern recognition & unified insights |
+| OK Verifier | Best Available | Hybrid | Fact checking & final consensus |
 
 ---
 
@@ -98,19 +98,19 @@ print(result.json()["final_answer"])
 ```
 User Question
      ↓
-🧠 Analyst (OpenAI) — logical framework
+ANALYST Analyst (OpenAI) — logical framework
      ↓
-🔍 Researcher (OpenAI + Tavily) — evidence & sources
+RESEARCHER Researcher (OpenAI + Tavily) — evidence & sources
      ↓
-⚠️ Critic (Gemini) — risks & flaws
+WARN Critic (Gemini) — risks & flaws
      ↓
-🎯 Strategist (Gemini) — strategic options
+CONSENSUS Strategist (Gemini) — strategic options
      ↓
-💭 Debater (Groq) — counter-arguments
+DEBATER Debater (Groq) — counter-arguments
      ↓
 � Synthesizer (Groq) — unified insights
      ↓
-✅ Verifier (Best Available) — final consensus
+OK Verifier (Best Available) — final consensus
 ```
 
 ---
@@ -120,19 +120,19 @@ User Question
 ```
 Question: "Should I start a tech startup in 2026?"
 
-🧠 Analyst: "Let me break this down. The key variables are market timing, capital requirements, and competitive moat..."
+ANALYST Analyst: "Let me break this down. The key variables are market timing, capital requirements, and competitive moat..."
 
-🔍 Researcher: "Current data shows AI and climate tech sectors growing at 40% YoY. Funding rounds in these areas are up 23% from 2025..."
+RESEARCHER Researcher: "Current data shows AI and climate tech sectors growing at 40% YoY. Funding rounds in these areas are up 23% from 2025..."
 
-⚠️ Critic: "The risks: 90% startup failure rate, funding winter in non-AI sectors, regulatory uncertainty in EU markets..."
+WARN Critic: "The risks: 90% startup failure rate, funding winter in non-AI sectors, regulatory uncertainty in EU markets..."
 
-🎯 Strategist: "A phased approach — validate in 3 months, MVP in 6, Series A target at 18 months — reduces burn and de-risks..."
+CONSENSUS Strategist: "A phased approach — validate in 3 months, MVP in 6, Series A target at 18 months — reduces burn and de-risks..."
 
-💭 Debater: "Waiting has its own cost. The AI tooling window is open now. First-mover advantage in niche verticals is real..."
+DEBATER Debater: "Waiting has its own cost. The AI tooling window is open now. First-mover advantage in niche verticals is real..."
 
 � Synthesizer: "Across all perspectives: niche AI tooling + 18-month runway + early validation = viable path..."
 
-✅ Verifier: "Consensus: viable if focused on AI/climate niches with validated demand. Key risk is runway — secure 18 months minimum before launch."
+OK Verifier: "Consensus: viable if focused on AI/climate niches with validated demand. Key risk is runway — secure 18 months minimum before launch."
 ```
 
 ---

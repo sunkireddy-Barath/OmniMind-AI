@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { apiClient, QueryResponse } from '@/lib/api';
+import { useState, useEffect } from "react";
+import { apiClient, QueryResponse } from "@/lib/api";
 
 export function useQuery(queryId: string | null) {
   const [data, setData] = useState<QueryResponse | null>(null);
@@ -12,22 +12,22 @@ export function useQuery(queryId: string | null) {
     const fetchQuery = async () => {
       setLoading(true);
       setError(null);
-      
+
       try {
         const response = await apiClient.getQuery(queryId);
         setData(response);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to fetch query');
+        setError(err instanceof Error ? err.message : "Failed to fetch query");
       } finally {
         setLoading(false);
       }
     };
 
     fetchQuery();
-    
+
     // Poll for updates every 2 seconds if query is processing
     const interval = setInterval(() => {
-      if (data?.status === 'queued' || data?.status === 'running') {
+      if (data?.status === "queued" || data?.status === "running") {
         fetchQuery();
       }
     }, 2000);
@@ -46,12 +46,12 @@ export function useQueries() {
   const fetchQueries = async () => {
     setLoading(true);
     setError(null);
-    
+
     try {
       const response = await apiClient.listQueries();
       setData(response);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch queries');
+      setError(err instanceof Error ? err.message : "Failed to fetch queries");
     } finally {
       setLoading(false);
     }

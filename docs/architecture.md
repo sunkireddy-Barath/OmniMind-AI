@@ -64,13 +64,13 @@ OmniMind AI is a full-stack autonomous AI platform with two debate modes (LLM Co
 #### LLM Council (7 agents)
 | Agent | Provider | Model |
 |-------|----------|-------|
-| 🧠 Analyst | OpenAI | GPT-4o |
-| 🔍 Researcher | OpenAI + Tavily | GPT-4o |
-| ⚠️ Critic | Google | Gemini 1.5 Flash |
-| 🎯 Strategist | Google | Gemini 1.5 Flash |
-| 💭 Debater | Groq | Llama 3.1 70B |
-| 🔗 Synthesizer | Groq | Llama 3.1 70B |
-| ✅ Verifier | Best Available | Hybrid |
+| ANALYST Analyst | OpenAI | GPT-4o |
+| RESEARCHER Researcher | OpenAI + Tavily | GPT-4o |
+| WARN Critic | Google | Gemini 1.5 Flash |
+| CONSENSUS Strategist | Google | Gemini 1.5 Flash |
+| DEBATER Debater | Groq | Llama 3.1 70B |
+| SYNTH Synthesizer | Groq | Llama 3.1 70B |
+| OK Verifier | Best Available | Hybrid |
 
 #### Multi-Agent Debate (4 agents)
 | Agent | Provider | Role |

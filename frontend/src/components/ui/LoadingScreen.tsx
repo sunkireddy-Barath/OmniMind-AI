@@ -1,20 +1,20 @@
-'use client';
+"use client";
 
-import { motion } from 'framer-motion';
-import { Brain, Zap, Target, Users } from 'lucide-react';
+import { motion } from "framer-motion";
+import { Brain, Zap, Target, Users } from "lucide-react";
 
 const loadingSteps = [
-  { icon: Brain, text: 'Initializing AI Core', delay: 0 },
-  { icon: Users, text: 'Connecting Agents', delay: 0.5 },
-  { icon: Target, text: 'Calibrating Models', delay: 1 },
-  { icon: Zap, text: 'Processing Request', delay: 1.5 },
+  { icon: Brain, text: "Initializing AI Core", delay: 0 },
+  { icon: Users, text: "Connecting Agents", delay: 0.5 },
+  { icon: Target, text: "Calibrating Models", delay: 1 },
+  { icon: Zap, text: "Processing Request", delay: 1.5 },
 ];
 
 export default function LoadingScreen() {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-[var(--bg-main)]">
       <div className="absolute inset-0 opacity-20" />
-      
+
       <div className="text-center relative z-10">
         <motion.div
           initial={{ scale: 0.9, opacity: 0 }}
@@ -39,7 +39,7 @@ export default function LoadingScreen() {
               </div>
             </div>
           </div>
-          
+
           <motion.h1
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -48,14 +48,14 @@ export default function LoadingScreen() {
           >
             OmniMind
           </motion.h1>
-          
+
           <motion.div
             initial={{ width: 0 }}
             animate={{ width: 100 }}
             transition={{ delay: 0.5, duration: 1 }}
             className="h-[1px] bg-blue-600/50 mx-auto mb-6"
           />
-          
+
           <motion.p
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -80,13 +80,19 @@ export default function LoadingScreen() {
               </div>
               <div className="flex-1">
                 <div className="flex justify-between items-center mb-2">
-                  <span className="text-[10px] font-semibold uppercase tracking-widest leading-none">{step.text}</span>
+                  <span className="text-[10px] font-semibold uppercase tracking-widest leading-none">
+                    {step.text}
+                  </span>
                 </div>
                 <div className="h-[2px] bg-[var(--glass-bg)] rounded-full overflow-hidden">
                   <motion.div
-                    initial={{ x: '-100%' }}
-                    animate={{ x: '0%' }}
-                    transition={{ delay: 1 + index * 0.2, duration: 1.5, ease: "easeInOut" }}
+                    initial={{ x: "-100%" }}
+                    animate={{ x: "0%" }}
+                    transition={{
+                      delay: 1 + index * 0.2,
+                      duration: 1.5,
+                      ease: "easeInOut",
+                    }}
                     className="h-full bg-gradient-to-r from-transparent via-blue-600 to-transparent"
                   />
                 </div>
@@ -104,10 +110,10 @@ export default function LoadingScreen() {
           {[0, 1, 2].map((i) => (
             <motion.div
               key={i}
-              animate={{ 
+              animate={{
                 scale: [1, 1.5, 1],
                 opacity: [0.3, 1, 0.3],
-                backgroundColor: ['#2563eb', '#FFFFFF', '#2563eb']
+                backgroundColor: ["#2563eb", "#FFFFFF", "#2563eb"],
               }}
               transition={{
                 duration: 2,

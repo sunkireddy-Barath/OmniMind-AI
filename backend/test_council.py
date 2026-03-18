@@ -15,7 +15,7 @@ from services.llm_council import llm_council_chat
 
 async def test_multi_provider_council():
     """Test the Multi-Provider LLM Council Chat system"""
-    print("🧠 Testing Multi-Provider LLM Council System")
+    print("ANALYST Testing Multi-Provider LLM Council System")
     print("=" * 60)
     
     # Test question
@@ -26,11 +26,11 @@ async def test_multi_provider_council():
     
     # Create session
     session_id = await llm_council_chat.create_session(question)
-    print(f"✅ Created session: {session_id}")
+    print(f"OK Created session: {session_id}")
     
     # Get agent list
     agents = llm_council_chat.get_agent_list()
-    print(f"📋 Available agents: {len(agents)}")
+    print(f"INFO Available agents: {len(agents)}")
     for agent in agents:
         provider_info = f" ({agent.get('model', 'Unknown')})" if 'model' in agent else ""
         print(f"  {agent['emoji']} {agent['name']} - {agent['role']}{provider_info}")
@@ -44,22 +44,22 @@ async def test_multi_provider_council():
         provider = agent_info.get('provider', 'unknown')
         model = agent_info.get('model', 'unknown')
         
-        print(f"🔍 Testing {agent_info['name']} ({provider} - {model})...")
+        print(f"RESEARCHER Testing {agent_info['name']} ({provider} - {model})...")
         try:
             message = await llm_council_chat.add_agent_message(session_id, agent_key)
             print(f"Response: {message.message[:100]}...")
             print(f"Confidence: {message.confidence}")
             print()
         except Exception as e:
-            print(f"❌ Error with {agent_info['name']}: {e}")
+            print(f"NO Error with {agent_info['name']}: {e}")
             print()
     
     # Test full council
-    print("🏛️ Running full multi-provider council discussion...")
+    print("️ Running full multi-provider council discussion...")
     try:
         session = await llm_council_chat.run_full_council(session_id)
         
-        print(f"✅ Multi-provider council completed with {len(session.messages)} messages")
+        print(f"OK Multi-provider council completed with {len(session.messages)} messages")
         print()
         
         # Show messages by provider
@@ -81,28 +81,28 @@ async def test_multi_provider_council():
         
         # Display by provider
         for provider, messages in providers.items():
-            print(f"📡 {provider} Responses:")
+            print(f"PROVIDER {provider} Responses:")
             for msg in messages:
                 print(f"   {msg.message[:120]}...")
             print()
         
         # Show final answer
         if session.final_answer:
-            print("🎯 MULTI-PROVIDER CONSENSUS:")
+            print("CONSENSUS MULTI-PROVIDER CONSENSUS:")
             print(session.final_answer)
         else:
-            print("⚠️ No final consensus generated")
+            print("WARN No final consensus generated")
             
     except Exception as e:
-        print(f"❌ Error with full council: {e}")
+        print(f"NO Error with full council: {e}")
     
     print("\n" + "=" * 60)
-    print("✅ Multi-provider test completed!")
+    print("OK Multi-provider test completed!")
 
 
 async def test_provider_health():
     """Test multi-provider system health"""
-    print("🏥 Multi-Provider Health Check:")
+    print("HEALTH Multi-Provider Health Check:")
     
     # Check if APIs are configured
     openai_key = os.getenv("OPENAI_API_KEY")
@@ -110,18 +110,18 @@ async def test_provider_health():
     groq_key = os.getenv("GROQ_API_KEY")
     tavily_key = os.getenv("TAVILY_API_KEY")
     
-    print(f"  OpenAI GPT-5.4: {'✅ Set' if openai_key else '❌ Not set'}")
-    print(f"  Google Gemini Pro: {'✅ Set' if gemini_key else '❌ Not set'}")
-    print(f"  Groq Llama 3.1: {'✅ Set' if groq_key else '❌ Not set'}")
-    print(f"  Tavily Search: {'✅ Set' if tavily_key else '❌ Not set'}")
+    print(f"  OpenAI GPT-5.4: {'OK Set' if openai_key else 'NO Not set'}")
+    print(f"  Google Gemini Pro: {'OK Set' if gemini_key else 'NO Not set'}")
+    print(f"  Groq Llama 3.1: {'OK Set' if groq_key else 'NO Not set'}")
+    print(f"  Tavily Search: {'OK Set' if tavily_key else 'NO Not set'}")
     
     # Check LLM availability
     available_llms = len(llm_council_chat.llms)
     print(f"  Available LLMs: {available_llms}/3")
-    print(f"  Search Available: {'✅ Yes' if llm_council_chat.search_available else '❌ No'}")
+    print(f"  Search Available: {'OK Yes' if llm_council_chat.search_available else 'NO No'}")
     
     if not any([openai_key, gemini_key, groq_key]):
-        print("\n💡 To enable full multi-provider functionality:")
+        print("\nTIP To enable full multi-provider functionality:")
         print("   export OPENAI_API_KEY='your-openai-key'")
         print("   export GOOGLE_API_KEY='your-gemini-key'") 
         print("   export GROQ_API_KEY='your-groq-key'")
@@ -131,7 +131,7 @@ async def test_provider_health():
 
 
 if __name__ == "__main__":
-    print("🚀 Starting Multi-Provider LLM Council Test")
+    print("START Starting Multi-Provider LLM Council Test")
     print()
     
     # Run health check

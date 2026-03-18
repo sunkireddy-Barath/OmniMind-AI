@@ -133,14 +133,14 @@ class LLMService:
 
     def _fallback(self, agent_type: str, err: str = "") -> str:
         defaults = {
-            "planner":   "Planner: decompose the problem into market, financial, risk, strategy, and policy workstreams.",
-            "research":  "Analysis of 0 sources indicates: GRADIENT_API_KEY not configured.",
-            "risk":      "Before we proceed, I need to flag 1 risk: GRADIENT_API_KEY not set.",
-            "finance":   "Let me run the numbers on this: GRADIENT_API_KEY required.",
-            "strategy":  "Based on the councils analysis: configure GRADIENT_API_KEY first.",
-            "policy":    "Good news - I found 0 schemes (fallback). Set GRADIENT_API_KEY for Meera.",
-            "debate":    "Debate summary: all agents in fallback mode. Set GRADIENT_API_KEY.",
-            "consensus": "Consensus: set GRADIENT_API_KEY to enable the full engine.",
+            "planner":   "Planner unavailable: configure GRADIENT_API_KEY to generate planning output.",
+            "research":  "Research agent unavailable: configure GRADIENT_API_KEY.",
+            "risk":      "Risk agent unavailable: configure GRADIENT_API_KEY.",
+            "finance":   "Finance agent unavailable: configure GRADIENT_API_KEY.",
+            "strategy":  "Strategy agent unavailable: configure GRADIENT_API_KEY.",
+            "policy":    "Policy agent unavailable: configure GRADIENT_API_KEY.",
+            "debate":    "Debate agent unavailable: configure GRADIENT_API_KEY.",
+            "consensus": "Consensus agent unavailable: configure GRADIENT_API_KEY.",
         }
         return defaults.get(agent_type, f"Configure GRADIENT_API_KEY. Error: {err}")
 

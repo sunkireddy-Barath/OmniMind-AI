@@ -5,7 +5,6 @@ from contextlib import asynccontextmanager
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
 
 from api.routes import agents, queries, simulations, council, debate
 from core.config import settings
@@ -20,7 +19,7 @@ logger = logging.getLogger(__name__)
 async def _seed_knowledge_base() -> None:
     """Index domain documents into Qdrant on first startup."""
     try:
-        from services.rag_service import RAGService, FALLBACK_KB
+        from services.rag_service import RAGService
         rag = RAGService()
         await rag._init()
         if rag._qdrant_ok and rag._embedder_ok:

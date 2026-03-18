@@ -1,64 +1,100 @@
-'use client';
+"use client";
 
-import { motion, useInView } from 'framer-motion';
-import { useRef } from 'react';
-import { 
-  DocumentTextIcon, 
-  CpuChipIcon, 
-  ChartBarIcon, 
+import { motion, useInView } from "framer-motion";
+import { useRef } from "react";
+import {
+  DocumentTextIcon,
+  CpuChipIcon,
+  ChartBarIcon,
   LightBulbIcon,
   CheckCircleIcon,
-  ArrowRightIcon 
-} from '@heroicons/react/24/outline';
+  ArrowRightIcon,
+} from "@heroicons/react/24/outline";
 
 const steps = [
   {
     id: 1,
-    title: 'Cognitive Analysis',
-    description: 'The system analyzes your challenge and breaks it down into logical domains.',
+    title: "Cognitive Analysis",
+    description:
+      "The system analyzes your challenge and breaks it down into logical domains.",
     icon: DocumentTextIcon,
-    color: 'from-blue-600 to-blue-800',
-    details: ['Semantic analysis', 'Domain mapping', 'Strategic planning', 'Resource allocation'],
+    color: "from-blue-600 to-blue-800",
+    details: [
+      "Semantic analysis",
+      "Domain mapping",
+      "Strategic planning",
+      "Resource allocation",
+    ],
   },
   {
     id: 2,
-    title: 'Expert Selection',
-    description: 'Dynamic selection of specialized AI experts, each optimized for specific project needs.',
+    title: "Expert Selection",
+    description:
+      "Dynamic selection of specialized AI experts, each optimized for specific project needs.",
     icon: CpuChipIcon,
-    color: 'from-zinc-800 to-zinc-900',
-    details: ['Expert selection', 'Logic settings', 'Refined tuning', 'Security locking'],
+    color: "from-zinc-800 to-zinc-900",
+    details: [
+      "Expert selection",
+      "Logic settings",
+      "Refined tuning",
+      "Security locking",
+    ],
   },
   {
     id: 3,
-    title: 'Deep Research',
-    description: 'Concurrent gathering of relevant information and data from verified sources.',
+    title: "Deep Research",
+    description:
+      "Concurrent gathering of relevant information and data from verified sources.",
     icon: ChartBarIcon,
-    color: 'from-blue-600/20 to-blue-600/40',
-    details: ['Data retrieval', 'Evidence weighting', 'Real-time synthesis', 'Source verification'],
+    color: "from-blue-600/20 to-blue-600/40",
+    details: [
+      "Data retrieval",
+      "Evidence weighting",
+      "Real-time synthesis",
+      "Source verification",
+    ],
   },
   {
     id: 4,
-    title: 'Collaborative Debate',
-    description: 'AI agents engage in structured debate to refine and validate proposed solutions.',
+    title: "Collaborative Debate",
+    description:
+      "AI agents engage in structured debate to refine and validate proposed solutions.",
     icon: LightBulbIcon,
-    color: 'from-zinc-900 to-zinc-800',
-    details: ['Logical critique', 'Quality testing', 'Solution hardening', 'Project alignment'],
+    color: "from-zinc-900 to-zinc-800",
+    details: [
+      "Logical critique",
+      "Quality testing",
+      "Solution hardening",
+      "Project alignment",
+    ],
   },
   {
     id: 5,
-    title: 'Scenario Projection',
-    description: 'Advanced simulations project potential outcomes across multiple strategic paths.',
+    title: "Scenario Projection",
+    description:
+      "Advanced simulations project potential outcomes across multiple strategic paths.",
     icon: ChartBarIcon,
-    color: 'from-blue-800 to-blue-600',
-    details: ['Outcome modeling', 'Risk assessment', 'Success probability', 'Timeline analysis'],
+    color: "from-blue-800 to-blue-600",
+    details: [
+      "Outcome modeling",
+      "Risk assessment",
+      "Success probability",
+      "Timeline analysis",
+    ],
   },
   {
     id: 6,
-    title: 'Unified Consensus',
-    description: 'The final distillation of collective intelligence into an actionable project directive.',
+    title: "Unified Consensus",
+    description:
+      "The final distillation of collective intelligence into an actionable project directive.",
     icon: CheckCircleIcon,
-    color: 'from-zinc-700 to-zinc-900',
-    details: ['Result synthesis', 'Actionable plans', 'Risk mitigation', 'Clear direction'],
+    color: "from-zinc-700 to-zinc-900",
+    details: [
+      "Result synthesis",
+      "Actionable plans",
+      "Risk mitigation",
+      "Clear direction",
+    ],
   },
 ];
 
@@ -71,11 +107,15 @@ export default function HowItWorks({ onAction }: HowItWorksProps) {
   const isInView = useInView(ref, { once: true, margin: "-100px" });
 
   return (
-    <section id="how-it-works" ref={ref} className="py-32 sm:py-48 bg-[var(--bg-main)] text-[var(--text-primary)] relative overflow-hidden">
+    <section
+      id="how-it-works"
+      ref={ref}
+      className="py-32 sm:py-48 bg-[var(--bg-main)] text-[var(--text-primary)] relative overflow-hidden"
+    >
       {/* Background elements */}
       <div className="absolute inset-0 opacity-20" />
       <div className="absolute top-0 left-0 w-full h-[1px] bg-gradient-to-r from-transparent via-blue-600/30 to-transparent" />
-      
+
       <div className="mx-auto max-w-7xl px-6 lg:px-8 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -83,7 +123,7 @@ export default function HowItWorks({ onAction }: HowItWorksProps) {
           transition={{ duration: 0.8 }}
           className="mx-auto max-w-4xl text-center mb-32"
         >
-          <motion.span 
+          <motion.span
             className="text-xs font-black uppercase tracking-[0.5em] text-blue-600 mb-6 block"
             initial={{ opacity: 0 }}
             animate={isInView ? { opacity: 1 } : {}}
@@ -94,7 +134,8 @@ export default function HowItWorks({ onAction }: HowItWorksProps) {
             The OmniMind Protocol
           </h2>
           <p className="text-xl text-[var(--text-secondary)] leading-8 max-w-2xl mx-auto font-medium">
-            Intelligence redefined through a sequence of collaborative operations.
+            Intelligence redefined through a sequence of collaborative
+            operations.
           </p>
         </motion.div>
 
@@ -103,7 +144,13 @@ export default function HowItWorks({ onAction }: HowItWorksProps) {
           <div className="hidden lg:block absolute top-0 left-0 w-full h-full pointer-events-none opacity-30">
             <svg className="w-full h-full" viewBox="0 0 1200 800">
               <defs>
-                <linearGradient id="brandLineGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <linearGradient
+                  id="brandLineGradient"
+                  x1="0%"
+                  y1="0%"
+                  x2="100%"
+                  y2="0%"
+                >
                   <stop offset="0%" stopColor="rgba(59, 130, 246, 0.5)" />
                   <stop offset="50%" stopColor="rgba(255, 255, 255, 0.1)" />
                   <stop offset="100%" stopColor="rgba(59, 130, 246, 0.5)" />
@@ -145,7 +192,9 @@ export default function HowItWorks({ onAction }: HowItWorksProps) {
                   </div>
 
                   {/* Icon */}
-                  <div className={`w-20 h-20 rounded-[2rem] bg-gradient-to-r ${step.color} flex items-center justify-center mb-8 border border-white/5 transition-all duration-500 shadow-2xl overflow-hidden relative`}>
+                  <div
+                    className={`w-20 h-20 rounded-[2rem] bg-gradient-to-r ${step.color} flex items-center justify-center mb-8 border border-white/5 transition-all duration-500 shadow-2xl overflow-hidden relative`}
+                  >
                     <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-10 transition-opacity" />
                     <step.icon className="w-10 h-10 text-white" />
                   </div>

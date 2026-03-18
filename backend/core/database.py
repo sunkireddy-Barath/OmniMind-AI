@@ -13,7 +13,7 @@ _logger = logging.getLogger(__name__)
 # ── Normalise DB URL ─────────────────────────────────────────────────
 _db_url = settings.DATABASE_URL or ""
 
-# Docker postgres placeholder → swap to local SQLite
+# Convert default Docker Postgres values to local SQLite for local runs.
 if not _db_url or "postgres:5432" in _db_url or "user:password" in _db_url:
     _db_url = "sqlite+aiosqlite:///./omnimind.db"
     _logger.info("No local Postgres configured — using SQLite.")
