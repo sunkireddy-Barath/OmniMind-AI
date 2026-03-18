@@ -1,12 +1,14 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from services.multi_agent_debate import MultiAgentDebateService
+from app.services.multi_agent_debate import MultiAgentDebateService
 
 router = APIRouter()
 debate_service = MultiAgentDebateService()
 
+
 class DebateRequest(BaseModel):
     problem: str
+
 
 @router.post("/run")
 async def run_debate(request: DebateRequest):

@@ -60,7 +60,9 @@ async def agent_workflow_stream(websocket: WebSocket, session_id: str):
             event = await asyncio.wait_for(queue.get(), timeout=30)
             snapshot = event.get("snapshot")
             if not snapshot:
-                await websocket.send_json({"event": "heartbeat", "data": {"session_id": created.id}})
+                await websocket.send_json(
+                    {"event": "heartbeat", "data": {"session_id": created.id}}
+                )
                 continue
 
             current_stage = snapshot.get("current_stage")
@@ -68,14 +70,20 @@ async def agent_workflow_stream(websocket: WebSocket, session_id: str):
                 await websocket.send_json(
                     {
                         "event": "step_start",
-                        "data": {"step": "agents", "label": "Assembling expert council..."},
+                        "data": {
+                            "step": "agents",
+                            "label": "Assembling expert council...",
+                        },
                     }
                 )
             elif current_stage == "simulation":
                 await websocket.send_json(
                     {
                         "event": "step_start",
-                        "data": {"step": "simulation", "label": "Running scenario simulations..."},
+                        "data": {
+                            "step": "simulation",
+                            "label": "Running scenario simulations...",
+                        },
                     }
                 )
             elif current_stage == "debate":
@@ -89,12 +97,18 @@ async def agent_workflow_stream(websocket: WebSocket, session_id: str):
                 await websocket.send_json(
                     {
                         "event": "step_start",
-                        "data": {"step": "consensus", "label": "Generating final recommendation..."},
+                        "data": {
+                            "step": "consensus",
+                            "label": "Generating final recommendation...",
+                        },
                     }
                 )
 
             for agent in snapshot.get("agents", []):
-                if agent.get("status") == "active" and agent.get("name") not in sent_agents:
+                if (
+                    agent.get("status") == "active"
+                    and agent.get("name") not in sent_agents
+                ):
                     await websocket.send_json(
                         {
                             "event": "agent_thinking",
@@ -105,9 +119,14 @@ async def agent_workflow_stream(websocket: WebSocket, session_id: str):
                             },
                         }
                     )
-                if agent.get("status") == "completed" and agent.get("name") not in sent_agents:
+                if (
+                    agent.get("status") == "completed"
+                    and agent.get("name") not in sent_agents
+                ):
                     sent_agents.add(agent.get("name"))
-                    await websocket.send_json({"event": "agent_complete", "data": _agent_payload(agent)})
+                    await websocket.send_json(
+                        {"event": "agent_complete", "data": _agent_payload(agent)}
+                    )
 
             sim = snapshot.get("simulation")
             if sim and not sent_scenarios:
@@ -120,13 +139,35 @@ async def agent_workflow_stream(websocket: WebSocket, session_id: str):
                                 {
                                     "name": s.get("name"),
                                     "investment_inr": s.get("investment"),
-                                    "monthly_operational_cost_inr": round((s.get("investment", 0) or 0) * 0.08),
-                                    "expected_annual_revenue_inr": round((s.get("expected_profit", 0) or 0) + ((s.get("investment", 0) or 0) * 0.96)),
-                                    "expected_annual_profit_inr": s.get("expected_profit"),
+                                    "monthly_operational_cost_inr": round(
+                                        (s.get("investment", 0) or 0) * 0.08
+                                    ),
+                                    "expected_annual_revenue_inr": round(
+                                        (s.get("expected_profit", 0) or 0)
+                                        + ((s.get("investment", 0) or 0) * 0.96)
+                                    ),
+                                    "expected_annual_profit_inr": s.get(
+                                        "expected_profit"
+                                    ),
                                     "roi_percent": s.get("roi"),
-                                    "payback_months": 999 if (s.get("expected_profit", 0) or 0) <= 0 else round(((s.get("investment", 0) or 0) / max((s.get("expected_profit", 0) or 1) / 12, 1)), 1),
+                                    "payback_months": 999
+                                    if (s.get("expected_profit", 0) or 0) <= 0
+                                    else round(
+                                        (
+                                            (s.get("investment", 0) or 0)
+                                            / max(
+                                                (s.get("expected_profit", 0) or 1) / 12,
+                                                1,
+                                            )
+                                        ),
+                                        1,
+                                    ),
                                     "risk_level": s.get("risk_level"),
-                                    "risk_score": {"Low": 3, "Medium": 6, "High": 9}.get(s.get("risk_level"), 5),
+                                    "risk_score": {
+                                        "Low": 3,
+                                        "Medium": 6,
+                                        "High": 9,
+                                    }.get(s.get("risk_level"), 5),
                                 }
                                 for s in sim.get("scenarios", [])
                             ],
@@ -144,20 +185,47 @@ async def agent_workflow_stream(websocket: WebSocket, session_id: str):
                             "event": "consensus_ready",
                             "data": {
                                 "final_recommendation": consensus.get("analysis", ""),
-                                "recommended_scenario": snapshot.get("simulation", {}).get("recommended_scenario", "Balanced"),
+                                "recommended_scenario": snapshot.get(
+                                    "simulation", {}
+                                ).get("recommended_scenario", "Balanced"),
                                 "total_agents": len(snapshot.get("agents", [])),
                                 "debate_rounds": 2,
-                                "model": next((a.get("model") for a in snapshot.get("agents", []) if a.get("name") == "Consensus Engine"), None),
-                                "provider": next((a.get("provider") for a in snapshot.get("agents", []) if a.get("name") == "Consensus Engine"), None),
-                                "tokens": next((a.get("tokens") for a in snapshot.get("agents", []) if a.get("name") == "Consensus Engine"), 0),
+                                "model": next(
+                                    (
+                                        a.get("model")
+                                        for a in snapshot.get("agents", [])
+                                        if a.get("name") == "Consensus Engine"
+                                    ),
+                                    None,
+                                ),
+                                "provider": next(
+                                    (
+                                        a.get("provider")
+                                        for a in snapshot.get("agents", [])
+                                        if a.get("name") == "Consensus Engine"
+                                    ),
+                                    None,
+                                ),
+                                "tokens": next(
+                                    (
+                                        a.get("tokens")
+                                        for a in snapshot.get("agents", [])
+                                        if a.get("name") == "Consensus Engine"
+                                    ),
+                                    0,
+                                ),
                             },
                         }
                     )
-                await websocket.send_json({"event": "workflow_complete", "data": {"session_id": created_id}})
+                await websocket.send_json(
+                    {"event": "workflow_complete", "data": {"session_id": created_id}}
+                )
                 break
 
             if snapshot.get("status") == "failed":
-                await websocket.send_json({"event": "error", "data": {"message": "Workflow failed"}})
+                await websocket.send_json(
+                    {"event": "error", "data": {"message": "Workflow failed"}}
+                )
                 break
 
     except WebSocketDisconnect:
@@ -167,7 +235,9 @@ async def agent_workflow_stream(websocket: WebSocket, session_id: str):
     finally:
         if queue is not None:
             try:
-                await session_event_bus.unsubscribe(created_id if "created_id" in locals() else session_id, queue)
+                await session_event_bus.unsubscribe(
+                    created_id if "created_id" in locals() else session_id, queue
+                )
             except Exception:
                 pass
         await websocket.close()

@@ -58,7 +58,10 @@ const insightColors = {
   info: "text-blue-600 bg-blue-500/5 border-blue-500/10",
 };
 
-export default function ConsensusPanel({ consensus, simplified = false }: ConsensusPanelProps) {
+export default function ConsensusPanel({
+  consensus,
+  simplified = false,
+}: ConsensusPanelProps) {
   const consensusData = consensus
     ? {
         recommendation: consensus.recommendation,
@@ -75,7 +78,8 @@ export default function ConsensusPanel({ consensus, simplified = false }: Consen
   const simplifiedInsights = simplified
     ? consensusData.keyInsights.map((insight) => ({
         ...insight,
-        text: insight.text.split(".")[0] + (insight.text.includes(".") ? "." : ""),
+        text:
+          insight.text.split(".")[0] + (insight.text.includes(".") ? "." : ""),
       }))
     : consensusData.keyInsights;
 

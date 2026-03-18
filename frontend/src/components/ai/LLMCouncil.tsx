@@ -25,6 +25,9 @@ interface CouncilMessage {
   message: string;
   timestamp: string;
   confidence: number;
+  provider_requested?: string;
+  provider_used?: string;
+  fallback_marker?: string;
 }
 
 interface CouncilSession {
@@ -55,6 +58,9 @@ function AgentMessageCard({
 }) {
   const [expanded, setExpanded] = useState(false);
   const preview = msg.message.slice(0, 160);
+  const marker =
+    msg.fallback_marker || (msg.message.match(/\[FALLBACK[^\]]+\]/)?.[0] ?? "");
+  const hasFallback = Boolean(marker);
 
   return (
     <motion.div
@@ -77,6 +83,17 @@ function AgentMessageCard({
           <p className="text-[10px] text-[var(--text-secondary)] uppercase tracking-widest">
             {msg.role}
           </p>
+          {(msg.provider_requested || msg.provider_used) && (
+            <p className="text-[10px] text-[var(--text-secondary)] mt-0.5">
+              {msg.provider_requested || "unknown"} →{" "}
+              {msg.provider_used || "unknown"}
+            </p>
+          )}
+          {hasFallback && (
+            <span className="inline-flex mt-1 text-[10px] px-1.5 py-0.5 rounded border border-amber-500/40 text-amber-600 bg-amber-500/10 uppercase tracking-widest">
+              fallback
+            </span>
+          )}
         </div>
         <div className="text-[var(--text-secondary)]">
           {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}

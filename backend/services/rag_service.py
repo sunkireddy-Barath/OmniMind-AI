@@ -3,6 +3,7 @@ RAG service — Qdrant vector DB + Sentence Transformers (all-MiniLM-L6-v2).
 Falls back to cosine similarity over an in-memory knowledge base when
 Qdrant or the embedder is unavailable.
 """
+
 from __future__ import annotations
 
 import logging
@@ -193,6 +194,7 @@ class RAGService:
         # Try loading Sentence Transformers
         try:
             from sentence_transformers import SentenceTransformer
+
             self._embedder = SentenceTransformer(settings.EMBEDDING_MODEL)
             self._embedder_ok = True
             logger.info("Sentence Transformers loaded: %s", settings.EMBEDDING_MODEL)
@@ -266,7 +268,9 @@ class RAGService:
         search_filter = None
         if collection:
             search_filter = Filter(
-                must=[FieldCondition(key="collection", match=MatchValue(value=collection))]
+                must=[
+                    FieldCondition(key="collection", match=MatchValue(value=collection))
+                ]
             )
 
         results = self._qdrant.search(
@@ -315,48 +319,50 @@ class RAGService:
             for score, doc in scored[:top_k]
         ]
 
-    async def postgres_search(self, query: str, top_k: int = 5) -> list[KnowledgeDocument]:
+    async def postgres_search(
+        self, query: str, top_k: int = 5
+    ) -> list[KnowledgeDocument]:
         """Search using pgvector in PostgreSQL."""
         from core.database import AsyncSessionLocal
         from models.entities import KnowledgeDocumentEntity
         from sqlalchemy import select
 
         q_vec = await self._embed(query)
-        
+
         async with AsyncSessionLocal() as session:
             # Using cosine distance (<=>) or inner product (<#>) or Euclidean distance (<->)
             # Default to cosine distance for pgvector
-            stmt = select(KnowledgeDocumentEntity).order_by(
-                KnowledgeDocumentEntity.embedding.cosine_distance(q_vec)
-            ).limit(top_k)
-            
+            stmt = (
+                select(KnowledgeDocumentEntity)
+                .order_by(KnowledgeDocumentEntity.embedding.cosine_distance(q_vec))
+                .limit(top_k)
+            )
+
             result = await session.execute(stmt)
             docs = result.scalars().all()
-            
+
             return [
                 KnowledgeDocument(
                     id=str(d.id),
                     title=d.title,
                     source=d.source,
-                    score=0.0, # distance info not easily retrieved without separate label
+                    score=0.0,  # distance info not easily retrieved without separate label
                     snippet=d.content,
-                    metadata={}
-                ) for d in docs
+                    metadata={},
+                )
+                for d in docs
             ]
 
     async def ingest_to_postgres(self, title: str, content: str, source: str) -> bool:
         """Ingest document chunk into PostgreSQL pgvector."""
         from core.database import AsyncSessionLocal
         from models.entities import KnowledgeDocumentEntity
-        
+
         try:
             vec = await self._embed(content)
             async with AsyncSessionLocal() as session:
                 new_doc = KnowledgeDocumentEntity(
-                    title=title,
-                    content=content,
-                    source=source,
-                    embedding=vec
+                    title=title, content=content, source=source, embedding=vec
                 )
                 session.add(new_doc)
                 await session.commit()
@@ -378,7 +384,7 @@ class RAGService:
         await self._init()
         # Also ingest to Postgres for Feature 3 requirement
         await self.ingest_to_postgres(title, text, source)
-        
+
         if not (self._qdrant_ok and self._embedder_ok and self._qdrant):
             logger.warning("Cannot ingest: Qdrant or embedder unavailable")
             return False
@@ -396,7 +402,13 @@ class RAGService:
             }
             self._qdrant.upsert(
                 collection_name=settings.QDRANT_COLLECTION,
-                points=[PointStruct(id=str(uuid.uuid5(uuid.NAMESPACE_URL, doc_id)), vector=vec, payload=payload)],
+                points=[
+                    PointStruct(
+                        id=str(uuid.uuid5(uuid.NAMESPACE_URL, doc_id)),
+                        vector=vec,
+                        payload=payload,
+                    )
+                ],
             )
             return True
         except Exception as exc:

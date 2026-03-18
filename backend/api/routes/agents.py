@@ -7,6 +7,7 @@ from services.runtime import runtime
 
 router = APIRouter()
 
+
 @router.get("/{query_id}", response_model=List[AgentResponse])
 async def get_agents_for_query(
     query_id: str,
@@ -17,6 +18,7 @@ async def get_agents_for_query(
     if snapshot is None:
         raise HTTPException(status_code=404, detail="Query session not found")
     return snapshot.agents
+
 
 @router.get("/{query_id}/{agent_id}", response_model=AgentResponse)
 async def get_agent(

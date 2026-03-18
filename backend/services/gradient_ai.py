@@ -3,6 +3,7 @@ DigitalOcean Gradient AI client.
 Uses the OpenAI-compatible /v1/chat/completions endpoint.
 Exposes model name, token count, and latency for judge visibility.
 """
+
 from __future__ import annotations
 
 import time

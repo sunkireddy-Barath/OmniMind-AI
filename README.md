@@ -1,224 +1,238 @@
 # OmniMind AI
 
-Autonomous Multi-Agent AI Platform for Real-World Decision Intelligence and Simulation.
+Autonomous multi-agent decision intelligence platform with two orchestration modes:
 
-Multi-provider LLM architecture with 7-agent Council, 4-agent Debate, RAG knowledge base, and a Next.js frontend — all running locally with a single bat file.
+- Council mode: 7-agent deliberation workflow
+- Debate mode: 4-agent structured argument workflow
 
----
+The platform includes a FastAPI backend, a Next.js frontend, RAG-backed knowledge retrieval, scenario simulation, and consensus synthesis.
 
-## Quick Start (Windows)
+## System Overview
+
+| Area | Implementation |
+|---|---|
+| Frontend | Next.js 14, TypeScript, Tailwind CSS |
+| Backend | FastAPI, Python 3.13, Uvicorn |
+| Primary LLM Path | DigitalOcean Gradient AI (Llama 3.1 70B) |
+| Additional Providers | OpenAI, Gemini, Groq, OpenRouter, Tavily |
+| Decision Graph | LangGraph workflow pipeline |
+| Data | SQLite (local) or PostgreSQL (prod) |
+| Vector/RAG | Sentence Transformers + in-memory fallback / Qdrant |
+| Optional Cache/Memory | Redis |
+
+## Quick Start
+
+### Windows
 
 ```bat
 start-full-system.bat
 ```
 
-That's it. It handles venv creation, dependency install, frontend `npm install`, and launches both servers in separate windows.
+### Linux/macOS
+
+```bash
+./start-full-system.sh
+```
+
+### Local Endpoints
 
 | URL | Service |
-|-----|---------|
-| http://localhost:3000 | Frontend (Next.js) |
-| http://localhost:8000 | Backend API (FastAPI) |
+|---|---|
+| http://localhost:3000 | Frontend |
+| http://localhost:8000 | Backend API |
 | http://localhost:8000/docs | Swagger UI |
-| http://localhost:8000/api/council/health | Council health |
-| http://localhost:8000/api/debate/run | Debate endpoint |
+| http://localhost:8000/health | Service health |
+| http://localhost:8000/api/gradient/status | Gradient provider status |
+| http://localhost:8000/api/council/health | Council provider and routing health |
 
----
+## Architecture Diagrams
 
-## Architecture
+### High-Level Runtime Topology
 
+```mermaid
+flowchart LR
+    UI[Next.js Frontend] --> API[FastAPI Backend]
+
+    API --> Council[Council Orchestrator]
+    API --> Debate[Debate Orchestrator]
+    API --> Workflow[Decision Graph Runtime]
+
+    Workflow --> Planner[Planner]
+    Workflow --> Experts[Experts: Priya Arjun Kavya Ravi Meera]
+    Workflow --> Synth[Debate + Simulation + Consensus]
+
+    Council --> Providers[Provider Router]
+    Debate --> Providers
+    Workflow --> Gradient[DigitalOcean Gradient AI]
+
+    Providers --> Gradient
+    Providers --> OpenAI
+    Providers --> Gemini
+    Providers --> Groq
+    Providers --> OpenRouter
+    Providers --> Tavily
+
+    Workflow --> RAG[RAG Service]
+    RAG --> Vector[(Qdrant / In-Memory Vector Store)]
+
+    API --> DB[(SQLite / PostgreSQL)]
+    API --> Redis[(Redis Optional)]
 ```
-┌─────────────────────────────────────────────────────────┐
-│  Frontend  —  Next.js 14 + TypeScript + Tailwind CSS    │
-│  MultiAgentChat  ←→  Debate Mode  ←→  Council Mode      │
-└────────────────────────┬────────────────────────────────┘
-                         │ HTTP / REST
-┌────────────────────────▼────────────────────────────────┐
-│  Backend API  —  FastAPI (Python 3.13) + Uvicorn        │
-│  /api/council/*   /api/debate/*   /api/queries/*        │
-│  /api/agents/*    /api/simulations/*                    │
-└──────┬──────────────────────────┬───────────────────────┘
-       │                          │
-┌──────▼──────────┐   ┌───────────▼──────────────────────┐
-│  LLM Council    │   │  Multi-Agent Debate               │
-│  7 Agents       │   │  4 Agents + Moderator             │
-│  3 Providers    │   │  4 Providers                      │
-└──────┬──────────┘   └───────────┬──────────────────────┘
-       │                          │
-┌──────▼──────────────────────────▼──────────────────────┐
-│  LLM Providers                                          │
-│  OpenAI GPT-4o  │  Gemini 1.5 Flash  │  Groq Llama 3.1 │
-│  OpenRouter Mixtral  │  Tavily Search                   │
-└─────────────────────────────────────────────────────────┘
-       │
-┌──────▼──────────────────────────────────────────────────┐
-│  Data Layer                                             │
-│  SQLite (local dev)  │  Sentence Transformers (RAG)     │
-│  In-memory vector KB  │  Redis (optional cache)         │
-└─────────────────────────────────────────────────────────┘
+
+### Decision Workflow (Runtime Graph)
+
+```mermaid
+flowchart LR
+    A[Planner] --> B[Experts]
+    B --> C[Debate]
+    C --> D[Simulation]
+    D --> E[Consensus]
 ```
 
----
+### Request Sequence (Council Run-All)
 
-## LLM Council — 7 Agents
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant F as Frontend
+    participant A as API
+    participant C as Council Service
+    participant P as Provider Router
 
-Accessible from the Multi-Agent Chat UI via the **Council** toggle.
+    U->>F: Submit question
+    F->>A: POST /api/council/chat/start
+    A->>C: create_session
+    F->>A: POST /api/council/chat/run-all/{session_id}
+    A->>C: run_full_council
+    C->>P: per-agent inference request
+    P-->>C: provider response or explicit fallback marker
+    C-->>A: messages + final consensus
+    A-->>F: session payload
+    F-->>U: agent cards + fallback badges
+```
 
-| Agent | Provider | Model | Role |
-|-------|----------|-------|------|
-| ANALYST Analyst | OpenAI | GPT-4o | Logical reasoning & structured frameworks |
-| RESEARCHER Researcher | OpenAI + Tavily | GPT-4o | Evidence-based research with live web search |
-| WARN Critic | Google | Gemini 1.5 Flash | Risk identification & assumption challenging |
-| CONSENSUS Strategist | Google | Gemini 1.5 Flash | Strategic planning & implementation roadmaps |
-| DEBATER Debater | Groq | Llama 3.1 70B | Counter-arguments & alternative perspectives |
-| SYNTH Synthesizer | Groq | Llama 3.1 70B | Pattern recognition & unified insights |
-| OK Verifier | Best Available | Hybrid | Fact checking & final consensus |
+## Council Mode (7 Agents)
 
-All 7 agents respond in sequence, each building on prior context. A final consensus is generated by the Verifier using the best available LLM.
+| Agent | Role | Requested Provider | Typical Model |
+|---|---|---|---|
+| Analyst | Logical reasoning | OpenAI | GPT-4o |
+| Researcher | Evidence synthesis | OpenAI + Tavily | GPT-4o |
+| Critic | Risk/challenge lens | Gemini | Gemini 1.5 Flash |
+| Strategist | Plan framing | Gemini | Gemini 1.5 Flash |
+| Debater | Counter-positions | Groq | Llama 3.1 |
+| Synthesizer | Pattern merge | Groq | Llama 3.1 |
+| Verifier | Consensus | Hybrid (Gradient-first) | Llama 3.1 70B |
 
----
+## Debate Mode (4 Agents)
 
-## Multi-Agent Debate — 4 Agents
+| Persona | Role | Primary Provider |
+|---|---|---|
+| Priya | Research and intelligence | Tavily + OpenAI |
+| Arjun | Risk analysis | OpenRouter |
+| Kavya | Financial and resource strategy | OpenAI |
+| Ravi | Strategy and execution | Gemini |
 
-Accessible from the Multi-Agent Chat UI via the **Debate** toggle.
+## Gradient-First and Provider Drift Policy
 
-| Agent | Persona | Provider | Role |
-|-------|---------|----------|------|
-| Priya | Research & Intelligence | Tavily + OpenAI | Live search + evidence analysis |
-| Arjun | Risk Analysis | OpenRouter (Mixtral) | Risk scoring & failure scenarios |
-| Kavya | Financial & Resources | OpenAI | ROI, costs, resource feasibility |
-| Ravi | Strategy & Execution | Gemini 1.5 Flash | Final consensus + execution plan |
+The backend now enforces explicit routing semantics:
 
-**5-step pipeline:**
-1. Problem restatement + research (Priya)
-2. Risk analysis (Arjun)
-3. Financial analysis (Kavya)
-4. Moderated debate between all three
-5. Final consensus & execution plan (Ravi)
+| Rule | Behavior |
+|---|---|
+| Gradient-first fallback | If a requested provider is unavailable/fails, the system attempts Gradient fallback first |
+| No silent cross-provider drift | No hidden OpenAI->Gemini or Gemini->Groq substitution without markers |
+| Marker propagation | Responses include explicit fallback markers in payload/text |
+| UI visibility | Frontend surfaces fallback badges and provider requested/used metadata |
 
----
+Marker format:
 
-## API Endpoints
+```text
+[FALLBACK requested=<provider> used=<provider|none> reason=<reason_code>]
+```
+
+## Persona Output Shape Validation
+
+Persona outputs are now validated against required structures.
+
+| Persona | Required Shape Constraints |
+|---|---|
+| Priya | Must include confidence and explicit data gaps |
+| Arjun | Must include critical, manageable, and acceptable risk tiers |
+| Kavya | Must include rupee-denominated financial table with investment, monthly cost, break-even, 3-year ROI |
+| Ravi | Must include phased roadmap: 0-30 days, 31-90 days, 91-180 days |
+| Meera | Must include scheme details, deadlines, and required documents |
+
+Validation failure marker format:
+
+```text
+[VALIDATION_FAILED persona=<name> missing=<fields>]
+```
+
+## Progressive Backend Reorganization
+
+The backend has started transitioning toward an app-style module layout with compatibility shims.
+
+| Path | Purpose |
+|---|---|
+| backend/app/api/routes | New app-style route package |
+| backend/app/api/routes/* | Compatibility shims re-exporting legacy route modules |
+| backend/app/services | New service namespace for reorganized modules |
+| backend/services/persona_output_validator.py | Shim importing app-style validator module |
+
+Current API behavior remains backward compatible while structure evolves.
+
+## API Surface
+
+### Core Workflow
 
 | Method | Path | Description |
-|--------|------|-------------|
-| GET | `/health` | Full system health check |
-| POST | `/api/council/chat/start` | Start a Council session |
-| POST | `/api/council/chat/run-all/{session_id}` | Run all 7 agents |
-| POST | `/api/council/chat/{session_id}/agent/{agent_key}` | Run single agent |
-| GET | `/api/council/agents` | List agents + provider status |
-| GET | `/api/council/health` | Council health + key status |
-| POST | `/api/debate/run` | Run full 4-agent debate |
-| POST | `/api/queries` | Start agent workflow |
-| GET | `/api/queries/{id}` | Get session results |
-| WS | `/api/queries/{id}/stream` | WebSocket event stream |
-| POST | `/api/simulations` | Run scenario simulation |
+|---|---|---|
+| POST | /api/queries | Start full decision workflow |
+| GET | /api/queries/{id} | Fetch workflow state |
+| WS | /api/queries/{id}/stream | Stream workflow events |
+| POST | /api/simulations | Run scenario simulation |
 
----
+### Council
+
+| Method | Path | Description |
+|---|---|---|
+| GET | /api/council/health | Provider + routing status |
+| GET | /api/council/agents | List council agents |
+| POST | /api/council/chat/start | Create council session |
+| POST | /api/council/chat/run-all/{session_id} | Execute full council sequence |
+
+### Debate
+
+| Method | Path | Description |
+|---|---|---|
+| POST | /api/debate/run | Execute debate pipeline |
 
 ## Environment Variables
 
-Copy `.env.example` to `.env` and fill in your keys.
+| Variable | Used For |
+|---|---|
+| GRADIENT_API_KEY | Primary/fallback inference path |
+| GRADIENT_BASE_URL | Gradient endpoint base URL |
+| GRADIENT_WORKSPACE_ID | Optional Gradient workspace routing |
+| OPENAI_API_KEY | Council OpenAI agents |
+| OPENAI_RESEARCH_API_KEY | Priya research analysis |
+| OPENAI_FINANCE_API_KEY | Kavya financial analysis |
+| GOOGLE_API_KEY | Council Gemini agents |
+| GEMINI_API_KEY | Ravi strategy analysis |
+| GROQ_API_KEY | Council Groq agents |
+| OPENROUTER_API_KEY | Arjun risk analysis |
+| TAVILY_API_KEY | Live search enrichment |
+| DATABASE_URL | SQL persistence layer |
+| REDIS_URL | Optional cache/memory services |
+| QDRANT_URL | Optional vector store |
 
-| Variable | Provider | Used By |
-|----------|----------|---------|
-| `OPENAI_API_KEY` | OpenAI | Analyst, Researcher, Finance agents |
-| `OPENAI_FINANCE_API_KEY` | OpenAI | Kavya (Financial agent) |
-| `OPENAI_RESEARCH_API_KEY` | OpenAI | Priya (Research agent) |
-| `GOOGLE_API_KEY` | Google | Critic, Strategist (Council) |
-| `GEMINI_API_KEY` | Google | Ravi (Strategy agent, Debate) |
-| `GROQ_API_KEY` | Groq | Debater, Synthesizer (Council) |
-| `TAVILY_API_KEY` | Tavily | Researcher (live web search) |
-| `OPENROUTER_API_KEY` | OpenRouter | Arjun (Risk agent, Mixtral) |
-| `DATABASE_URL` | — | SQLite local / PostgreSQL prod |
+## Development Notes
 
-Minimum to get started: `GOOGLE_API_KEY` + `GEMINI_API_KEY` + `TAVILY_API_KEY` + `OPENROUTER_API_KEY`.
-
----
-
-## Setup Scripts
-
-| File | Purpose |
-|------|---------|
-| `start-full-system.bat` | One-click: setup + launch backend + frontend |
-| `setup-backend.bat` | First-time backend setup (venv + deps) |
-| `start-backend.bat` | Start backend server only |
-| `start-frontend.bat` | Start frontend dev server only |
-
----
-
-## Project Structure
-
-```
-OmniMind-AI/
-├── backend/
-│   ├── api/routes/          # FastAPI route handlers
-│   │   ├── council.py       # LLM Council endpoints
-│   │   ├── debate.py        # Multi-Agent Debate endpoints
-│   │   ├── agents.py
-│   │   ├── queries.py
-│   │   └── simulations.py
-│   ├── core/
-│   │   ├── config.py        # Pydantic settings (reads .env)
-│   │   └── database.py      # SQLite/PostgreSQL async engine
-│   ├── services/
-│   │   ├── llm_council.py   # 7-agent council logic
-│   │   ├── multi_agent_debate.py  # 4-agent debate pipeline
-│   │   ├── rag_service.py   # Vector search + in-memory KB
-│   │   ├── decision_graph.py
-│   │   └── memory_service.py
-│   ├── models/
-│   │   ├── entities.py      # SQLAlchemy ORM models
-│   │   └── schemas.py       # Pydantic request/response schemas
-│   └── main.py              # FastAPI app entry point
-├── frontend/
-│   └── src/
-│       ├── app/             # Next.js App Router pages
-│       ├── components/
-│       │   ├── ai/
-│       │   │   ├── MultiAgentChat.tsx   # Debate + Council UI
-│       │   │   ├── LLMCouncil.tsx       # 7-agent council panel
-│       │   │   └── ...
-│       │   ├── sections/    # Landing page sections
-│       │   └── layout/      # AppLayout, sidebar
-│       └── lib/api.ts       # API client
-├── requirements.txt         # Python dependencies (actual installed versions)
-├── .env.example             # Environment variable template
-├── start-full-system.bat    # One-click launcher
-└── docker-compose.yml       # Docker setup (optional)
-```
-
----
-
-## Knowledge Base
-
-Built-in fallback KB (no Qdrant needed locally):
-
-| Collection | Content |
-|------------|---------|
-| `agriculture` | Tamil Nadu crop calendar, organic farming, drip irrigation subsidies |
-| `government_schemes` | PM-KISAN, PMFBY, MUDRA, NABARD KCC, Startup India, TN schemes |
-| `business` | FPO formation, MSME registration, cloud kitchen model |
-| `finance` | SBI agri loans, NABARD RIDF, interest rates |
-| `career` | Tamil Nadu IT market 2025, skill demand |
-
-Qdrant + Sentence Transformers are optional — the system falls back to cosine similarity over the in-memory KB automatically.
-
----
-
-## Tech Stack
-
-| Layer | Technology |
-|-------|-----------|
-| Frontend | Next.js 14, TypeScript, Tailwind CSS |
-| Backend | FastAPI, Python 3.13, Uvicorn |
-| LLM Orchestration | LangChain, LangGraph |
-| LLM Providers | OpenAI, Google Gemini, Groq, OpenRouter |
-| Search | Tavily API |
-| Database | SQLite (local) / PostgreSQL (prod) |
-| Vector Search | Sentence Transformers + in-memory / Qdrant |
-| Cache | Redis (optional) |
-
----
+| Script | Description |
+|---|---|
+| start-full-system.sh / .bat | Start backend and frontend |
+| start-backend.sh / .bat | Start backend only |
+| start-frontend.sh / .bat | Start frontend only |
+| troubleshoot.sh / .bat | Run diagnostics |
 
 ## License
 

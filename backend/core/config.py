@@ -16,11 +16,15 @@ class Settings(BaseSettings):
     ]
 
     # Database
-    DATABASE_URL: str = os.getenv("DATABASE_URL", "postgresql://user:password@localhost/omnimind")
+    DATABASE_URL: str = os.getenv(
+        "DATABASE_URL", "postgresql://user:password@localhost/omnimind"
+    )
 
     # DigitalOcean Gradient AI — primary LLM provider
     GRADIENT_API_KEY: str = os.getenv("GRADIENT_API_KEY", "")
-    GRADIENT_BASE_URL: str = os.getenv("GRADIENT_BASE_URL", "https://inference.do-ai.run/v1")
+    GRADIENT_BASE_URL: str = os.getenv(
+        "GRADIENT_BASE_URL", "https://inference.do-ai.run/v1"
+    )
     GRADIENT_WORKSPACE_ID: str = os.getenv("GRADIENT_WORKSPACE_ID", "")
     LLM_MODEL: str = os.getenv("LLM_MODEL", "llama3-1-70b-instruct")
     LLM_MAX_TOKENS: int = int(os.getenv("LLM_MAX_TOKENS", "2048"))
@@ -45,7 +49,9 @@ class Settings(BaseSettings):
     QDRANT_COLLECTION: str = os.getenv("QDRANT_COLLECTION", "omnimind_knowledge")
 
     # Sentence Transformers
-    EMBEDDING_MODEL: str = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+    EMBEDDING_MODEL: str = os.getenv(
+        "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
+    )
 
     # Redis
     REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379")

@@ -7,6 +7,7 @@ from services.runtime import runtime
 
 router = APIRouter()
 
+
 @router.post("/", response_model=SimulationResponse)
 async def create_simulation(
     simulation_request: SimulationRequest,
@@ -22,9 +23,12 @@ async def create_simulation(
         snapshot = await runtime.get_session(simulation_request.query_id)
 
     if snapshot is None or snapshot.simulation is None:
-        raise HTTPException(status_code=409, detail="Simulation is not available for this session")
+        raise HTTPException(
+            status_code=409, detail="Simulation is not available for this session"
+        )
 
     return snapshot.simulation
+
 
 @router.get("/{simulation_id}", response_model=SimulationResponse)
 async def get_simulation(
@@ -40,6 +44,7 @@ async def get_simulation(
     if snapshot is None or snapshot.simulation is None:
         raise HTTPException(status_code=404, detail="Simulation not found")
     return snapshot.simulation
+
 
 @router.get("/query/{query_id}", response_model=List[SimulationResponse])
 async def get_simulations_for_query(

@@ -45,6 +45,8 @@ interface AgentResult {
   icon: string;
   color: string;
   analysis: string;
+  fallback_marker?: string;
+  validation_marker?: string;
 }
 
 interface DebateResponse {
@@ -52,6 +54,9 @@ interface DebateResponse {
   agents: AgentResult[];
   debate: string;
   final_consensus: string;
+  debate_fallback_marker?: string;
+  final_fallback_marker?: string;
+  final_validation_marker?: string;
 }
 
 interface DebateChatMessage {
@@ -87,11 +92,15 @@ const DEBATE_PHASE_LABELS: Record<DebatePhase, string> = {
 /*  Council types                                                       */
 /* ------------------------------------------------------------------ */
 interface CouncilMessage {
+  agent_key?: string;
   agent: string;
   role: string;
   message: string;
   timestamp: string;
   confidence: number;
+  provider_requested?: string;
+  provider_used?: string;
+  fallback_marker?: string;
 }
 
 interface CouncilSession {
@@ -166,6 +175,20 @@ function DebateAgentCard({ agent }: { agent: AgentResult }) {
           <p className="text-[10px] text-[var(--text-secondary)]">
             {agent.role} · {agent.provider}
           </p>
+          {(agent.fallback_marker || agent.validation_marker) && (
+            <div className="flex items-center gap-1 mt-1">
+              {agent.fallback_marker && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded border border-amber-500/40 text-amber-600 bg-amber-500/10 uppercase tracking-widest">
+                  fallback
+                </span>
+              )}
+              {agent.validation_marker && (
+                <span className="text-[10px] px-1.5 py-0.5 rounded border border-red-500/40 text-red-600 bg-red-500/10 uppercase tracking-widest">
+                  shape-check
+                </span>
+              )}
+            </div>
+          )}
         </div>
         <div className="text-[var(--text-secondary)]">
           {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -220,6 +243,11 @@ function DebatePanel({ data }: { data: DebateResponse }) {
             <p className="text-[10px] text-[var(--text-secondary)]">
               Agents challenged each other's assumptions
             </p>
+            {data.debate_fallback_marker && (
+              <span className="inline-flex mt-1 text-[10px] px-1.5 py-0.5 rounded border border-amber-500/40 text-amber-600 bg-amber-500/10 uppercase tracking-widest">
+                fallback
+              </span>
+            )}
           </div>
           <div className="text-[var(--text-secondary)]">
             {showDebate ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
@@ -255,6 +283,20 @@ function DebatePanel({ data }: { data: DebateResponse }) {
             <p className="text-[10px] text-[var(--text-secondary)]">
               Strategy Agent (Ravi) · Gemini
             </p>
+            {(data.final_fallback_marker || data.final_validation_marker) && (
+              <div className="flex items-center gap-1 mt-1">
+                {data.final_fallback_marker && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded border border-amber-500/40 text-amber-600 bg-amber-500/10 uppercase tracking-widest">
+                    fallback
+                  </span>
+                )}
+                {data.final_validation_marker && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded border border-red-500/40 text-red-600 bg-red-500/10 uppercase tracking-widest">
+                    shape-check
+                  </span>
+                )}
+              </div>
+            )}
           </div>
         </div>
         <div className="text-sm text-[var(--text-primary)] whitespace-pre-wrap leading-relaxed max-h-[500px] overflow-y-auto scrollbar-hide">
@@ -360,6 +402,9 @@ function CouncilAgentCard({
   const [expanded, setExpanded] = useState(false);
   const Icon = COUNCIL_AGENT_ICONS[agentKey] || Brain;
   const color = COUNCIL_AGENT_COLORS[agentKey] || "#3b82f6";
+  const marker =
+    msg.fallback_marker || (msg.message.match(/\[FALLBACK[^\]]+\]/)?.[0] ?? "");
+  const hasFallback = Boolean(marker);
   return (
     <motion.div
       initial={{ opacity: 0, y: 8 }}
@@ -381,6 +426,17 @@ function CouncilAgentCard({
             {msg.agent}
           </p>
           <p className="text-[10px] text-[var(--text-secondary)]">{msg.role}</p>
+          {(msg.provider_requested || msg.provider_used) && (
+            <p className="text-[10px] text-[var(--text-secondary)] mt-0.5">
+              {msg.provider_requested || "unknown"} →{" "}
+              {msg.provider_used || "unknown"}
+            </p>
+          )}
+          {hasFallback && (
+            <span className="inline-flex mt-1 text-[10px] px-1.5 py-0.5 rounded border border-amber-500/40 text-amber-600 bg-amber-500/10 uppercase tracking-widest">
+              fallback
+            </span>
+          )}
         </div>
         <div className="text-[var(--text-secondary)]">
           {expanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}

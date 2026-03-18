@@ -23,17 +23,19 @@ elif _db_url.startswith("postgresql://"):
 _is_sqlite = _db_url.startswith("sqlite")
 
 # ── Engine ───────────────────────────────────────────────────────────
-_engine_kwargs = {} if _is_sqlite else {
-    "pool_size": 10,
-    "max_overflow": 20,
-    "pool_pre_ping": True,
-}
+_engine_kwargs = (
+    {}
+    if _is_sqlite
+    else {
+        "pool_size": 10,
+        "max_overflow": 20,
+        "pool_pre_ping": True,
+    }
+)
 
 engine = create_async_engine(_db_url, echo=False, **_engine_kwargs)
 
-AsyncSessionLocal = sessionmaker(
-    engine, class_=AsyncSession, expire_on_commit=False
-)
+AsyncSessionLocal = sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
 
 Base = declarative_base()
 
@@ -46,11 +48,15 @@ async def init_db():
             async with engine.begin() as conn:
                 if not _is_sqlite:
                     try:
-                        await conn.execute(text("CREATE EXTENSION IF NOT EXISTS vector"))
+                        await conn.execute(
+                            text("CREATE EXTENSION IF NOT EXISTS vector")
+                        )
                     except Exception:
                         pass
                 await conn.run_sync(Base.metadata.create_all)
-            _logger.info("Database initialised (%s).", "SQLite" if _is_sqlite else "PostgreSQL")
+            _logger.info(
+                "Database initialised (%s).", "SQLite" if _is_sqlite else "PostgreSQL"
+            )
             return
         except Exception as exc:
             _logger.warning("DB init attempt %d failed: %s", attempt + 1, exc)

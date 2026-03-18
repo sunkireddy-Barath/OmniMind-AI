@@ -6,10 +6,13 @@ Routes each agent through a different API provider:
   - Financial & Resource Agent     → OpenAI proj key (GPT-4o-mini)
   - Strategy & Execution Agent     → Google Gemini 1.5 Pro
 """
+
 import os
 import logging
 import httpx
 from core.config import settings
+from services.gradient_ai import gradient_client
+from services.persona_output_validator import validate_persona_output
 
 logger = logging.getLogger(__name__)
 
@@ -17,18 +20,59 @@ logger = logging.getLogger(__name__)
 class MultiAgentDebateService:
     def __init__(self):
         # Access keys via the central settings object with os.getenv fallback
-        self.tavily_api_key = (settings.TAVILY_API_KEY or os.getenv("TAVILY_API_KEY", "")).strip()
-        self.openrouter_api_key = (settings.OPENROUTER_API_KEY or os.getenv("OPENROUTER_API_KEY", "")).strip()
-        self.openai_finance_key = (settings.OPENAI_FINANCE_API_KEY or os.getenv("OPENAI_FINANCE_API_KEY", "")).strip()
-        self.openai_research_key = (settings.OPENAI_RESEARCH_API_KEY or os.getenv("OPENAI_RESEARCH_API_KEY", "")).strip()
-        self.gemini_api_key = (settings.GEMINI_API_KEY or os.getenv("GEMINI_API_KEY", "")).strip()
-        
-        logger.info("MultiAgentDebateService initialized. Keys status: "
-                    f"Tavily={'OK' if self.tavily_api_key else 'MISSING'}, "
-                    f"OpenRouter={'OK' if self.openrouter_api_key else 'MISSING'}, "
-                    f"OpenAI_Finance={'OK' if self.openai_finance_key else 'MISSING'}, "
-                    f"OpenAI_Research={'OK' if self.openai_research_key else 'MISSING'}, "
-                    f"Gemini={'OK' if self.gemini_api_key else 'MISSING'}")
+        self.tavily_api_key = (
+            settings.TAVILY_API_KEY or os.getenv("TAVILY_API_KEY", "")
+        ).strip()
+        self.openrouter_api_key = (
+            settings.OPENROUTER_API_KEY or os.getenv("OPENROUTER_API_KEY", "")
+        ).strip()
+        self.openai_finance_key = (
+            settings.OPENAI_FINANCE_API_KEY or os.getenv("OPENAI_FINANCE_API_KEY", "")
+        ).strip()
+        self.openai_research_key = (
+            settings.OPENAI_RESEARCH_API_KEY or os.getenv("OPENAI_RESEARCH_API_KEY", "")
+        ).strip()
+        self.gemini_api_key = (
+            settings.GEMINI_API_KEY or os.getenv("GEMINI_API_KEY", "")
+        ).strip()
+
+        logger.info(
+            "MultiAgentDebateService initialized. Keys status: "
+            f"Tavily={'OK' if self.tavily_api_key else 'MISSING'}, "
+            f"OpenRouter={'OK' if self.openrouter_api_key else 'MISSING'}, "
+            f"OpenAI_Finance={'OK' if self.openai_finance_key else 'MISSING'}, "
+            f"OpenAI_Research={'OK' if self.openai_research_key else 'MISSING'}, "
+            f"Gemini={'OK' if self.gemini_api_key else 'MISSING'}"
+        )
+
+    def _fallback_marker(self, requested: str, used: str, reason: str) -> str:
+        return f"[FALLBACK requested={requested} used={used} reason={reason}]"
+
+    def _looks_like_provider_failure(self, text: str) -> bool:
+        low = text.lower()
+        return (
+            "api key missing" in low
+            or "error" in low
+            or "exception" in low
+            or "skipping live search" in low
+        )
+
+    async def _call_gradient(self, system_prompt: str, user_prompt: str) -> str:
+        if not gradient_client.enabled:
+            raise RuntimeError("GRADIENT_API_KEY not set")
+        result = await gradient_client.complete(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            temperature=0.6,
+            max_tokens=2500,
+        )
+        return result.get("content", "")
+
+    async def _ensure_persona_shape(self, persona: str, text: str) -> tuple[str, str]:
+        validation = validate_persona_output(persona, text)
+        if validation.valid:
+            return text, ""
+        return f"{validation.marker}\n{text}", validation.marker
 
     # ------------------------------------------------------------------ #
     #  Tavily real-time search
@@ -67,7 +111,9 @@ class MultiAgentDebateService:
     # ------------------------------------------------------------------ #
     #  OpenAI call (supports separate keys for research vs finance)
     # ------------------------------------------------------------------ #
-    async def _call_openai(self, api_key: str, system_prompt: str, user_prompt: str) -> str:
+    async def _call_openai(
+        self, api_key: str, system_prompt: str, user_prompt: str
+    ) -> str:
         """Call OpenAI chat completions."""
         if not api_key:
             return "OpenAI API key missing."
@@ -90,7 +136,9 @@ class MultiAgentDebateService:
                     },
                 )
                 if resp.status_code != 200:
-                    logger.error("OpenAI returned %s: %s", resp.status_code, resp.text[:300])
+                    logger.error(
+                        "OpenAI returned %s: %s", resp.status_code, resp.text[:300]
+                    )
                     return f"[OpenAI error {resp.status_code}] {resp.text[:200]}"
                 data = resp.json()
                 return data["choices"][0]["message"]["content"]
@@ -125,7 +173,9 @@ class MultiAgentDebateService:
                     },
                 )
                 if resp.status_code != 200:
-                    logger.error("OpenRouter returned %s: %s", resp.status_code, resp.text[:300])
+                    logger.error(
+                        "OpenRouter returned %s: %s", resp.status_code, resp.text[:300]
+                    )
                     return f"[OpenRouter error {resp.status_code}] {resp.text[:200]}"
                 data = resp.json()
                 return data["choices"][0]["message"]["content"]
@@ -140,17 +190,21 @@ class MultiAgentDebateService:
         """Call Google Gemini 1.5 Pro via REST."""
         if not self.gemini_api_key:
             return "Gemini API key missing."
-            
+
         url = (
             "https://generativelanguage.googleapis.com/v1beta/"
             f"models/gemini-1.5-flash:generateContent?key={self.gemini_api_key}"
         )
-        
+
         payload = {
             "contents": [
                 {
                     "role": "user",
-                    "parts": [{"text": f"System Persona: {system_prompt}\n\nTask: {user_prompt}"}],
+                    "parts": [
+                        {
+                            "text": f"System Persona: {system_prompt}\n\nTask: {user_prompt}"
+                        }
+                    ],
                 }
             ],
             "generationConfig": {
@@ -158,16 +212,18 @@ class MultiAgentDebateService:
                 "maxOutputTokens": 4096,
             },
         }
-        
+
         try:
             async with httpx.AsyncClient(timeout=120.0) as client:
                 resp = await client.post(
                     url, json=payload, headers={"Content-Type": "application/json"}
                 )
                 if resp.status_code != 200:
-                    logger.error("Gemini returned %s: %s", resp.status_code, resp.text[:300])
+                    logger.error(
+                        "Gemini returned %s: %s", resp.status_code, resp.text[:300]
+                    )
                     return f"[Gemini error {resp.status_code}] {resp.text[:200]}"
-                
+
                 data = resp.json()
                 return data["candidates"][0]["content"]["parts"][0]["text"]
         except Exception as exc:
@@ -207,6 +263,20 @@ class MultiAgentDebateService:
         research_analysis = await self._call_openai(
             self.openai_research_key, research_system, research_user
         )
+        research_marker = ""
+        if self._looks_like_provider_failure(research_analysis):
+            marker = self._fallback_marker("openai", "gradient", "provider_failure")
+            if gradient_client.enabled:
+                research_analysis = f"{marker}\n" + await self._call_gradient(
+                    research_system, research_user
+                )
+            else:
+                research_analysis = f"{marker}\n{research_analysis}"
+            research_marker = marker
+        (
+            research_analysis,
+            research_validation_marker,
+        ) = await self._ensure_persona_shape("priya", research_analysis)
 
         # ---- Step 3: Risk Analysis Agent (Arjun) ----
         risk_system = (
@@ -224,6 +294,19 @@ class MultiAgentDebateService:
             "Identify ALL potential risks, uncertainties, and failure points."
         )
         risk_analysis = await self._call_openrouter(risk_system, risk_user)
+        risk_marker = ""
+        if self._looks_like_provider_failure(risk_analysis):
+            marker = self._fallback_marker("openrouter", "gradient", "provider_failure")
+            if gradient_client.enabled:
+                risk_analysis = f"{marker}\n" + await self._call_gradient(
+                    risk_system, risk_user
+                )
+            else:
+                risk_analysis = f"{marker}\n{risk_analysis}"
+            risk_marker = marker
+        risk_analysis, risk_validation_marker = await self._ensure_persona_shape(
+            "arjun", risk_analysis
+        )
 
         # ---- Step 3: Financial & Resource Strategy Agent (Kavya) ----
         finance_system = (
@@ -244,6 +327,19 @@ class MultiAgentDebateService:
         finance_analysis = await self._call_openai(
             self.openai_finance_key, finance_system, finance_user
         )
+        finance_marker = ""
+        if self._looks_like_provider_failure(finance_analysis):
+            marker = self._fallback_marker("openai", "gradient", "provider_failure")
+            if gradient_client.enabled:
+                finance_analysis = f"{marker}\n" + await self._call_gradient(
+                    finance_system, finance_user
+                )
+            else:
+                finance_analysis = f"{marker}\n{finance_analysis}"
+            finance_marker = marker
+        finance_analysis, finance_validation_marker = await self._ensure_persona_shape(
+            "kavya", finance_analysis
+        )
 
         # ---- Step 4: Agent Debate ----
         debate_system = (
@@ -261,6 +357,16 @@ class MultiAgentDebateService:
             "Moderate the debate. Identify trade-offs and refined ideas."
         )
         debate_result = await self._call_openrouter(debate_system, debate_user)
+        debate_marker = ""
+        if self._looks_like_provider_failure(debate_result):
+            marker = self._fallback_marker("openrouter", "gradient", "provider_failure")
+            if gradient_client.enabled:
+                debate_result = f"{marker}\n" + await self._call_gradient(
+                    debate_system, debate_user
+                )
+            else:
+                debate_result = f"{marker}\n{debate_result}"
+            debate_marker = marker
 
         # ---- Step 5: Final Consensus & Execution Plan (Ravi) ----
         strategy_system = (
@@ -283,6 +389,19 @@ class MultiAgentDebateService:
             "Provide the final consensus report."
         )
         final_strategy = await self._call_gemini(strategy_system, strategy_user)
+        final_marker = ""
+        if self._looks_like_provider_failure(final_strategy):
+            marker = self._fallback_marker("gemini", "gradient", "provider_failure")
+            if gradient_client.enabled:
+                final_strategy = f"{marker}\n" + await self._call_gradient(
+                    strategy_system, strategy_user
+                )
+            else:
+                final_strategy = f"{marker}\n{final_strategy}"
+            final_marker = marker
+        final_strategy, strategy_validation_marker = await self._ensure_persona_shape(
+            "ravi", final_strategy
+        )
 
         return {
             "problem": problem,
@@ -295,6 +414,8 @@ class MultiAgentDebateService:
                     "icon": "search",
                     "color": "#3b82f6",
                     "analysis": research_analysis,
+                    "fallback_marker": research_marker or None,
+                    "validation_marker": research_validation_marker or None,
                 },
                 {
                     "id": "risk",
@@ -304,6 +425,8 @@ class MultiAgentDebateService:
                     "icon": "shield",
                     "color": "#f59e0b",
                     "analysis": risk_analysis,
+                    "fallback_marker": risk_marker or None,
+                    "validation_marker": risk_validation_marker or None,
                 },
                 {
                     "id": "finance",
@@ -313,8 +436,13 @@ class MultiAgentDebateService:
                     "icon": "dollar",
                     "color": "#10b981",
                     "analysis": finance_analysis,
+                    "fallback_marker": finance_marker or None,
+                    "validation_marker": finance_validation_marker or None,
                 },
             ],
             "debate": debate_result,
+            "debate_fallback_marker": debate_marker or None,
             "final_consensus": final_strategy,
+            "final_fallback_marker": final_marker or None,
+            "final_validation_marker": strategy_validation_marker or None,
         }

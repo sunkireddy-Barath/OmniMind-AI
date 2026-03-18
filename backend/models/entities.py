@@ -12,10 +12,14 @@ class SessionEntity(Base):
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
     query: Mapped[str] = mapped_column(Text, nullable=False)
     status: Mapped[str] = mapped_column(String(32), nullable=False, default="queued")
-    current_stage: Mapped[str] = mapped_column(String(32), nullable=False, default="planner")
+    current_stage: Mapped[str] = mapped_column(
+        String(32), nullable=False, default="planner"
+    )
     context: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
     snapshot: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -23,23 +27,33 @@ class SessionEntity(Base):
         nullable=False,
     )
 
-    agents = relationship("AgentRunEntity", cascade="all, delete-orphan", back_populates="session")
-    simulations = relationship("SimulationEntity", cascade="all, delete-orphan", back_populates="session")
+    agents = relationship(
+        "AgentRunEntity", cascade="all, delete-orphan", back_populates="session"
+    )
+    simulations = relationship(
+        "SimulationEntity", cascade="all, delete-orphan", back_populates="session"
+    )
 
 
 class AgentRunEntity(Base):
     __tablename__ = "agent_runs"
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
-    session_id: Mapped[str] = mapped_column(ForeignKey("decision_sessions.id", ondelete="CASCADE"), index=True)
+    session_id: Mapped[str] = mapped_column(
+        ForeignKey("decision_sessions.id", ondelete="CASCADE"), index=True
+    )
     name: Mapped[str] = mapped_column(String(128), nullable=False)
     agent_type: Mapped[str] = mapped_column(String(64), nullable=False)
     role: Mapped[str] = mapped_column(String(256), nullable=False)
     status: Mapped[str] = mapped_column(String(32), nullable=False)
     progress: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     output: Mapped[str | None] = mapped_column(Text, nullable=True)
-    run_metadata: Mapped[dict] = mapped_column("metadata", JSON, nullable=False, default=dict)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    run_metadata: Mapped[dict] = mapped_column(
+        "metadata", JSON, nullable=False, default=dict
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),
@@ -54,17 +68,25 @@ class SimulationEntity(Base):
     __tablename__ = "simulation_runs"
 
     id: Mapped[str] = mapped_column(String(64), primary_key=True)
-    session_id: Mapped[str] = mapped_column(ForeignKey("decision_sessions.id", ondelete="CASCADE"), index=True)
+    session_id: Mapped[str] = mapped_column(
+        ForeignKey("decision_sessions.id", ondelete="CASCADE"), index=True
+    )
     scenario_name: Mapped[str] = mapped_column(String(128), nullable=False)
     outcome: Mapped[str] = mapped_column(Text, nullable=False)
     confidence: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     investment: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     expected_profit: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     roi: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
-    risk_level: Mapped[str] = mapped_column(String(32), nullable=False, default="Medium")
-    timeline: Mapped[str] = mapped_column(String(64), nullable=False, default="12 months")
+    risk_level: Mapped[str] = mapped_column(
+        String(32), nullable=False, default="Medium"
+    )
+    timeline: Mapped[str] = mapped_column(
+        String(64), nullable=False, default="12 months"
+    )
     parameters: Mapped[dict] = mapped_column(JSON, nullable=False, default=dict)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )
 
     session = relationship("SessionEntity", back_populates="simulations")
 
@@ -74,6 +96,7 @@ try:
 except ImportError:
     Vector = None
 
+
 class KnowledgeDocumentEntity(Base):
     __tablename__ = "knowledge_base"
 
@@ -81,5 +104,9 @@ class KnowledgeDocumentEntity(Base):
     title: Mapped[str] = mapped_column(String(256), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     source: Mapped[str] = mapped_column(String(256), nullable=True)
-    embedding: Mapped[list[float]] = mapped_column(Vector(384) if Vector else Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    embedding: Mapped[list[float]] = mapped_column(
+        Vector(384) if Vector else Text, nullable=True
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), nullable=False
+    )

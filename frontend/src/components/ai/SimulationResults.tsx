@@ -90,7 +90,9 @@ export default function SimulationResults({
           <p className="text-[10px] uppercase tracking-widest text-[var(--text-secondary)] font-semibold">
             Investment Multiplier
           </p>
-          <p className="text-xs font-bold text-blue-600">{multiplier.toFixed(1)}x</p>
+          <p className="text-xs font-bold text-blue-600">
+            {multiplier.toFixed(1)}x
+          </p>
         </div>
         <input
           type="range"

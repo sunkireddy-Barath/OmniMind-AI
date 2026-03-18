@@ -64,11 +64,15 @@ export default function ReasoningGraph({ graph, messages }: Props) {
     if (!selectedNode) {
       return [];
     }
-    const selectedLabel = vizData.nodes.find((n) => n.id === selectedNode)?.label;
+    const selectedLabel = vizData.nodes.find(
+      (n) => n.id === selectedNode,
+    )?.label;
     if (!selectedLabel) {
       return [];
     }
-    return messages.filter((m) => m.agent_name.toLowerCase().includes(selectedLabel.toLowerCase()));
+    return messages.filter((m) =>
+      m.agent_name.toLowerCase().includes(selectedLabel.toLowerCase()),
+    );
   }, [messages, selectedNode, vizData.nodes]);
 
   useEffect(() => {
@@ -84,7 +88,13 @@ export default function ReasoningGraph({ graph, messages }: Props) {
 
     const simulation = d3
       .forceSimulation(vizData.nodes as d3.SimulationNodeDatum[])
-      .force("link", d3.forceLink(vizData.edges).id((d: any) => d.id).distance(140))
+      .force(
+        "link",
+        d3
+          .forceLink(vizData.edges)
+          .id((d: any) => d.id)
+          .distance(140),
+      )
       .force("charge", d3.forceManyBody().strength(-520))
       .force("center", d3.forceCenter(width / 2, height / 2));
 
@@ -181,7 +191,10 @@ export default function ReasoningGraph({ graph, messages }: Props) {
           {selectedMessages.length > 0 ? (
             <div className="space-y-2 max-h-36 overflow-y-auto pr-2">
               {selectedMessages.slice(0, 3).map((m, idx) => (
-                <p key={`${m.timestamp}-${idx}`} className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                <p
+                  key={`${m.timestamp}-${idx}`}
+                  className="text-xs text-[var(--text-secondary)] leading-relaxed"
+                >
                   {m.content}
                 </p>
               ))}

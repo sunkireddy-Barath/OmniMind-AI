@@ -296,12 +296,18 @@ export default function AgentWorkflow({ query, onBack }: AgentWorkflowProps) {
             </div>
 
             <div className="mt-10">
-              <ReasoningGraph graph={snapshot?.graph} messages={snapshot?.messages ?? []} />
+              <ReasoningGraph
+                graph={snapshot?.graph}
+                messages={snapshot?.messages ?? []}
+              />
             </div>
           </div>
 
           <div className="lg:col-span-1 space-y-10">
-            <ConsensusPanel consensus={snapshot?.consensus} simplified={simplifiedView} />
+            <ConsensusPanel
+              consensus={snapshot?.consensus}
+              simplified={simplifiedView}
+            />
 
             <div className="card p-10">
               <h3 className="text-lg font-bold text-[var(--text-primary)] tracking-tight mb-8">

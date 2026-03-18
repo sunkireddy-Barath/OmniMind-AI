@@ -30,7 +30,9 @@ class SessionStore:
                 entity.context = snapshot.context
                 entity.snapshot = payload
 
-            await session.execute(delete(AgentRunEntity).where(AgentRunEntity.session_id == snapshot.id))
+            await session.execute(
+                delete(AgentRunEntity).where(AgentRunEntity.session_id == snapshot.id)
+            )
             for agent in snapshot.agents:
                 session.add(
                     AgentRunEntity(
@@ -46,7 +48,11 @@ class SessionStore:
                     )
                 )
 
-            await session.execute(delete(SimulationEntity).where(SimulationEntity.session_id == snapshot.id))
+            await session.execute(
+                delete(SimulationEntity).where(
+                    SimulationEntity.session_id == snapshot.id
+                )
+            )
             if snapshot.simulation:
                 for scenario in snapshot.simulation.scenarios:
                     session.add(
@@ -84,7 +90,11 @@ class SessionStore:
                 .limit(limit)
             )
             entities = result.scalars().all()
-            return [QueryResponse.model_validate(entity.snapshot) for entity in entities if entity.snapshot]
+            return [
+                QueryResponse.model_validate(entity.snapshot)
+                for entity in entities
+                if entity.snapshot
+            ]
 
     async def delete(self, session_id: str) -> None:
         async with AsyncSessionLocal() as session:

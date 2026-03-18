@@ -3,6 +3,7 @@ Layer 5 — Session event bus.
 Primary: in-process asyncio queues (zero latency, works without Redis).
 Secondary: Redis pub/sub channel per session (enables multi-worker deployments).
 """
+
 from __future__ import annotations
 
 import asyncio
@@ -28,6 +29,7 @@ class SessionEventBus:
             return self._redis_pub
         try:
             import redis.asyncio as redis
+
             self._redis_pub = redis.from_url(settings.REDIS_URL, decode_responses=True)
             await self._redis_pub.ping()
             return self._redis_pub

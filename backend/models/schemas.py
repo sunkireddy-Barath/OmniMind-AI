@@ -147,9 +147,13 @@ class AgentResponse(BaseModel):
     output: Optional[str] = None
     messages: List[str] = Field(default_factory=list)
     provider: Optional[str] = None
+    provider_requested: Optional[str] = None
+    provider_used: Optional[str] = None
     model: Optional[str] = None
     tokens: Optional[int] = None
     latency_ms: Optional[int] = None
+    fallback_marker: Optional[str] = None
+    validation_marker: Optional[str] = None
     retrieved_docs: List[str] = Field(default_factory=list)
     created_at: datetime
     updated_at: datetime

@@ -3,6 +3,7 @@ Layer 5 — Persistent agent memory service.
 Stores per-user query history and agent output summaries in Redis.
 Allows agents to reference past decisions in future queries.
 """
+
 from __future__ import annotations
 
 import json
@@ -13,8 +14,8 @@ from core.config import settings
 
 logger = logging.getLogger(__name__)
 
-_MEMORY_TTL = 86400 * 7   # 7 days
-_MAX_HISTORY = 10          # last 10 queries per user
+_MEMORY_TTL = 86400 * 7  # 7 days
+_MAX_HISTORY = 10  # last 10 queries per user
 
 
 class MemoryService:
@@ -29,6 +30,7 @@ class MemoryService:
             return self._client
         try:
             import redis.asyncio as redis
+
             self._client = redis.from_url(settings.REDIS_URL, decode_responses=True)
             await self._client.ping()
             return self._client
@@ -39,12 +41,16 @@ class MemoryService:
 
     # ── User query history ──────────────────────────────────────────────────
 
-    async def record_query(self, user_id: str, session_id: str, query: str, summary: str) -> None:
+    async def record_query(
+        self, user_id: str, session_id: str, query: str, summary: str
+    ) -> None:
         r = await self._get()
         if not r:
             return
         key = f"memory:user:{user_id}:history"
-        entry = json.dumps({"session_id": session_id, "query": query, "summary": summary})
+        entry = json.dumps(
+            {"session_id": session_id, "query": query, "summary": summary}
+        )
         try:
             await r.lpush(key, entry)
             await r.ltrim(key, 0, _MAX_HISTORY - 1)
@@ -57,7 +63,9 @@ class MemoryService:
         if not r:
             return []
         try:
-            raw_list = await r.lrange(f"memory:user:{user_id}:history", 0, _MAX_HISTORY - 1)
+            raw_list = await r.lrange(
+                f"memory:user:{user_id}:history", 0, _MAX_HISTORY - 1
+            )
             return [json.loads(item) for item in raw_list]
         except Exception:
             return []
@@ -65,7 +73,11 @@ class MemoryService:
     # ── Agent output memory ─────────────────────────────────────────────────
 
     async def store_agent_memory(
-        self, session_id: str, agent_type: str, content: str, metadata: dict[str, Any] | None = None
+        self,
+        session_id: str,
+        agent_type: str,
+        content: str,
+        metadata: dict[str, Any] | None = None,
     ) -> None:
         r = await self._get()
         if not r:
@@ -77,7 +89,9 @@ class MemoryService:
         except Exception as exc:
             logger.debug("store_agent_memory failed: %s", exc)
 
-    async def get_agent_memory(self, session_id: str, agent_type: str) -> dict[str, Any] | None:
+    async def get_agent_memory(
+        self, session_id: str, agent_type: str
+    ) -> dict[str, Any] | None:
         r = await self._get()
         if not r:
             return None

@@ -2,6 +2,7 @@
 LLM Council Chat System - Multi-Provider 7 Agents
 OpenAI GPT-4o + Google Gemini Pro + Groq Llama 3.1
 """
+
 import os
 import uuid
 import json
@@ -9,32 +10,38 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional
 from datetime import datetime
 from pydantic import BaseModel
+from services.gradient_ai import gradient_client
 
 from dotenv import load_dotenv
+
 load_dotenv()  # ensure .env is loaded before reading keys
 
 # Pull keys from settings (which reads .env) with os.getenv fallback
 try:
     from core.config import settings as _settings
-    _OPENAI_KEY  = _settings.OPENAI_API_KEY  or os.getenv("OPENAI_API_KEY", "")
-    _GOOGLE_KEY  = _settings.GOOGLE_API_KEY  or os.getenv("GOOGLE_API_KEY", "")
-    _GROQ_KEY    = _settings.GROQ_API_KEY    or os.getenv("GROQ_API_KEY", "")
-    _TAVILY_KEY  = _settings.TAVILY_API_KEY  or os.getenv("TAVILY_API_KEY", "")
+
+    _OPENAI_KEY = _settings.OPENAI_API_KEY or os.getenv("OPENAI_API_KEY", "")
+    _GOOGLE_KEY = _settings.GOOGLE_API_KEY or os.getenv("GOOGLE_API_KEY", "")
+    _GROQ_KEY = _settings.GROQ_API_KEY or os.getenv("GROQ_API_KEY", "")
+    _TAVILY_KEY = _settings.TAVILY_API_KEY or os.getenv("TAVILY_API_KEY", "")
 except Exception:
-    _OPENAI_KEY  = os.getenv("OPENAI_API_KEY", "")
-    _GOOGLE_KEY  = os.getenv("GOOGLE_API_KEY", "")
-    _GROQ_KEY    = os.getenv("GROQ_API_KEY", "")
-    _TAVILY_KEY  = os.getenv("TAVILY_API_KEY", "")
+    _OPENAI_KEY = os.getenv("OPENAI_API_KEY", "")
+    _GOOGLE_KEY = os.getenv("GOOGLE_API_KEY", "")
+    _GROQ_KEY = os.getenv("GROQ_API_KEY", "")
+    _TAVILY_KEY = os.getenv("TAVILY_API_KEY", "")
 
 try:
     from langchain_openai import ChatOpenAI
     from langchain_google_genai import ChatGoogleGenerativeAI
     from langchain_groq import ChatGroq
+
     try:
         from langchain_tavily import TavilySearch as TavilySearchResults
+
         _TAVILY_NEW = True
     except ImportError:
         from langchain_community.tools.tavily_search import TavilySearchResults
+
         _TAVILY_NEW = False
     LANGCHAIN_AVAILABLE = True
 except ImportError:
@@ -48,6 +55,9 @@ class ChatMessage(BaseModel):
     message: str
     timestamp: datetime
     confidence: float = 0.8
+    provider_requested: Optional[str] = None
+    provider_used: Optional[str] = None
+    fallback_marker: Optional[str] = None
 
 
 class ChatSession(BaseModel):
@@ -75,7 +85,9 @@ class LLMCouncilChat:
         self.registry_path = Path(
             os.getenv(
                 "COUNCIL_AGENT_REGISTRY_PATH",
-                str(Path(__file__).resolve().parents[1] / "data" / "council_agents.json"),
+                str(
+                    Path(__file__).resolve().parents[1] / "data" / "council_agents.json"
+                ),
             )
         )
 
@@ -97,9 +109,6 @@ class LLMCouncilChat:
                         temperature=0.7,
                         google_api_key=_GOOGLE_KEY,
                     )
-                    # Use Gemini as openai fallback if OpenAI quota exceeded
-                    if "openai" not in self.llms:
-                        self.llms["openai"] = self.llms["gemini"]
                 except Exception:
                     pass
 
@@ -232,9 +241,13 @@ class LLMCouncilChat:
             for key, a in self.agents.items()
         }
         self.registry_path.parent.mkdir(parents=True, exist_ok=True)
-        self.registry_path.write_text(json.dumps(serializable, indent=2), encoding="utf-8")
+        self.registry_path.write_text(
+            json.dumps(serializable, indent=2), encoding="utf-8"
+        )
 
-    def _normalized_order(self, requested_order: Optional[List[str]] = None) -> List[str]:
+    def _normalized_order(
+        self, requested_order: Optional[List[str]] = None
+    ) -> List[str]:
         if requested_order:
             ordered = [k for k in requested_order if k in self.agents]
             extras = [k for k in self.agents if k not in ordered]
@@ -275,10 +288,15 @@ class LLMCouncilChat:
         return order
 
     def _get_llm(self, provider: str):
-        """Get LLM for a provider, falling back to any available."""
+        """Strict provider lookup with no implicit cross-provider fallback."""
+        if provider == "gradient":
+            return "gradient" if gradient_client.enabled else None
         if provider == "hybrid":
-            return self.llms.get("openai") or self.llms.get("gemini") or self.llms.get("groq")
-        return self.llms.get(provider) or self.llms.get("openai") or self.llms.get("gemini") or self.llms.get("groq")
+            return "gradient" if gradient_client.enabled else None
+        return self.llms.get(provider)
+
+    def _build_fallback_marker(self, requested: str, used: str, reason: str) -> str:
+        return f"[FALLBACK requested={requested} used={used} reason={reason}]"
 
     async def create_session(self, question: str) -> str:
         session_id = str(uuid.uuid4())[:8]
@@ -292,22 +310,56 @@ class LLMCouncilChat:
     async def get_session(self, session_id: str) -> Optional[ChatSession]:
         return self.sessions.get(session_id)
 
-    async def run_agent_response(self, agent_key: str, question: str, context: str = "") -> str:
+    async def _invoke_gradient(self, system_prompt: str, user_prompt: str) -> str:
+        result = await gradient_client.complete(
+            system_prompt=system_prompt,
+            user_prompt=user_prompt,
+            temperature=0.6,
+            max_tokens=1800,
+        )
+        return result.get("content", "")
+
+    async def run_agent_response(
+        self, agent_key: str, question: str, context: str = ""
+    ) -> Dict[str, str]:
         agent = self.agents[agent_key]
-        llm = self._get_llm(agent["provider"])
+        requested_provider = agent["provider"]
+        llm = self._get_llm(requested_provider)
+
+        fallback_marker = ""
+        provider_used = requested_provider
 
         if not llm:
-            return (
-                f"{agent['emoji']} {agent['name']} ({agent['model']}): "
-                f"Provider unavailable: set API credentials for provider '{agent['provider']}'."
-            )
+            if gradient_client.enabled:
+                llm = "gradient"
+                provider_used = "gradient"
+                fallback_marker = self._build_fallback_marker(
+                    requested=requested_provider,
+                    used="gradient",
+                    reason="provider_unavailable",
+                )
+            else:
+                marker = self._build_fallback_marker(
+                    requested=requested_provider,
+                    used="none",
+                    reason="provider_unavailable",
+                )
+                return {
+                    "message": (
+                        f"{marker}\n{agent['emoji']} {agent['name']} ({agent['model']}): "
+                        f"Provider unavailable: set API credentials for provider '{requested_provider}'."
+                    ),
+                    "provider_requested": requested_provider,
+                    "provider_used": "none",
+                    "fallback_marker": marker,
+                }
 
-        prompt = f"""{agent['prompt']}
+        prompt = f"""{agent["prompt"]}
 
 Question: {question}
 {f"Previous discussion:{chr(10)}{context}" if context else ""}
 
-Respond as the {agent['role']} using {agent['model']}. Be concise and insightful."""
+Respond as the {agent["role"]} using {agent["model"]}. Be concise and insightful."""
 
         if agent_key == "researcher" and self.search_available:
             try:
@@ -318,19 +370,63 @@ Respond as the {agent['role']} using {agent['model']}. Be concise and insightful
                 pass
 
         try:
-            response = await llm.ainvoke(prompt)
-            return f"{agent['emoji']} {agent['name']} ({agent['model']}): {response.content}"
+            if llm == "gradient":
+                content = await self._invoke_gradient(agent["prompt"], prompt)
+            else:
+                response = await llm.ainvoke(prompt)
+                content = response.content
+
+            message = f"{agent['emoji']} {agent['name']} ({agent['model']}): {content}"
+            if fallback_marker:
+                message = f"{fallback_marker}\n{message}"
+
+            return {
+                "message": message,
+                "provider_requested": requested_provider,
+                "provider_used": provider_used,
+                "fallback_marker": fallback_marker,
+            }
         except Exception as e:
-            # If quota exceeded, try Gemini fallback
-            if "429" in str(e) or "quota" in str(e).lower():
-                fallback = self.llms.get("gemini") or self.llms.get("groq")
-                if fallback and fallback is not llm:
-                    try:
-                        response = await fallback.ainvoke(prompt)
-                        return f"{agent['emoji']} {agent['name']} (Gemini fallback): {response.content}"
-                    except Exception:
-                        pass
-            return f"{agent['emoji']} {agent['name']} ({agent['model']}): Error — {e}"
+            if gradient_client.enabled and provider_used != "gradient":
+                try:
+                    gradient_content = await self._invoke_gradient(
+                        agent["prompt"], prompt
+                    )
+                    marker = self._build_fallback_marker(
+                        requested=requested_provider,
+                        used="gradient",
+                        reason="provider_error",
+                    )
+                    return {
+                        "message": f"{marker}\n{agent['emoji']} {agent['name']} ({agent['model']}): {gradient_content}",
+                        "provider_requested": requested_provider,
+                        "provider_used": "gradient",
+                        "fallback_marker": marker,
+                    }
+                except Exception as ge:
+                    marker = self._build_fallback_marker(
+                        requested=requested_provider,
+                        used="none",
+                        reason="provider_and_gradient_error",
+                    )
+                    return {
+                        "message": f"{marker}\n{agent['emoji']} {agent['name']} ({agent['model']}): Error — {ge}",
+                        "provider_requested": requested_provider,
+                        "provider_used": "none",
+                        "fallback_marker": marker,
+                    }
+
+            marker = self._build_fallback_marker(
+                requested=requested_provider,
+                used="none",
+                reason="provider_error",
+            )
+            return {
+                "message": f"{marker}\n{agent['emoji']} {agent['name']} ({agent['model']}): Error — {e}",
+                "provider_requested": requested_provider,
+                "provider_used": "none",
+                "fallback_marker": marker,
+            }
 
     async def add_agent_message(self, session_id: str, agent_key: str) -> ChatMessage:
         session = self.sessions.get(session_id)
@@ -346,13 +442,18 @@ Respond as the {agent['role']} using {agent['model']}. Be concise and insightful
             agent_key=agent_key,
             agent=self.agents[agent_key]["name"],
             role=self.agents[agent_key]["role"],
-            message=response,
+            message=response["message"],
             timestamp=datetime.utcnow(),
+            provider_requested=response.get("provider_requested"),
+            provider_used=response.get("provider_used"),
+            fallback_marker=response.get("fallback_marker") or None,
         )
         session.messages.append(message)
         return message
 
-    async def run_full_council(self, session_id: str, agent_order: Optional[List[str]] = None) -> ChatSession:
+    async def run_full_council(
+        self, session_id: str, agent_order: Optional[List[str]] = None
+    ) -> ChatSession:
         session = self.sessions.get(session_id)
         if not session:
             raise ValueError(f"Session '{session_id}' not found")
@@ -370,8 +471,30 @@ Respond as the {agent['role']} using {agent['model']}. Be concise and insightful
             return
 
         best_llm = self._get_llm("hybrid")
+        fallback_marker = ""
+        provider_used = "gradient" if best_llm == "gradient" else "none"
         if not best_llm:
-            session.final_answer = "Consensus unavailable: no LLM providers are configured."
+            # Explicitly surface when we drift away from gradient-first behavior.
+            for alt in ("openai", "gemini", "groq"):
+                if self.llms.get(alt):
+                    best_llm = self.llms[alt]
+                    provider_used = alt
+                    fallback_marker = self._build_fallback_marker(
+                        requested="gradient",
+                        used=alt,
+                        reason="gradient_unavailable",
+                    )
+                    break
+
+        if not best_llm:
+            marker = self._build_fallback_marker(
+                requested="gradient",
+                used="none",
+                reason="no_provider_available",
+            )
+            session.final_answer = (
+                f"{marker}\nConsensus unavailable: no LLM providers are configured."
+            )
             return
 
         discussion = "\n\n".join(f"{m.agent}: {m.message}" for m in session.messages)
@@ -383,11 +506,26 @@ Discussion:
 Synthesize all perspectives into a balanced, actionable final answer:"""
 
         try:
-            response = await best_llm.ainvoke(prompt)
-            active = next(iter(self.llms), "unknown")
-            session.final_answer = f"Multi-Provider Consensus ({active.upper()}): {response.content}"
+            if best_llm == "gradient":
+                content = await self._invoke_gradient(
+                    "You are a neutral judge.",
+                    prompt,
+                )
+            else:
+                response = await best_llm.ainvoke(prompt)
+                content = response.content
+
+            prefix = f"Multi-Provider Consensus ({provider_used.upper()}):"
+            session.final_answer = f"{prefix} {content}"
+            if fallback_marker:
+                session.final_answer = f"{fallback_marker}\n{session.final_answer}"
         except Exception as e:
-            session.final_answer = f"Consensus Error: {e}"
+            marker = self._build_fallback_marker(
+                requested="gradient",
+                used="none",
+                reason="consensus_error",
+            )
+            session.final_answer = f"{marker}\nConsensus Error: {e}"
 
     def get_agent_list(self) -> List[Dict[str, str]]:
         listed = [
@@ -408,9 +546,10 @@ Synthesize all perspectives into a balanced, actionable final answer:"""
 
     def get_provider_status(self) -> Dict[str, bool]:
         return {
+            "gradient": gradient_client.enabled,
             "openai": "openai" in self.llms,
             "gemini": "gemini" in self.llms,
-            "groq":   "groq"   in self.llms,
+            "groq": "groq" in self.llms,
             "tavily": self.search_available,
         }
 

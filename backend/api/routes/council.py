@@ -2,12 +2,17 @@
 LLM Council API Routes
 Multi-provider chat: OpenAI GPT-5.4 + Google Gemini Pro + Groq Llama 3.1
 """
+
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Dict
 
-from services.llm_council import llm_council_chat, ChatMessage
-from models.schemas import CouncilAgentCreate, CouncilAgentOrderRequest, CouncilAgentUpdate
+from app.services.llm_council import llm_council_chat, ChatMessage
+from models.schemas import (
+    CouncilAgentCreate,
+    CouncilAgentOrderRequest,
+    CouncilAgentUpdate,
+)
 
 router = APIRouter()
 
@@ -36,6 +41,7 @@ class RunAllRequest(BaseModel):
 
 # ── Health & Meta ──────────────────────────────────────────────────────────────
 
+
 @router.get("/health")
 async def council_health():
     """Check Multi-Provider LLM Council system health."""
@@ -46,13 +52,35 @@ async def council_health():
     return {
         "status": "healthy",
         "system": "Multi-Provider LLM Council",
+        "routing_mode": "gradient-first-with-explicit-fallback-markers",
         "total_agents": len(agents),
         "active_providers": active_providers,
         "providers": {
-            "openai":  {"configured": status["openai"],  "model": "GPT-5.4",       "agents": ["Analyst", "Researcher"]},
-            "gemini":  {"configured": status["gemini"],  "model": "Gemini Pro",     "agents": ["Critic", "Strategist"]},
-            "groq":    {"configured": status["groq"],    "model": "Llama 3.1",      "agents": ["Debater", "Synthesizer"]},
-            "tavily":  {"configured": status["tavily"],  "service": "Web Search",   "agents": ["Researcher (enhanced)"]},
+            "gradient": {
+                "configured": status.get("gradient", False),
+                "model": "llama3-1-70b-instruct",
+                "usage": "fallback and hybrid consensus",
+            },
+            "openai": {
+                "configured": status["openai"],
+                "model": "GPT-5.4",
+                "agents": ["Analyst", "Researcher"],
+            },
+            "gemini": {
+                "configured": status["gemini"],
+                "model": "Gemini Pro",
+                "agents": ["Critic", "Strategist"],
+            },
+            "groq": {
+                "configured": status["groq"],
+                "model": "Llama 3.1",
+                "agents": ["Debater", "Synthesizer"],
+            },
+            "tavily": {
+                "configured": status["tavily"],
+                "service": "Web Search",
+                "agents": ["Researcher (enhanced)"],
+            },
         },
         "active_sessions": len(llm_council_chat.sessions),
         "langchain_available": True,
@@ -103,6 +131,7 @@ async def reorder_agents(payload: CouncilAgentOrderRequest):
 
 # ── Session Management ─────────────────────────────────────────────────────────
 
+
 @router.get("/chat/sessions")
 async def list_chat_sessions():
     """List all active chat sessions."""
@@ -133,7 +162,7 @@ async def start_chat(request: ChatRequest):
         "providers": {
             "openai": "GPT-5.4 → Analyst, Researcher",
             "gemini": "Gemini Pro → Critic, Strategist",
-            "groq":   "Llama 3.1 → Debater, Synthesizer",
+            "groq": "Llama 3.1 → Debater, Synthesizer",
             "hybrid": "Best Available → Verifier",
         },
     }
@@ -143,7 +172,9 @@ async def start_chat(request: ChatRequest):
 async def add_agent_to_chat(request: AgentChatRequest):
     """Add a specific agent's response to an existing session."""
     try:
-        return await llm_council_chat.add_agent_message(request.session_id, request.agent)
+        return await llm_council_chat.add_agent_message(
+            request.session_id, request.agent
+        )
     except ValueError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:

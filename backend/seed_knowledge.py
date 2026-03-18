@@ -9,6 +9,7 @@ Documents cover:
   - Finance (SBI agri loans, NABARD rates)
   - Career (Tamil Nadu IT market)
 """
+
 import asyncio
 import sys
 import os
@@ -175,11 +176,15 @@ async def seed():
     await rag._init()
 
     if not rag._qdrant_ok:
-        print("ERROR: Qdrant not reachable. Start Qdrant first (docker compose up qdrant).")
+        print(
+            "ERROR: Qdrant not reachable. Start Qdrant first (docker compose up qdrant)."
+        )
         return
 
     if not rag._embedder_ok:
-        print("ERROR: Sentence Transformers not available. pip install sentence-transformers")
+        print(
+            "ERROR: Sentence Transformers not available. pip install sentence-transformers"
+        )
         return
 
     print(f"Indexing {len(ALL_DOCS)} documents into Qdrant...")

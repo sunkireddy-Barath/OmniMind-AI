@@ -2,7 +2,13 @@ import asyncio
 import json
 from typing import List
 
-from fastapi import APIRouter, BackgroundTasks, HTTPException, WebSocket, WebSocketDisconnect
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    HTTPException,
+    WebSocket,
+    WebSocketDisconnect,
+)
 from fastapi.responses import Response
 
 from models.schemas import QueryRequest, QueryResponse
@@ -10,6 +16,7 @@ from services.event_bus import session_event_bus
 from services.runtime import runtime
 
 router = APIRouter()
+
 
 @router.post("/", response_model=QueryResponse)
 async def create_query(
@@ -29,6 +36,7 @@ async def create_query(
     background_tasks.add_task(runtime.run_session, snapshot.id)
     return snapshot
 
+
 @router.get("/{query_id}", response_model=QueryResponse)
 async def get_query(
     query_id: str,
@@ -40,6 +48,7 @@ async def get_query(
         raise HTTPException(status_code=404, detail="Query session not found")
     return snapshot
 
+
 @router.get("/", response_model=List[QueryResponse])
 async def list_queries(
     skip: int = 0,
@@ -48,6 +57,7 @@ async def list_queries(
     """List all queries for a user"""
 
     return await runtime.list_sessions(limit=limit, skip=skip)
+
 
 @router.delete("/{query_id}")
 async def delete_query(
@@ -66,13 +76,17 @@ async def export_query(query_id: str, format: str = "json"):
         raise HTTPException(status_code=404, detail="Query session not found")
 
     if format.lower() != "json":
-        raise HTTPException(status_code=400, detail="Only json export is currently supported")
+        raise HTTPException(
+            status_code=400, detail="Only json export is currently supported"
+        )
 
     payload = json.dumps(snapshot.model_dump(mode="json"), indent=2)
     return Response(
         content=payload,
         media_type="application/json",
-        headers={"Content-Disposition": f"attachment; filename=decision-{query_id}.json"},
+        headers={
+            "Content-Disposition": f"attachment; filename=decision-{query_id}.json"
+        },
     )
 
 
@@ -98,7 +112,9 @@ async def stream_query_updates(websocket: WebSocket, query_id: str):
                 event = await asyncio.wait_for(queue.get(), timeout=20)
                 await websocket.send_json(event)
             except asyncio.TimeoutError:
-                await websocket.send_json({"type": "heartbeat", "session_id": query_id, "message": "alive"})
+                await websocket.send_json(
+                    {"type": "heartbeat", "session_id": query_id, "message": "alive"}
+                )
     except WebSocketDisconnect:
         pass
     finally:

@@ -3,6 +3,7 @@ Layer 5 — Redis cache service.
 Caches: session snapshots, agent outputs, query history list.
 Gracefully degrades to no-op when Redis is unavailable.
 """
+
 from __future__ import annotations
 
 import json
@@ -14,10 +15,10 @@ from models.schemas import QueryResponse
 
 logger = logging.getLogger(__name__)
 
-_SNAPSHOT_TTL = settings.SESSION_CACHE_TTL_SECONDS   # default 3600s
-_AGENT_TTL    = 7200   # agent outputs cached 2 hours
-_HISTORY_KEY  = "omnimind:query_history"
-_HISTORY_MAX  = 100    # keep last 100 query IDs in history list
+_SNAPSHOT_TTL = settings.SESSION_CACHE_TTL_SECONDS  # default 3600s
+_AGENT_TTL = 7200  # agent outputs cached 2 hours
+_HISTORY_KEY = "omnimind:query_history"
+_HISTORY_MAX = 100  # keep last 100 query IDs in history list
 
 
 class SessionCacheService:
@@ -32,6 +33,7 @@ class SessionCacheService:
             return self._client
         try:
             import redis.asyncio as redis
+
             self._client = redis.from_url(settings.REDIS_URL, decode_responses=True)
             await self._client.ping()
             logger.info("Redis connected: %s", settings.REDIS_URL)
@@ -82,7 +84,9 @@ class SessionCacheService:
 
     # ── Agent output cache ──────────────────────────────────────────────────
 
-    async def get_agent_output(self, session_id: str, agent_type: str) -> Optional[dict[str, Any]]:
+    async def get_agent_output(
+        self, session_id: str, agent_type: str
+    ) -> Optional[dict[str, Any]]:
         r = await self._get()
         if not r:
             return None
@@ -92,7 +96,9 @@ class SessionCacheService:
         except Exception:
             return None
 
-    async def set_agent_output(self, session_id: str, agent_type: str, output: dict[str, Any]) -> None:
+    async def set_agent_output(
+        self, session_id: str, agent_type: str, output: dict[str, Any]
+    ) -> None:
         r = await self._get()
         if not r:
             return
