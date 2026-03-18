@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
@@ -12,7 +12,11 @@ export const metadata: Metadata = {
   keywords:
     "AI, artificial intelligence, multi-agent, decision making, simulation, automation",
   authors: [{ name: "OmniMind AI Team" }],
-  viewport: "width=device-width, initial-scale=1",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
   themeColor: "#3b82f6",
 };
 

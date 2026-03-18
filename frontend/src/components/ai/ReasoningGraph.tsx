@@ -142,9 +142,9 @@ export default function ReasoningGraph({ graph, messages }: Props) {
     nodeGroup
       .append("circle")
       .attr("r", 24)
-      .attr("fill", (d: any) => TYPE_COLOR[d.type] ?? "#94A3B8")
+      .attr("fill", (d: any) => TYPE_COLOR[d.type as NodeType] ?? "#94A3B8")
       .attr("fill-opacity", 0.14)
-      .attr("stroke", (d: any) => TYPE_COLOR[d.type] ?? "#94A3B8")
+      .attr("stroke", (d: any) => TYPE_COLOR[d.type as NodeType] ?? "#94A3B8")
       .attr("stroke-width", 2);
 
     nodeGroup
