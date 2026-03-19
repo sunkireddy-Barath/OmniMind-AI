@@ -40,7 +40,7 @@ export default function Header({
       transition={{ duration: 0.8, ease: "easeOut" }}
       className="fixed top-0 left-0 right-0 z-50 bg-[var(--glass-bg)] backdrop-blur-2xl border-b border-[var(--border-primary)]"
     >
-      <nav className="mx-auto flex max-w-7xl items-center justify-between p-6 lg:px-8">
+      <nav className="mx-auto flex max-w-[1300px] items-center justify-between px-8 py-6">
         <motion.div whileHover={{ scale: 1.02 }} className="flex lg:flex-none">
           <a
             href="/"

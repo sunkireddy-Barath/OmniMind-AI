@@ -5,6 +5,9 @@
 @tailwind utilities;
 
 @layer base {
+  * {
+    box-sizing: border-box;
+  }
   :root {
     --background: 240 10% 4%;
     --foreground: 0 0% 100%;

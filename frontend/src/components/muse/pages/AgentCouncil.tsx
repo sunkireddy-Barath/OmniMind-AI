@@ -29,7 +29,7 @@ export default function AgentCouncil() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: i * 0.12 }}
-            className="glass-panel rounded-lg overflow-hidden"
+            className="glass-panel rounded-lg  -hidden"
           >
             {/* Agent Header */}
             <div className="flex items-center justify-between px-5 py-3 border-b border-border">
