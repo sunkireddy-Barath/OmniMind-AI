@@ -11,16 +11,16 @@ export default function Dashboard() {
   const router = useRouter();
 
   return (
-    <div className="p-8 max-w-6xl mx-auto space-y-8">
+    <div className="p-8 max-w-6xl mx-auto space-y-10">
       {/* Header */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">Multi-agent intelligence for business, farming, and policy decisions.</p>
+        <h1 className="text-5xl font-black tracking-tight leading-none text-[hsl(var(--foreground))]">Dashboard</h1>
+        <p className="text-muted-foreground text-base">Multi-agent intelligence for business, farming, and policy decisions.</p>
       </motion.div>
 
       {/* Query Input */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }}>
-        <div className="glass-panel rounded-lg p-1">
+        <div className="glass-panel rounded-xl p-1.5">
           <div className="flex items-center gap-3 px-4">
             <Search className="w-5 h-5 text-muted-foreground flex-shrink-0" />
             <input
@@ -32,7 +32,7 @@ export default function Dashboard() {
             />
             <button
               onClick={() => router.push("/muse/council")}
-              className="flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90 transition-colors"
+              className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
             >
               Analyse <ArrowRight className="w-4 h-4" />
             </button>
@@ -41,17 +41,17 @@ export default function Dashboard() {
       </motion.div>
 
       {/* Impact Stats */}
-      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="grid grid-cols-4 gap-4">
+      <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.2 }} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: "Schemes Indexed", value: impactStats.schemesIndexed.toLocaleString(), icon: FileSearch },
           { label: "Potential Savings", value: impactStats.potentialSavings, icon: TrendingUp },
           { label: "Queries Answered", value: impactStats.queriesAnswered.toLocaleString(), icon: Users },
           { label: "Documents Processed", value: impactStats.documentsProcessed.toLocaleString(), icon: Shield },
         ].map((stat, i) => (
-          <div key={i} className="glass-panel rounded-lg p-5 space-y-3">
+          <div key={i} className="glass-panel rounded-xl p-5 space-y-3">
             <stat.icon className="w-5 h-5 text-muted-foreground" />
             <div>
-              <p className="text-2xl font-bold tracking-tight">{stat.value}</p>
+              <p className="text-4xl font-black tracking-tight leading-none">{stat.value}</p>
               <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
             </div>
           </div>
@@ -77,7 +77,7 @@ export default function Dashboard() {
 
       {/* Agent Cards */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">The Council of Five</h2>
+        <h2 className="text-3xl font-black tracking-tight">The Council of Five</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {agents.map((agent, i) => (
             <motion.div
@@ -85,20 +85,20 @@ export default function Dashboard() {
               initial={{ opacity: 0, y: 15 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 + i * 0.08 }}
-              className="glass-panel rounded-lg p-5 space-y-3 hover:border-foreground/20 transition-colors cursor-pointer"
+              className="glass-panel rounded-xl p-5 space-y-3 hover:border-foreground/20 transition-colors cursor-pointer"
               onClick={() => router.push("/muse/council")}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <span className="text-xl">{agent.icon}</span>
                   <div>
-                    <h3 className="text-sm font-semibold">{agent.name}</h3>
+                    <h3 className="text-base font-bold">{agent.name}</h3>
                     <p className="text-xs text-muted-foreground">{agent.role}</p>
                   </div>
                 </div>
                 <div className="status-dot-online" />
               </div>
-              <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{agent.description}</p>
+              <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{agent.description}</p>
               <div className="pt-1">
                 <span className="text-[10px] font-mono text-muted-foreground bg-secondary px-2 py-1 rounded">{agent.specialty}</span>
               </div>
@@ -109,8 +109,8 @@ export default function Dashboard() {
 
       {/* Recent Query Preview */}
       <div className="space-y-4">
-        <h2 className="text-lg font-semibold">Latest Council Session</h2>
-        <div className="glass-panel rounded-lg p-5 space-y-2">
+        <h2 className="text-2xl font-black tracking-tight">Latest Council Session</h2>
+        <div className="glass-panel rounded-xl p-5 space-y-2">
           <p className="text-xs font-mono text-muted-foreground">Query: "Should I switch from cotton to turmeric farming? 3 acres, ₹80,000 budget"</p>
           <div className="flex items-center gap-4 text-xs text-muted-foreground">
             <span>5 agents responded</span>

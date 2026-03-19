@@ -30,11 +30,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex h-screen overflow-hidden bg-background">
       {/* Sidebar */}
-      <aside className="w-64 flex-shrink-0 border-r border-border bg-sidebar flex flex-col">
+      <aside className="w-64 flex-shrink-0 border-r border-border bg-sidebar flex flex-col shadow-[6px_0_22px_rgba(10,10,10,0.08)]">
         {/* Logo */}
         <div className="p-6 border-b border-border">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center">
+            <div className="w-9 h-9 rounded-lg bg-primary flex items-center justify-center shadow-sm">
               <Zap className="w-5 h-5 text-primary-foreground" />
             </div>
             <div>
@@ -55,8 +55,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 className={cn(
                   "flex items-center gap-3 px-3 py-2.5 rounded-md text-sm transition-all duration-150",
                   isActive
-                    ? "bg-accent text-foreground font-medium"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent/50"
+                    ? "sidebar-active"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent/55"
                 )}
               >
                 <item.icon className="w-4 h-4 flex-shrink-0" />
@@ -76,7 +76,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Main */}
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1 overflow-y-auto bg-[hsl(var(--background))]">
         {children}
       </main>
     </div>

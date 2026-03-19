@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
-import { Space_Grotesk } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
+import CursorGlow from "@/components/ui/CursorGlow";
 
-const spaceGrotesk = Space_Grotesk({ subsets: ["latin"] });
+const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "OmniMind AI - Autonomous Multi-Agent AI Platform",
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#111111",
+  themeColor: "#0A0A0A",
 };
 
 import { ThemeProvider } from "@/context/ThemeContext";
@@ -37,8 +38,9 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
       </head>
-      <body className={`${spaceGrotesk.className} antialiased`}>
+      <body className={`${inter.className} antialiased`}>
         <ThemeProvider>
+          <CursorGlow />
           <div className="min-h-screen mesh-gradient text-[var(--text-primary)]">
             {children}
             <Toaster
@@ -46,24 +48,24 @@ export default function RootLayout({
               toastOptions={{
                 duration: 4000,
                 style: {
-                  background: "rgba(247, 247, 247, 0.97)",
+                  background: "rgba(18, 18, 18, 0.92)",
                   backdropFilter: "blur(10px)",
-                  border: "1px solid rgba(0, 0, 0, 0.12)",
+                  border: "1px solid rgba(255, 255, 255, 0.12)",
                   borderRadius: "12px",
-                  color: "#151515",
+                  color: "#FFFFFF",
                   fontSize: "14px",
                   fontWeight: "600",
                 },
                 success: {
                   iconTheme: {
-                    primary: "#111111",
-                    secondary: "#f7f7f7",
+                    primary: "#FFFFFF",
+                    secondary: "#0A0A0A",
                   },
                 },
                 error: {
                   iconTheme: {
-                    primary: "#111111",
-                    secondary: "#f7f7f7",
+                    primary: "#FFFFFF",
+                    secondary: "#0A0A0A",
                   },
                 },
               }}

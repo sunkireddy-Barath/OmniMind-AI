@@ -2,10 +2,8 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Trophy,
   Target,
   Cpu,
-  LayoutDashboard,
   ChevronRight,
   TrendingUp,
   ShieldCheck,
@@ -25,7 +23,7 @@ interface DashboardProps {
 }
 
 export default function Dashboard({
-  user,
+  user: _user,
   activeTab = "dashboard",
 }: DashboardProps) {
   const stats = [
@@ -111,13 +109,13 @@ export default function Dashboard({
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: index * 0.1 }}
-            className="card p-8 group hover:border-blue-600/30 transition-all duration-500"
+            className="card p-8 group hover-lift transition-all duration-500"
           >
             <div className="flex justify-between items-start mb-4">
-              <div className="w-10 h-10 rounded-lg bg-blue-600/10 flex items-center justify-center">
-                <stat.icon className="w-5 h-5 text-blue-600" />
+              <div className="w-10 h-10 rounded-lg bg-[#111111] flex items-center justify-center">
+                <stat.icon className="w-5 h-5 text-white" />
               </div>
-              <span className="text-[10px] font-semibold text-green-600 bg-green-500/10 px-2 py-1 rounded">
+              <span className="text-[10px] font-semibold text-[var(--text-primary)] bg-black/5 px-2 py-1 rounded">
                 {stat.trend}
               </span>
             </div>
@@ -134,7 +132,7 @@ export default function Dashboard({
           <div className="card p-6">
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-lg font-semibold">Active Analytics</h2>
-              <button className="text-xs font-medium text-blue-600 hover:underline">
+              <button className="text-xs font-medium text-[var(--text-primary)] hover:underline">
                 View Reports
               </button>
             </div>
@@ -149,7 +147,7 @@ export default function Dashboard({
               {recentHistory.map((item, index) => (
                 <div key={item.id} className="group cursor-pointer">
                   <div className="flex justify-between items-start mb-1">
-                    <h3 className="text-sm font-medium group-hover:text-blue-600 transition-colors">
+                    <h3 className="text-sm font-medium group-hover:text-[var(--text-primary)] transition-colors">
                       {item.title}
                     </h3>
                     <ChevronRight className="w-4 h-4 text-[var(--text-secondary)] group-hover:translate-x-1 transition-transform" />
@@ -159,7 +157,7 @@ export default function Dashboard({
                     <span className="w-1 h-1 rounded-full bg-[var(--border-primary)]" />
                     <span>{item.agents} Experts</span>
                     <span className="w-1 h-1 rounded-full bg-[var(--border-primary)]" />
-                    <span className="text-blue-600/80">{item.status}</span>
+                    <span className="text-[var(--text-primary)]/80">{item.status}</span>
                   </div>
                 </div>
               ))}
@@ -177,8 +175,8 @@ export default function Dashboard({
 
   const renderEmptyState = (title: string, subtitle: string) => (
     <div className="flex flex-col items-center justify-center min-h-[60vh] p-8 text-center bg-[var(--bg-main)] rounded-2xl border border-[var(--border-primary)] m-8">
-      <div className="w-16 h-16 rounded-2xl bg-blue-600/10 flex items-center justify-center mb-6">
-        <Sparkles className="text-blue-600 w-8 h-8" />
+      <div className="w-16 h-16 rounded-2xl bg-black/10 flex items-center justify-center mb-6">
+        <Sparkles className="text-[var(--text-primary)] w-8 h-8" />
       </div>
       <h2 className="text-2xl font-semibold mb-2">{title}</h2>
       <p className="text-[var(--text-secondary)] text-sm max-w-md">

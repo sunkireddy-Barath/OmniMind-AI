@@ -73,9 +73,9 @@ export default function HomePage() {
         position="bottom-right"
         toastOptions={{
           style: {
-            background: "#f7f7f7",
-            color: "#111111",
-            border: "1px solid rgba(0, 0, 0, 0.12)",
+            background: "#faf6ef",
+            color: "#201a14",
+            border: "1px solid rgba(217, 205, 184, 0.9)",
             fontSize: "12px",
             fontWeight: "600",
           },

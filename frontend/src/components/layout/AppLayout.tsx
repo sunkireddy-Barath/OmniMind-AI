@@ -12,12 +12,9 @@ import {
   LogOut,
   ChevronLeft,
   ChevronRight,
-  Sparkles,
   Sun,
   Moon,
-  User,
   ShieldCheck,
-  Zap,
   LayoutDashboard,
 } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
@@ -41,8 +38,6 @@ export default function AppLayout({
   const { theme, setTheme } = useTheme();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
 
-  const isDarkTheme = theme === "dark";
-
   const menuItems = [
     { id: "dashboard", name: "Dashboard", icon: LayoutDashboard },
     { id: "chat", name: "Multi Agent Chat", icon: MessageSquare },
@@ -58,12 +53,12 @@ export default function AppLayout({
       <motion.aside
         initial={false}
         animate={{ width: isSidebarCollapsed ? 80 : 210 }}
-        className="relative bg-[var(--bg-sidebar)] border-r border-blue-600/10 flex flex-col z-30 transition-colors duration-500"
+        className="relative bg-[var(--bg-sidebar)] border-r border-[var(--border-primary)] flex flex-col z-30 transition-colors duration-500"
       >
         {/* Toggle Button */}
         <button
           onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          className="absolute -right-3 top-20 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-zinc-950 shadow-lg border border-zinc-950 z-50 hover:scale-110 transition-transform"
+          className="absolute -right-3 top-20 w-6 h-6 bg-[#0a0a0a] rounded-full flex items-center justify-center text-white shadow-lg border border-black/80 z-50 hover:scale-110 transition-transform"
         >
           {isSidebarCollapsed ? (
             <ChevronRight size={14} />
@@ -74,7 +69,7 @@ export default function AppLayout({
 
         {/* Brand */}
         <div className="p-5 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center shrink-0 shadow-sm">
+          <div className="w-8 h-8 rounded-lg bg-[#0a0a0a] flex items-center justify-center shrink-0 shadow-sm">
             <Brain className="text-white w-5 h-5" />
           </div>
           {!isSidebarCollapsed && (
@@ -96,7 +91,7 @@ export default function AppLayout({
               onClick={() => setActiveTab(item.id)}
               className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${
                 activeTab === item.id
-                  ? "bg-blue-600/10 text-blue-600"
+                  ? "active-nav-item text-[var(--text-primary)]"
                   : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]"
               }`}
             >
@@ -104,7 +99,7 @@ export default function AppLayout({
                 size={18}
                 className={
                   activeTab === item.id
-                    ? "text-blue-600"
+                    ? "text-[var(--text-primary)]"
                     : "group-hover:text-[var(--text-primary)] transition-colors"
                 }
               />
@@ -134,7 +129,7 @@ export default function AppLayout({
       {/* Main Content */}
       <div className="flex-1 flex flex-col relative overflow-hidden">
         {/* Top Header */}
-        <header className="h-16 bg-[var(--bg-main)] border-b border-[var(--border-primary)] px-8 flex items-center justify-between z-20">
+        <header className="h-16 bg-[var(--glass-bg)] backdrop-blur-xl border-b border-[var(--border-primary)] px-8 flex items-center justify-between z-20">
           <div className="flex items-center gap-4">
             <h2 className="text-sm font-medium text-[var(--text-secondary)]">
               {menuItems.find((i) => i.id === activeTab)?.name ||
@@ -147,13 +142,13 @@ export default function AppLayout({
             <div className="flex items-center gap-1 p-1 bg-[var(--glass-bg)] rounded-lg border border-[var(--border-primary)]">
               <button
                 onClick={() => setTheme("light")}
-                className={`p-1.5 rounded-md transition-all ${theme === "light" ? "bg-[var(--bg-sidebar)] text-blue-600 shadow-sm" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"}`}
+                className={`p-1.5 rounded-md transition-all ${theme === "light" ? "bg-[var(--bg-sidebar)] text-[var(--text-primary)] shadow-sm" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"}`}
               >
                 <Sun size={14} />
               </button>
               <button
                 onClick={() => setTheme("dark")}
-                className={`p-1.5 rounded-md transition-all ${theme === "dark" ? "bg-[var(--bg-sidebar)] text-blue-600 shadow-sm" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"}`}
+                className={`p-1.5 rounded-md transition-all ${theme === "dark" ? "bg-[var(--bg-sidebar)] text-[var(--text-primary)] shadow-sm" : "text-[var(--text-secondary)] hover:text-[var(--text-primary)]"}`}
               >
                 <Moon size={14} />
               </button>
@@ -171,7 +166,7 @@ export default function AppLayout({
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="relative cursor-pointer"
               >
-                <div className="w-8 h-8 rounded-lg bg-blue-600 flex items-center justify-center font-bold text-white shadow-sm hover:bg-blue-700 transition-colors">
+                <div className="w-8 h-8 rounded-lg bg-[#0a0a0a] flex items-center justify-center font-bold text-white shadow-sm hover:bg-[#1a1a1a] transition-colors">
                   {user.name.charAt(0)}
                 </div>
               </div>
@@ -187,10 +182,10 @@ export default function AppLayout({
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 top-16 w-56 bg-[var(--bg-sidebar)] backdrop-blur-2xl border border-blue-600/20 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] p-2 z-50 overflow-hidden"
+                      className="absolute right-0 top-16 w-56 bg-[var(--bg-elev-1)] backdrop-blur-2xl border border-[var(--border-primary)] rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.2)] p-2 z-50 overflow-hidden"
                     >
-                      <div className="px-4 py-3 mb-2 border-b border-blue-600/10">
-                        <p className="text-[10px] font-bold text-blue-600 uppercase tracking-tighter truncate">
+                      <div className="px-4 py-3 mb-2 border-b border-[var(--border-primary)]">
+                        <p className="text-[10px] font-bold text-[var(--text-primary)] uppercase tracking-tighter truncate">
                           {user.name}
                         </p>
                         <p className="text-[8px] font-medium text-[var(--text-secondary)] uppercase tracking-widest truncate">
@@ -198,7 +193,7 @@ export default function AppLayout({
                         </p>
                       </div>
                       <button
-                        className="w-full flex items-center gap-3 px-4 py-4 rounded-2xl hover:bg-blue-600/5 text-[var(--text-secondary)] hover:text-blue-600 transition-all duration-300 group"
+                        className="w-full flex items-center gap-3 px-4 py-4 rounded-xl hover:bg-black/5 text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-all duration-300 group"
                         onClick={() => setIsProfileOpen(false)}
                       >
                         <Settings
@@ -236,8 +231,8 @@ export default function AppLayout({
           {/* Background decoration */}
           {activeTab !== "chat" && (
             <>
-              <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/5 blur-[120px] rounded-full -mr-64 -mt-64 pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-blue-600/5 blur-[120px] rounded-full -ml-64 -mb-64 pointer-events-none" />
+              <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-black/5 blur-[120px] rounded-full -mr-64 -mt-64 pointer-events-none" />
+              <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-white/40 blur-[120px] rounded-full -ml-64 -mb-64 pointer-events-none" />
             </>
           )}
 
