@@ -5,10 +5,35 @@ import { agents, impactStats, connectedSystems } from "@/data/mockData";
 import { Search, ArrowRight, TrendingUp, FileSearch, Users, Shield } from "lucide-react";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { apiClient } from "@/lib/api";
+import toast from "react-hot-toast";
 
 export default function Dashboard() {
   const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
+
+  const handleAnalyse = async () => {
+    if (!query.trim()) return;
+
+    setLoading(true);
+    try {
+      const response = await apiClient.createQuery({ 
+        query: query.trim(),
+        user_id: "anonymous_user",
+        context: {}
+      });
+      localStorage.setItem("activeQueryId", response.id);
+      localStorage.setItem("activeQueryText", query.trim());
+      toast.success("Council Session Initiated.");
+      router.push("/muse/council");
+    } catch (error) {
+      console.error("Failed to create query:", error);
+      toast.error("Failed to start analysis. Is the backend running?");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="p-8 max-w-6xl mx-auto space-y-10">
@@ -31,7 +56,7 @@ export default function Dashboard() {
               className="flex-1 bg-transparent py-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none"
             />
             <button
-              onClick={() => router.push("/muse/council")}
+              onClick={handleAnalyse}
               className="flex items-center gap-2 bg-primary text-primary-foreground px-5 py-2.5 rounded-lg text-sm font-semibold hover:bg-primary/90 transition-colors"
             >
               Analyse <ArrowRight className="w-4 h-4" />
@@ -110,23 +135,27 @@ export default function Dashboard() {
       {/* Recent Query Preview */}
       <div className="space-y-4">
         <h2 className="text-2xl font-black tracking-tight text-foreground">Latest Council Session</h2>
-        <div className="glass-panel rounded-xl p-5 space-y-2">
-          <p className="text-xs font-mono text-muted-foreground">Query: "Should I switch from cotton to turmeric farming? 3 acres, ₹80,000 budget"</p>
-          <div className="flex items-center gap-4 text-xs text-muted-foreground">
-            <span>5 agents responded</span>
-            <span>·</span>
-            <span>2 debate rounds</span>
-            <span>·</span>
-            <span>Consensus reached</span>
-            <span>·</span>
-            <span>12.4s total</span>
+        <div className="glass-panel rounded-xl p-5 space-y-4">
+          <div>
+            <p className="text-[10px] font-bold font-mono text-muted-foreground uppercase tracking-widest mb-1">Session Session</p>
+            <p className="text-sm font-bold text-foreground">
+              "{typeof window !== 'undefined' ? (localStorage.getItem("activeQueryText") || "Switch from cotton to turmeric?") : "Switch from cotton to turmeric?"}"
+            </p>
           </div>
-          <div className="flex gap-2 pt-2">
-            <button onClick={() => router.push("/muse/council")} className="text-xs bg-secondary text-secondary-foreground px-3 py-1.5 rounded-md hover:bg-accent transition-colors">
-              View Full Analysis →
-            </button>
-            <button onClick={() => router.push("/muse/debate")} className="text-xs bg-secondary text-secondary-foreground px-3 py-1.5 rounded-md hover:bg-accent transition-colors">
-              View Debate →
+          <div className="flex items-center gap-4 text-[10px] text-muted-foreground border-t border-border/50 pt-3">
+            <span className="flex items-center gap-1.5"><div className="status-dot-online" /> Real-time active</span>
+            <span>·</span>
+            <span>5 Expert Agents</span>
+          </div>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => {
+                if (localStorage.getItem("activeQueryId")) router.push("/muse/council");
+                else toast("No active session. Start one above.");
+              }} 
+              className="flex-1 bg-primary text-primary-foreground px-4 py-2.5 rounded-md hover:bg-primary/90 transition-all shadow-lg font-bold text-xs uppercase tracking-wider"
+            >
+              Resume Analysis →
             </button>
           </div>
         </div>

@@ -1,0 +1,43 @@
+{
+  "agents": [
+    {
+      "id": "priya",
+      "name": "Priya",
+      "role": "Research Analyst",
+      "specialty": "Market Data & Trends",
+      "icon": "MKT",
+      "description": "Retrieves and analyses market data, crop prices, government schemes, and research papers.",
+      "status": "active"
+    },
+    {
+      "id": "arjun",
+      "name": "Arjun",
+      "role": "Risk Assessor",
+      "specialty": "Risk Analysis & Mitigation",
+      "icon": "RSK",
+      "description": "Identifies risks in every recommendation. Challenges assumptions aggressively.",
+      "status": "active"
+    },
+    {
+      "id": "kavya",
+      "name": "Kavya",
+      "role": "Financial Advisor",
+      "specialty": "Financial Modelling & ROI",
+      "icon": "FIN",
+      "description": "Builds financial projections, calculates ROI, and demands every recommendation show the numbers.",
+      "status": "active"
+    }
+  ],
+  "stats": {
+    "schemesIndexed": 847,
+    "potentialSavings": "₹2.3 Crore",
+    "queriesAnswered": 312,
+    "documentsProcessed": 5420
+  },
+  "systems": [
+    { "name": "Airia", "status": "online" },
+    { "name": "Gmail", "status": "online" },
+    { "name": "Google Calendar", "status": "online" },
+    { "name": "Qdrant", "status": "online" }
+  ]
+}

@@ -10,6 +10,9 @@ import {
   TrendingUp,
 } from "lucide-react";
 
+import { apiClient } from "@/lib/api";
+import toast from "react-hot-toast";
+
 export default function ScenarioSimulation() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -19,16 +22,11 @@ export default function ScenarioSimulation() {
     if (!query) return;
     setLoading(true);
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/intel/simulate?query=${encodeURIComponent(query)}`,
-        {
-          method: "POST",
-        },
-      );
-      const data = await response.json();
+      const data = await apiClient.simulateScenario(query);
       setResult(data);
     } catch (error) {
       console.error("Simulation failed:", error);
+      toast.error("Simulation failed. Check your link.");
     } finally {
       setLoading(false);
     }

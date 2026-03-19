@@ -12,6 +12,9 @@ import {
   Cpu,
 } from "lucide-react";
 
+import { apiClient } from "@/lib/api";
+import toast from "react-hot-toast";
+
 export default function DocumentIntelligence() {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
@@ -32,27 +35,15 @@ export default function DocumentIntelligence() {
     setLoading(true);
     setStatus(null);
 
-    const formData = new FormData();
-    formData.append("file", file);
-
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/intel/upload`,
-        {
-          method: "POST",
-          body: formData,
-        },
-      );
-      const data = await response.json();
-      if (response.ok) {
-        setStatus({ type: "success", message: data.message });
-        setFile(null);
-      } else {
-        setStatus({ type: "error", message: data.detail || "Upload failed" });
-      }
-    } catch (error) {
+      const data = await apiClient.uploadDocument(file);
+      setStatus({ type: "success", message: data.message });
+      setFile(null);
+      toast.success("Sync complete.");
+    } catch (error: any) {
       console.error("Upload failed:", error);
-      setStatus({ type: "error", message: "Network error occurred" });
+      setStatus({ type: "error", message: error.message || "Upload failed" });
+      toast.error("Upload failed.");
     } finally {
       setLoading(false);
     }

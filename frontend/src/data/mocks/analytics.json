@@ -1,0 +1,18 @@
+{
+  "activities": [
+    { "id": "1", "timestamp": "14:22:58", "agentName": "Orchestrator", "action": "Query received — spawning 5 expert agents", "system": "Airia", "latencyMs": 120, "tokensUsed": 0, "status": "success" },
+    { "id": "2", "timestamp": "14:22:59", "agentName": "Priya-RAG", "action": "Retrieving documents: turmeric cultivation, Madurai soil data", "system": "Qdrant", "latencyMs": 340, "tokensUsed": 0, "status": "success" },
+    { "id": "3", "timestamp": "14:23:01", "agentName": "Priya", "action": "Analysis complete — 12 documents cited", "system": "Airia", "latencyMs": 2100, "tokensUsed": 847, "status": "success" }
+  ],
+  "graph": {
+    "nodes": [
+      { "id": "orch", "label": "Orchestrator", "type": "orchestrator", "x": 400, "y": 40 },
+      { "id": "priya", "label": "Priya", "type": "expert", "x": 100, "y": 160 },
+      { "id": "arjun", "label": "Arjun", "type": "expert", "x": 250, "y": 160 }
+    ],
+    "edges": [
+      { "from": "orch", "to": "priya", "type": "spawn" },
+      { "from": "orch", "to": "arjun", "type": "spawn" }
+    ]
+  }
+}

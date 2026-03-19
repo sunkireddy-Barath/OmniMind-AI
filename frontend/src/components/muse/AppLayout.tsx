@@ -12,9 +12,11 @@ import {
   Activity,
   FileText,
   Zap,
+  Play,
   LogOut,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useAppStore } from "@/store/useAppStore";
 
 const navItems = [
   { to: "/muse", icon: LayoutDashboard, label: "Dashboard" },
@@ -24,10 +26,14 @@ const navItems = [
   { to: "/muse/reasoning", icon: GitBranch, label: "Reasoning Graph" },
   { to: "/muse/activity", icon: Activity, label: "Activity Log" },
   { to: "/muse/export", icon: FileText, label: "Decision Export" },
+  { to: "/simulations", icon: BarChart3, label: "Simulations" },
+  { to: "/research", icon: Play, label: "Research Agent" },
+  { to: "/documents", icon: FileText, label: "Knowledge Base" },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { mode } = useAppStore();
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
@@ -70,6 +76,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         {/* Footer */}
         <div className="p-4 border-t border-border space-y-4">
+          <div className="px-3">
+             <Link 
+               href="/mode-selection"
+               className="flex items-center gap-2 group mb-2 text-[10px] font-black uppercase tracking-[0.2em] text-muted-foreground hover:text-primary transition-all"
+             >
+               <Zap className="w-3 h-3 group-hover:animate-pulse" />
+               Switch Mode
+             </Link>
+          </div>
           <button
             onClick={() => {
               localStorage.removeItem("user");
@@ -82,10 +97,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           </button>
           <div className="flex items-center justify-between px-3">
             <div className="flex items-center gap-2 text-[10px] font-mono text-muted-foreground uppercase tracking-wider">
-              <div className="status-dot-online" />
-              Sync Active
+              {mode === 'live' ? (
+                <div className="flex items-center gap-2 px-2 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 font-black">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  LIVE LINK
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 px-2 py-0.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-500 font-black">
+                  <Play className="w-2.5 h-2.5" />
+                  DEMO MODE
+                </div>
+              )}
             </div>
-            <span className="text-[10px] font-mono text-muted-foreground uppercase">V4.1.2</span>
+            <span className="text-[10px] font-mono text-muted-foreground uppercase opacity-40">H-V4.3</span>
           </div>
         </div>
       </aside>

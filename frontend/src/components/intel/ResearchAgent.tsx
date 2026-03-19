@@ -12,6 +12,9 @@ import {
   Target,
 } from "lucide-react";
 
+import { apiClient } from "@/lib/api";
+import toast from "react-hot-toast";
+
 export default function ResearchAgent() {
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,16 +24,11 @@ export default function ResearchAgent() {
     if (!query) return;
     setLoading(true);
     try {
-      const response = await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000"}/api/intel/research?query=${encodeURIComponent(query)}`,
-        {
-          method: "POST",
-        },
-      );
-      const data = await response.json();
+      const data = await apiClient.autonomousResearch(query);
       setResult(data);
     } catch (error) {
       console.error("Research failed:", error);
+      toast.error("Research failed. Link unstable.");
     } finally {
       setLoading(false);
     }

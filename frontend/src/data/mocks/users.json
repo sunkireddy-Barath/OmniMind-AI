@@ -1,0 +1,13 @@
+{
+  "currentUser": {
+    "id": "user_demo",
+    "name": "Demo Operator",
+    "email": "demo@omnimind.ai",
+    "role": "Vanguard Analyst",
+    "avatar": "https://api.dicebear.com/7.x/bottts/svg?seed=demo"
+  },
+  "history": [
+    { "query": "Switching from cotton to turmeric farming?", "date": "2 hours ago", "status": "completed" },
+    { "query": "Optimizing supply chain for organic coffee", "date": "Yesterday", "status": "completed" }
+  ]
+}
