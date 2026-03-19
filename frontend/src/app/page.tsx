@@ -14,7 +14,8 @@ import {
   User as UserIcon,
   Fingerprint,
   Sparkles,
-  Target
+  Target,
+  ArrowRight
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import AuthModal from "@/components/ui/AuthModal";
@@ -51,12 +52,6 @@ export default function LandingPage() {
     setIsAuthModalOpen(true);
   };
 
-  const handleLogout = () => {
-    setUser(null);
-    localStorage.removeItem("user");
-    toast.success("Disconnected.");
-  };
-
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -82,159 +77,160 @@ export default function LandingPage() {
   if (!mounted) return null;
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-[#0a0a0a] text-white selection:bg-blue-600 font-[family-name:var(--font-space-grotesk)]">
+    <div className="relative min-h-screen overflow-hidden bg-[#050505] text-white selection:bg-blue-600 font-[family-name:var(--font-space-grotesk)]">
       
-      {/* AESTHETIC BACKGROUND */}
+      {/* --- PREMIUM BACKGROUND --- */}
       <div className="fixed inset-0 z-0">
-         <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/5 blur-[120px] rounded-full" />
-         <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-blue-800/10 blur-[120px] rounded-full" />
-         {/* Top Beam */}
-         <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-blue-500/30 to-transparent" />
+         <div className="absolute top-[-10%] right-[-10%] w-[60%] h-[60%] bg-blue-600/5 blur-[160px] rounded-full" />
+         <div className="absolute bottom-[-10%] left-[-10%] w-[60%] h-[60%] bg-blue-800/10 blur-[160px] rounded-full" />
+         {/* Subtle beam */}
+         <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-blue-500/40 to-transparent" />
+         <div className="absolute inset-0 opacity-[0.03] pointer-events-none" style={{ backgroundImage: "url('https://www.transparenttextures.com/patterns/carbon-fibre.png')" }} />
       </div>
 
       <Header 
         onSignIn={handleSignIn} 
         onSignUp={handleSignUp} 
-        user={user} 
-        onSignOut={handleLogout} 
         hideAuthButtons={true} 
       />
 
-      <main className="relative z-10 pt-44 pb-32 px-6 max-w-7xl mx-auto">
+      <main className="relative z-10 pt-48 pb-32 px-6 max-w-7xl mx-auto">
         
-        {/* --- SPLIT HERO: RIGHT SIDE AUTH --- */}
-        <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-24">
+        {/* --- EXPANSIVE SPLIT HERO --- */}
+        <div className="flex flex-col lg:flex-row items-center gap-16 lg:gap-32">
           
-          {/* LEFT: CONTENT (ULTRA-WHITE HEADERS) */}
+          {/* LEFT: CONTENT (STABLE WHITE) */}
           <motion.div 
-            initial={{ opacity: 0, x: -50 }}
-            animate={{ opacity: 1, x: 0 }}
-            className="flex-1 flex flex-col items-center lg:items-start text-center lg:text-left space-y-12"
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="lg:flex-[0.8] flex flex-col items-center lg:items-start text-center lg:text-left space-y-12"
           >
-            <div className="inline-flex items-center gap-3 px-5 py-2 rounded-lg border border-white/20 bg-white/5 shadow-inner">
-               <Fingerprint className="w-4 h-4 text-blue-500" />
-               <span className="text-[10px] font-black text-white uppercase tracking-[0.3em]">Neural Sanctuary v2</span>
+            <div className="inline-flex items-center gap-4 px-6 py-2 rounded-xl border border-white/20 bg-white/5 shadow-2xl backdrop-blur-md">
+               <Fingerprint className="w-5 h-5 text-blue-500" />
+               <span className="text-xs font-black text-white uppercase tracking-[0.4em]">Neural Sanctuary v3.1</span>
             </div>
 
-            <h1 className="text-6xl md:text-9xl font-black tracking-tighter leading-[0.8] text-white uppercase italic">
-              COLLECTIVE <br />
+            <h1 className="text-7xl md:text-[10rem] font-black tracking-tighter leading-[0.75] text-white uppercase italic">
+              OMNIMIND <br />
               <span className="text-blue-600">INTEL.</span>
             </h1>
 
-            <p className="max-w-xl text-white text-lg md:text-xl font-medium leading-relaxed italic border-l-4 border-blue-600 pl-8 py-2">
-              The hyper-stable, multi-agent sanctuary for decision intelligence. Collapse complexity with zero hallucinations. Verified. Precise. Autonomous.
+            <p className="max-w-2xl text-white text-xl md:text-2xl font-medium leading-relaxed italic border-l-8 border-blue-600 pl-10 py-4 bg-white/5 rounded-r-[2rem]">
+              The hyper-stable, multi-agent sanctuary for decision intelligence. Collapse complexity with zero hallucinations. High precision autonomous engine.
             </p>
 
-            <div className="flex gap-12 pt-4">
-              <div className="flex items-center gap-4">
-                <Target className="w-8 h-8 text-blue-600" />
-                <div className="flex flex-col">
-                  <span className="text-2xl font-black text-white">0.02ms</span>
-                  <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">Warp Speed</span>
-                </div>
+            <div className="flex gap-16 pt-6">
+              <div className="flex flex-col border-t-4 border-blue-600 pt-6 pr-12">
+                <span className="text-5xl font-black text-white tracking-tighter">0.02ms</span>
+                <span className="text-[11px] font-black text-white/40 uppercase tracking-[0.5em] mt-2 italic">Response Time</span>
               </div>
-              <div className="flex items-center gap-4">
-                <ShieldCheck className="w-8 h-8 text-blue-600" />
-                <div className="flex flex-col">
-                  <span className="text-2xl font-black text-white">99.9%</span>
-                  <span className="text-[9px] font-black text-white/40 uppercase tracking-widest">Truth Gain</span>
-                </div>
+              <div className="flex flex-col border-t-4 border-white/20 pt-6">
+                <span className="text-5xl font-black text-white tracking-tighter">99.9%</span>
+                <span className="text-[11px] font-black text-white/40 uppercase tracking-[0.5em] mt-2 italic">Truth Integrity</span>
               </div>
             </div>
           </motion.div>
 
-          {/* RIGHT: PREMIUM AUTH CARD (REVERTED TO RIGHT SIDE) */}
+          {/* RIGHT: EXPANSIVE AUTH HUB (INCREASED WIDTH as requested) */}
           <motion.div 
-            initial={{ opacity: 0, x: 50 }}
+            initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
-            className="flex-1 w-full max-w-lg"
+            transition={{ duration: 1 }}
+            className="lg:flex-1 w-full max-w-2xl" 
           >
-            <div className="bg-[#111111] border border-white/10 rounded-[2.5rem] p-10 lg:p-12 shadow-[0_0_80px_rgba(0,0,0,0.5)] relative overflow-hidden group">
-               <div className="absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-blue-600/5 to-transparent pointer-events-none" />
+            <div className="bg-[#111111]/80 backdrop-blur-3xl border border-white/10 rounded-[3rem] p-12 lg:p-16 shadow-[0_0_120px_rgba(0,0,0,0.8)] relative overflow-hidden group">
+               {/* Aesthetic accents */}
+               <div className="absolute inset-x-0 top-0 h-48 bg-gradient-to-b from-blue-600/10 to-transparent pointer-events-none" />
+               <div className="absolute -right-20 -top-20 w-64 h-64 bg-blue-600/5 blur-[100px]" />
 
-               <div className="relative z-10 space-y-10">
-                 <div className="flex flex-col items-center text-center space-y-5">
-                    <div className="w-16 h-16 rounded-2xl bg-blue-600 flex items-center justify-center shadow-xl shadow-blue-600/30">
-                       <Brain className="w-8 h-8 text-black" />
-                    </div>
-                    <div>
-                      <h2 className="text-3xl font-black text-white italic tracking-tighter">
-                         {user ? "IDENTIFIED" : (isLogin ? "IDENTITY LINK" : "JOIN COUNCIL")}
+               <div className="relative z-10 space-y-12">
+                 <div className="flex items-center justify-between border-b border-white/10 pb-10">
+                    <div className="space-y-4">
+                      <h2 className="text-5xl font-black text-white italic tracking-tighter uppercase leading-none">
+                         {user ? "ACCESS" : (isLogin ? "Identity Link" : "Join Council")}
                       </h2>
-                      <p className="text-[10px] font-black text-white/30 uppercase tracking-[0.4em]">Establish Secure Connect</p>
+                      <p className="text-xs font-black text-blue-600 uppercase tracking-[0.4em]">Establish Secure Linkage v4</p>
+                    </div>
+                    <div className="w-20 h-20 rounded-3xl bg-blue-600 flex items-center justify-center p-5 shadow-[0_0_40px_rgba(59,130,246,0.5)] group-hover:rotate-12 transition-transform duration-500">
+                       <Brain className="w-full h-full text-black" />
                     </div>
                  </div>
 
                  {user ? (
-                   <div className="space-y-10 py-4 flex flex-col items-center">
-                      <div className="text-center p-8 rounded-3xl bg-white/[0.03] border border-white/5 w-full">
-                         <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-2">Authenticated Operator</p>
-                         <p className="text-3xl font-black text-white italic uppercase">{user.name}</p>
+                   <div className="space-y-12 py-6 flex flex-col items-center">
+                      <div className="text-center p-12 rounded-[2.5rem] bg-white/[0.04] border-2 border-white/10 w-full relative group/user overflow-hidden">
+                         <div className="absolute inset-0 bg-blue-600/5 opacity-0 group-hover/user:opacity-100 transition-opacity" />
+                         <p className="text-xs font-black text-blue-600 uppercase tracking-widest mb-4">Current Operator Hash</p>
+                         <p className="text-5xl font-black text-white italic uppercase tracking-tighter">{user.name}</p>
                       </div>
                       <Link href="/muse" className="w-full">
                         <motion.button
-                          whileHover={{ scale: 1.02 }}
-                          className="btn-primary w-full py-7 flex items-center justify-center gap-4 text-xs font-black uppercase tracking-[0.4em]"
+                          whileHover={{ scale: 1.02, x: 5 }}
+                          className="btn-primary w-full py-8 flex items-center justify-center gap-6 text-sm font-black uppercase tracking-[0.5em] shadow-[0_20px_60px_rgba(59,130,246,0.3)]"
                         >
-                          <Layers className="w-5 h-5" />
-                          Initialize Portal
+                          <Layers className="w-7 h-7" />
+                          Initialize Terminal
+                          <ArrowRight className="w-6 h-6" />
                         </motion.button>
                       </Link>
-                      <button onClick={handleLogout} className="text-[10px] font-black text-white/20 hover:text-red-500 transition-colors uppercase tracking-[0.4em] underline decoration-2 underline-offset-8">Terminate Link</button>
                    </div>
                  ) : (
-                   <form onSubmit={handleFormSubmit} className="space-y-6">
-                      {!isLogin && (
+                   <form onSubmit={handleFormSubmit} className="space-y-10">
+                      <div className="grid grid-cols-1 gap-8">
+                        {!isLogin && (
+                          <div className="relative">
+                            <input 
+                              required
+                              type="text" 
+                              placeholder="FULL NAME"
+                              className="w-full bg-white/[0.03] border-2 border-white/10 rounded-2xl py-7 px-10 text-sm font-black text-white placeholder:text-white/20 focus:outline-none focus:border-blue-600 focus:bg-white/[0.06] transition-all uppercase tracking-widest"
+                              value={formData.name}
+                              onChange={(e) => setFormData({...formData, name: e.target.value})}
+                            />
+                          </div>
+                        )}
                         <input 
                           required
-                          type="text" 
-                          placeholder="OPERATOR NAME"
-                          className="w-full bg-white/[0.03] border border-white/10 rounded-xl py-6 px-8 text-xs font-black text-white placeholder:text-white/20 focus:outline-none focus:border-blue-600 focus:bg-white/[0.06] transition-all uppercase tracking-widest"
-                          value={formData.name}
-                          onChange={(e) => setFormData({...formData, name: e.target.value})}
+                          type="email" 
+                          placeholder="NEURAL IDENTITY ADDRESS"
+                          className="w-full bg-white/[0.03] border-2 border-white/10 rounded-2xl py-7 px-10 text-sm font-black text-white placeholder:text-white/20 focus:outline-none focus:border-blue-600 focus:bg-white/[0.06] transition-all uppercase tracking-widest"
+                          value={formData.email}
+                          onChange={(e) => setFormData({...formData, email: e.target.value})}
                         />
-                      )}
-                      <input 
-                        required
-                        type="email" 
-                        placeholder="NEURAL ADDRESS"
-                        className="w-full bg-white/[0.03] border border-white/10 rounded-xl py-6 px-8 text-xs font-black text-white placeholder:text-white/20 focus:outline-none focus:border-blue-600 focus:bg-white/[0.06] transition-all uppercase tracking-widest"
-                        value={formData.email}
-                        onChange={(e) => setFormData({...formData, email: e.target.value})}
-                      />
-                      <input 
-                        required
-                        type="password" 
-                        placeholder="ACCESS CIPHER"
-                        className="w-full bg-white/[0.03] border border-white/10 rounded-xl py-6 px-8 text-xs font-black text-white placeholder:text-white/20 focus:outline-none focus:border-blue-600 focus:bg-white/[0.06] transition-all uppercase tracking-widest"
-                        value={formData.password}
-                        onChange={(e) => setFormData({...formData, password: e.target.value})}
-                      />
+                        <input 
+                          required
+                          type="password" 
+                          placeholder="ACCESS CIPHER KEY"
+                          className="w-full bg-white/[0.03] border-2 border-white/10 rounded-2xl py-7 px-10 text-sm font-black text-white placeholder:text-white/20 focus:outline-none focus:border-blue-600 focus:bg-white/[0.06] transition-all uppercase tracking-widest"
+                          value={formData.password}
+                          onChange={(e) => setFormData({...formData, password: e.target.value})}
+                        />
+                      </div>
 
                       <motion.button
-                        whileHover={{ scale: 1.02, boxShadow: "0 0 50px rgba(59, 130, 246, 0.4)" }}
+                        whileHover={{ scale: 1.02, boxShadow: "0 0 60px rgba(59, 130, 246, 0.4)" }}
                         whileTap={{ scale: 0.98 }}
                         disabled={isSubmitting}
-                        className="btn-primary w-full py-7 flex items-center justify-center gap-4 text-xs font-black uppercase tracking-[0.4em] shadow-2xl disabled:opacity-50"
+                        className="btn-primary w-full py-8 flex items-center justify-center gap-6 text-sm font-black uppercase tracking-[0.5em] shadow-2xl disabled:opacity-50"
                       >
-                        {isSubmitting ? "SYNC..." : (
+                        {isSubmitting ? "SYNCING..." : (
                           <>
-                            <Zap className="w-6 h-6" />
+                            <Zap className="w-7 h-7" />
                             {isLogin ? "EXECUTE LOGIN" : "RESERVE SEAT"}
                           </>
                         )}
                       </motion.button>
 
-                      <div className="pt-10 text-center border-t border-white/5">
-                         <p className="text-[10px] font-black text-white/20 uppercase tracking-[0.4em] mb-4">
-                            {isLogin ? "No Established ID?" : "Identified Vanguard?"}
+                      <div className="pt-12 text-center border-t border-white/10">
+                         <p className="text-[11px] font-black text-white/30 uppercase tracking-[0.5em] mb-6">
+                            {isLogin ? "NO ESTABLISHED IDENTITY?" : "VANGUARD OPERATOR?"}
                          </p>
                          <button 
                            type="button"
                            onClick={() => setIsLogin(!isLogin)}
-                           className="w-full py-4 rounded-xl border border-white/10 hover:border-blue-600 hover:text-blue-500 text-[10px] font-black text-white uppercase tracking-[0.4em] transition-all"
+                           className="w-full py-6 rounded-2xl border-2 border-white/10 hover:border-blue-600 hover:text-blue-500 text-[11px] font-black text-white uppercase tracking-[0.5em] transition-all bg-white/[0.01]"
                          >
-                            {isLogin ? "CREATE ACCOUNT" : "BACK TO LOGIN"}
+                            {isLogin ? "CREATE ACCOUNT" : "RETURN TO SIGN IN"}
                          </button>
                       </div>
                    </form>
@@ -243,32 +239,17 @@ export default function LandingPage() {
             </div>
           </motion.div>
         </div>
-
-        {/* --- FEATURES GRID --- */}
-        <section className="mt-60 grid grid-cols-1 md:grid-cols-3 gap-16">
-            {[
-              { icon: Brain, title: "Neural Unity", desc: "Collaborative agents debating complex business problems in a unified decision environment." },
-              { icon: ShieldCheck, title: "Zero Error", desc: "Every word is verified against our decentralized knowledge stores using RAG v3." },
-              { icon: MessageSquare, title: "Consensus IQ", desc: "Multi-modal reasoning chains that deliver absolute strategic clarity for leadership." }
-            ].map((f, i) => (
-              <div key={i} className="p-12 rounded-[2.5rem] border border-white/10 bg-white/[0.02] hover:bg-white/[0.04] hover:border-blue-600/50 transition-all space-y-8">
-                 <div className="w-14 h-14 rounded-2xl bg-blue-600 flex items-center justify-center">
-                    <f.icon className="w-8 h-8 text-black" />
-                 </div>
-                 <h3 className="text-3xl font-black text-white uppercase italic leading-none">{f.title}</h3>
-                 <p className="text-white text-base font-medium leading-relaxed italic opacity-80">{f.desc}</p>
-              </div>
-            ))}
-        </section>
       </main>
 
-      <footer className="border-t border-white/5 py-24 px-6 text-center">
-         <div className="max-w-7xl mx-auto flex flex-col items-center gap-8">
-            <div className="flex items-center gap-4">
-               <Brain className="w-8 h-8 text-blue-600" />
-               <span className="text-3xl font-black tracking-tighter text-white">OmniMind</span>
+      <footer className="border-t-4 border-blue-600/20 py-32 px-6 text-center">
+         <div className="max-w-7xl mx-auto flex flex-col items-center gap-12">
+            <div className="flex items-center gap-5">
+               <div className="w-14 h-14 rounded-full bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/20">
+                  <Brain className="text-black w-8 h-8" />
+               </div>
+               <span className="text-4xl font-black tracking-tighter text-white uppercase italic">OmniMind</span>
             </div>
-            <p className="text-[10px] font-black text-white/10 uppercase tracking-[1em]">© 2026 THE VANGUARD GROUP • SYSTEM V3.1.2</p>
+            <p className="text-[11px] font-black text-white/10 uppercase tracking-[1.2rem] ml-[1.2rem]">© 2026 THE VANGUARD GROUP • SYSTEM V4.0.0</p>
          </div>
       </footer>
 
