@@ -90,7 +90,7 @@ export default function Dashboard() {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <span className="text-xl">{agent.icon}</span>
+                  <span className="text-xl font-black text-foreground">{agent.icon}</span>
                   <div>
                     <h3 className="text-base font-bold text-foreground">{agent.name}</h3>
                     <p className="text-xs text-muted-foreground">{agent.role}</p>
@@ -100,7 +100,7 @@ export default function Dashboard() {
               </div>
               <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{agent.description}</p>
               <div className="pt-1">
-                <span className="text-[10px] font-mono text-muted-foreground bg-secondary px-2 py-1 rounded">{agent.specialty}</span>
+                <span className="text-[10px] font-mono text-foreground font-black bg-secondary px-2 py-1 rounded">{agent.specialty}</span>
               </div>
             </motion.div>
           ))}

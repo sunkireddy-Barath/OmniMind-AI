@@ -47,16 +47,16 @@
     --popover-foreground: 240 10% 4%;
     --primary: 221 83% 53%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 0 0% 96%;
+    --secondary: 0 0% 92%;
     --secondary-foreground: 240 10% 4%;
-    --muted: 0 0% 96%;
-    --muted-foreground: 240 4% 36%;
-    --accent: 0 0% 96%;
+    --muted: 0 0% 92%;
+    --muted-foreground: 240 10% 10%;
+    --accent: 0 0% 92%;
     --accent-foreground: 240 10% 4%;
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
-    --border: 240 6% 90%;
-    --input: 240 6% 90%;
+    --border: 240 6% 85%;
+    --input: 240 6% 85%;
     --ring: 221 83% 53%;
 
     --bg-main: #ece8e2;

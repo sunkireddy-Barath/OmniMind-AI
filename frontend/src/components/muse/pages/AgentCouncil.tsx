@@ -34,14 +34,14 @@ export default function AgentCouncil() {
             {/* Agent Header */}
             <div className="flex items-center justify-between px-5 py-3 border-b border-border">
               <div className="flex items-center gap-3">
-                <span className="text-lg">{agent.icon}</span>
+                <span className="text-lg font-black text-foreground">{agent.icon}</span>
                 <div>
                   <span className="text-sm font-semibold text-foreground">{agent.name}</span>
                   <span className="text-xs text-muted-foreground ml-2">— {agent.role}</span>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono text-muted-foreground bg-secondary px-2 py-0.5 rounded">{agent.specialty}</span>
+                <span className="text-[10px] font-mono text-foreground font-black bg-secondary px-2 py-0.5 rounded">{agent.specialty}</span>
                 <div className="status-dot-online" />
               </div>
             </div>
