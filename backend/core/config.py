@@ -20,11 +20,14 @@ class Settings(BaseSettings):
         "DATABASE_URL", "postgresql://user:password@localhost/omnimind"
     )
 
-    # DigitalOcean Gradient AI — primary LLM provider
+    # Airia platform (primary LLM provider)
+    AIRIA_API_KEY: str = os.getenv("AIRIA_API_KEY", "")
+    AIRIA_API_URL: str = os.getenv("AIRIA_API_URL", "https://api.airia.ai/v1")
+    AIRIA_AGENT_ID: str = os.getenv("AIRIA_AGENT_ID", "")
+
+    # Backward-compatible aliases for older Gradient env vars
     GRADIENT_API_KEY: str = os.getenv("GRADIENT_API_KEY", "")
-    GRADIENT_BASE_URL: str = os.getenv(
-        "GRADIENT_BASE_URL", "https://inference.do-ai.run/v1"
-    )
+    GRADIENT_BASE_URL: str = os.getenv("GRADIENT_BASE_URL", "")
     GRADIENT_WORKSPACE_ID: str = os.getenv("GRADIENT_WORKSPACE_ID", "")
     LLM_MODEL: str = os.getenv("LLM_MODEL", "llama3-1-70b-instruct")
     LLM_MAX_TOKENS: int = int(os.getenv("LLM_MAX_TOKENS", "2048"))
@@ -74,3 +77,11 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+# Normalize Airia config if only legacy Gradient env vars are present.
+if not settings.AIRIA_API_KEY and settings.GRADIENT_API_KEY:
+    settings.AIRIA_API_KEY = settings.GRADIENT_API_KEY
+if not settings.AIRIA_API_URL and settings.GRADIENT_BASE_URL:
+    settings.AIRIA_API_URL = settings.GRADIENT_BASE_URL
+if not settings.AIRIA_AGENT_ID and settings.GRADIENT_WORKSPACE_ID:
+    settings.AIRIA_AGENT_ID = settings.GRADIENT_WORKSPACE_ID

@@ -52,12 +52,12 @@ async def council_health():
     return {
         "status": "healthy",
         "system": "Multi-Provider LLM Council",
-        "routing_mode": "gradient-first-with-explicit-fallback-markers",
+        "routing_mode": "airia-first-with-explicit-fallback-markers",
         "total_agents": len(agents),
         "active_providers": active_providers,
         "providers": {
-            "gradient": {
-                "configured": status.get("gradient", False),
+            "airia": {
+                "configured": status.get("airia", False),
                 "model": "llama3-1-70b-instruct",
                 "usage": "fallback and hybrid consensus",
             },

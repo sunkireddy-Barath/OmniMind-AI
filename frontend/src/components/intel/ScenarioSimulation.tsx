@@ -42,7 +42,7 @@ export default function ScenarioSimulation() {
         </h1>
         <p className="text-[var(--text-secondary)] text-sm">
           Ask "what-if" questions and explore predicted outcomes powered by
-          Gradient AI.
+          Airia.
         </p>
       </header>
 

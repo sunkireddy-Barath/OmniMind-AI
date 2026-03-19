@@ -1,0 +1,54 @@
+.muse-theme {
+  --background: 0 0% 4%;
+  --foreground: 0 0% 92%;
+  --card: 0 0% 7%;
+  --card-foreground: 0 0% 92%;
+  --popover: 0 0% 7%;
+  --popover-foreground: 0 0% 92%;
+  --primary: 0 0% 100%;
+  --primary-foreground: 0 0% 0%;
+  --secondary: 0 0% 12%;
+  --secondary-foreground: 0 0% 85%;
+  --muted: 0 0% 10%;
+  --muted-foreground: 0 0% 55%;
+  --accent: 0 0% 15%;
+  --accent-foreground: 0 0% 92%;
+  --destructive: 0 70% 50%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 0 0% 16%;
+  --input: 0 0% 16%;
+  --ring: 0 0% 40%;
+  --radius: 0.5rem;
+  --success: 140 60% 50%;
+  --warning: 45 90% 55%;
+  --sidebar-background: 0 0% 5%;
+  --sidebar-foreground: 0 0% 75%;
+  --sidebar-primary: 0 0% 100%;
+  --sidebar-primary-foreground: 0 0% 0%;
+  --sidebar-accent: 0 0% 10%;
+  --sidebar-accent-foreground: 0 0% 92%;
+  --sidebar-border: 0 0% 14%;
+  --sidebar-ring: 0 0% 40%;
+}
+
+.muse-theme * {
+  border-color: hsl(var(--border));
+}
+
+.muse-theme .glass-panel {
+  background: hsl(var(--card) / 0.6);
+  backdrop-filter: blur(24px);
+  border: 1px solid hsl(var(--border));
+}
+
+.muse-theme .glow-line {
+  height: 1px;
+  background: linear-gradient(to right, transparent, hsl(var(--foreground) / 0.2), transparent);
+}
+
+.muse-theme .status-dot-online {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 9999px;
+  background: hsl(var(--success));
+}

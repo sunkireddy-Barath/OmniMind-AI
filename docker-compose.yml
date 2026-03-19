@@ -18,10 +18,10 @@ services:
     ports:
       - "8000:8000"
     environment:
-      # DigitalOcean Gradient AI — set these in .env
-      - GRADIENT_API_KEY=${GRADIENT_API_KEY}
-      - GRADIENT_BASE_URL=${GRADIENT_BASE_URL:-https://inference.do-ai.run/v1}
-      - GRADIENT_WORKSPACE_ID=${GRADIENT_WORKSPACE_ID}
+      # Airia platform — set these in .env
+      - AIRIA_API_KEY=${AIRIA_API_KEY}
+      - AIRIA_API_URL=${AIRIA_API_URL:-https://api.airia.ai/v1}
+      - AIRIA_AGENT_ID=${AIRIA_AGENT_ID}
       - LLM_MODEL=${LLM_MODEL:-llama3-1-70b-instruct}
       - LLM_MAX_TOKENS=${LLM_MAX_TOKENS:-2048}
       - LLM_TEMPERATURE=${LLM_TEMPERATURE:-0.7}

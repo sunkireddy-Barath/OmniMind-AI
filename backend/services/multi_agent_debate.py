@@ -11,7 +11,7 @@ import os
 import logging
 import httpx
 from core.config import settings
-from services.gradient_ai import gradient_client
+from services.airia_client import airia_client
 from services.persona_output_validator import validate_persona_output
 
 logger = logging.getLogger(__name__)
@@ -57,16 +57,32 @@ class MultiAgentDebateService:
             or "skipping live search" in low
         )
 
-    async def _call_gradient(self, system_prompt: str, user_prompt: str) -> str:
-        if not gradient_client.enabled:
-            raise RuntimeError("GRADIENT_API_KEY not set")
-        result = await gradient_client.complete(
+    async def _call_airia(self, system_prompt: str, user_prompt: str) -> str:
+        if not airia_client.enabled:
+            raise RuntimeError("AIRIA_API_KEY not set")
+        result = await airia_client.complete(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
             temperature=0.6,
             max_tokens=2500,
         )
         return result.get("content", "")
+
+    async def _apply_provider_fallback(
+        self,
+        response_text: str,
+        requested_provider: str,
+        system_prompt: str,
+        user_prompt: str,
+    ) -> tuple[str, str]:
+        """Return (possibly replaced text, fallback marker)."""
+        if not self._looks_like_provider_failure(response_text):
+            return response_text, ""
+
+        marker = self._fallback_marker(requested_provider, "airia", "provider_failure")
+        if airia_client.enabled:
+            return f"{marker}\n" + await self._call_airia(system_prompt, user_prompt), marker
+        return f"{marker}\n{response_text}", marker
 
     async def _ensure_persona_shape(self, persona: str, text: str) -> tuple[str, str]:
         validation = validate_persona_output(persona, text)
@@ -263,16 +279,12 @@ class MultiAgentDebateService:
         research_analysis = await self._call_openai(
             self.openai_research_key, research_system, research_user
         )
-        research_marker = ""
-        if self._looks_like_provider_failure(research_analysis):
-            marker = self._fallback_marker("openai", "gradient", "provider_failure")
-            if gradient_client.enabled:
-                research_analysis = f"{marker}\n" + await self._call_gradient(
-                    research_system, research_user
-                )
-            else:
-                research_analysis = f"{marker}\n{research_analysis}"
-            research_marker = marker
+        research_analysis, research_marker = await self._apply_provider_fallback(
+            research_analysis,
+            "openai",
+            research_system,
+            research_user,
+        )
         (
             research_analysis,
             research_validation_marker,
@@ -294,16 +306,12 @@ class MultiAgentDebateService:
             "Identify ALL potential risks, uncertainties, and failure points."
         )
         risk_analysis = await self._call_openrouter(risk_system, risk_user)
-        risk_marker = ""
-        if self._looks_like_provider_failure(risk_analysis):
-            marker = self._fallback_marker("openrouter", "gradient", "provider_failure")
-            if gradient_client.enabled:
-                risk_analysis = f"{marker}\n" + await self._call_gradient(
-                    risk_system, risk_user
-                )
-            else:
-                risk_analysis = f"{marker}\n{risk_analysis}"
-            risk_marker = marker
+        risk_analysis, risk_marker = await self._apply_provider_fallback(
+            risk_analysis,
+            "openrouter",
+            risk_system,
+            risk_user,
+        )
         risk_analysis, risk_validation_marker = await self._ensure_persona_shape(
             "arjun", risk_analysis
         )
@@ -327,16 +335,12 @@ class MultiAgentDebateService:
         finance_analysis = await self._call_openai(
             self.openai_finance_key, finance_system, finance_user
         )
-        finance_marker = ""
-        if self._looks_like_provider_failure(finance_analysis):
-            marker = self._fallback_marker("openai", "gradient", "provider_failure")
-            if gradient_client.enabled:
-                finance_analysis = f"{marker}\n" + await self._call_gradient(
-                    finance_system, finance_user
-                )
-            else:
-                finance_analysis = f"{marker}\n{finance_analysis}"
-            finance_marker = marker
+        finance_analysis, finance_marker = await self._apply_provider_fallback(
+            finance_analysis,
+            "openai",
+            finance_system,
+            finance_user,
+        )
         finance_analysis, finance_validation_marker = await self._ensure_persona_shape(
             "kavya", finance_analysis
         )
@@ -357,16 +361,12 @@ class MultiAgentDebateService:
             "Moderate the debate. Identify trade-offs and refined ideas."
         )
         debate_result = await self._call_openrouter(debate_system, debate_user)
-        debate_marker = ""
-        if self._looks_like_provider_failure(debate_result):
-            marker = self._fallback_marker("openrouter", "gradient", "provider_failure")
-            if gradient_client.enabled:
-                debate_result = f"{marker}\n" + await self._call_gradient(
-                    debate_system, debate_user
-                )
-            else:
-                debate_result = f"{marker}\n{debate_result}"
-            debate_marker = marker
+        debate_result, debate_marker = await self._apply_provider_fallback(
+            debate_result,
+            "openrouter",
+            debate_system,
+            debate_user,
+        )
 
         # ---- Step 5: Final Consensus & Execution Plan (Ravi) ----
         strategy_system = (
@@ -389,16 +389,12 @@ class MultiAgentDebateService:
             "Provide the final consensus report."
         )
         final_strategy = await self._call_gemini(strategy_system, strategy_user)
-        final_marker = ""
-        if self._looks_like_provider_failure(final_strategy):
-            marker = self._fallback_marker("gemini", "gradient", "provider_failure")
-            if gradient_client.enabled:
-                final_strategy = f"{marker}\n" + await self._call_gradient(
-                    strategy_system, strategy_user
-                )
-            else:
-                final_strategy = f"{marker}\n{final_strategy}"
-            final_marker = marker
+        final_strategy, final_marker = await self._apply_provider_fallback(
+            final_strategy,
+            "gemini",
+            strategy_system,
+            strategy_user,
+        )
         final_strategy, strategy_validation_marker = await self._ensure_persona_shape(
             "ravi", final_strategy
         )

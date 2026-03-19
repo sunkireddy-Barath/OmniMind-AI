@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowDownTrayIcon, ArrowLeftIcon } from "@heroicons/react/24/outline";
+import { Calendar, Mail, CheckCircle2, XCircle } from "lucide-react";
 import toast from "react-hot-toast";
 
 import AgentCard from "./AgentCard";
@@ -23,6 +24,8 @@ export default function AgentWorkflow({ query, onBack }: AgentWorkflowProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [events, setEvents] = useState<SessionEvent[]>([]);
   const [simplifiedView, setSimplifiedView] = useState(false);
+  const [hitlSubmitting, setHitlSubmitting] = useState(false);
+  const [integrationRunning, setIntegrationRunning] = useState(false);
 
   useEffect(() => {
     let socket: WebSocket | null = null;
@@ -108,6 +111,70 @@ export default function AgentWorkflow({ query, onBack }: AgentWorkflowProps) {
       toast.success("Decision exported as JSON.");
     } catch {
       toast.error("Export failed.");
+    }
+  };
+
+  const handleExportPdf = async () => {
+    if (!sessionId) {
+      return;
+    }
+
+    try {
+      const blob = await apiClient.exportQuery(sessionId, "pdf");
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `decision-${sessionId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(url);
+      toast.success("Decision exported as PDF.");
+    } catch {
+      toast.error("PDF export failed.");
+    }
+  };
+
+  const submitHitl = async (approved: boolean) => {
+    if (!sessionId || !snapshot?.context?.hitl_pending_gate) {
+      return;
+    }
+
+    try {
+      setHitlSubmitting(true);
+      await apiClient.submitHitlDecision(sessionId, {
+        gate: snapshot.context.hitl_pending_gate,
+        approved,
+        notes: approved ? "Approved from dashboard" : "Rejected from dashboard",
+      });
+      toast.success(
+        `Gate ${snapshot.context.hitl_pending_gate} ${approved ? "approved" : "rejected"}.`,
+      );
+    } catch {
+      toast.error("Failed to submit HITL decision.");
+    } finally {
+      setHitlSubmitting(false);
+    }
+  };
+
+  const runIntegrations = async () => {
+    if (!sessionId) {
+      return;
+    }
+
+    try {
+      setIntegrationRunning(true);
+      const result = await apiClient.executeIntegrations(sessionId, {
+        actions: ["gmail", "calendar"],
+      });
+      const summary = Object.entries(result.results || {})
+        .map(([k, v]: any) => `${k}:${v?.status || "unknown"}`)
+        .join(" | ");
+      toast.success(`Integration run completed: ${summary}`);
+    } catch {
+      toast.error("Integration execution failed.");
+    } finally {
+      setIntegrationRunning(false);
     }
   };
 
@@ -208,7 +275,15 @@ export default function AgentWorkflow({ query, onBack }: AgentWorkflowProps) {
                 className="btn-primary flex items-center gap-3 h-fit px-8 py-4 text-[10px] font-black uppercase tracking-widest"
               >
                 <ArrowDownTrayIcon className="h-4 w-4" />
-                Export Results
+                Export JSON
+              </button>
+              <button
+                onClick={handleExportPdf}
+                disabled={!sessionId}
+                className="btn-secondary flex items-center gap-3 h-fit px-6 py-4 text-[10px] font-black uppercase tracking-widest"
+              >
+                <ArrowDownTrayIcon className="h-4 w-4" />
+                Export PDF
               </button>
               <button
                 onClick={() => setSimplifiedView((prev) => !prev)}
@@ -216,7 +291,57 @@ export default function AgentWorkflow({ query, onBack }: AgentWorkflowProps) {
               >
                 {simplifiedView ? "Detailed View" : "Simplified View"}
               </button>
+              {snapshot?.status === "completed" && (
+                <button
+                  onClick={runIntegrations}
+                  disabled={integrationRunning}
+                  className="btn-primary flex items-center gap-2 h-fit px-6 py-4 text-[10px] font-black uppercase tracking-widest"
+                >
+                  {integrationRunning ? <CheckCircle2 className="h-4 w-4 animate-pulse" /> : <Mail className="h-4 w-4" />}
+                  Run Gmail + Calendar
+                </button>
+              )}
             </div>
+
+            {snapshot?.status === "paused" && snapshot?.context?.hitl_pending_gate && (
+              <div className="mb-6 rounded-2xl border border-amber-500/30 bg-amber-500/5 p-5">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-amber-500 mb-2">
+                  Human Approval Required
+                </p>
+                <p className="text-sm text-[var(--text-primary)] mb-4">
+                  Workflow is paused at gate: <span className="font-semibold">{snapshot.context.hitl_pending_gate}</span>
+                </p>
+                <div className="flex flex-wrap gap-3">
+                  <button
+                    onClick={() => submitHitl(true)}
+                    disabled={hitlSubmitting}
+                    className="btn-primary flex items-center gap-2 px-5 py-3 text-[10px] font-black uppercase tracking-widest"
+                  >
+                    <CheckCircle2 className="h-4 w-4" /> Approve
+                  </button>
+                  <button
+                    onClick={() => submitHitl(false)}
+                    disabled={hitlSubmitting}
+                    className="btn-secondary flex items-center gap-2 px-5 py-3 text-[10px] font-black uppercase tracking-widest"
+                  >
+                    <XCircle className="h-4 w-4" /> Reject
+                  </button>
+                  <button
+                    onClick={() =>
+                      apiClient.submitHitlDecision(sessionId!, {
+                        gate: "calendar_approval",
+                        approved: true,
+                        notes: "Pre-approved calendar action",
+                      })
+                    }
+                    className="btn-secondary flex items-center gap-2 px-5 py-3 text-[10px] font-black uppercase tracking-widest"
+                  >
+                    <Calendar className="h-4 w-4" /> Pre-Approve Calendar
+                  </button>
+                </div>
+              </div>
+            )}
+
             <div className="pt-6 border-t border-white/5">
               <WorkflowProgress
                 steps={workflowSteps}

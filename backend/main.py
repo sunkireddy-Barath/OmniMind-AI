@@ -9,8 +9,9 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import agents, intel, queries, simulations, council, debate, query
 from core.config import settings
 from core.database import init_db
-from services.gradient_ai import gradient_client
+from services.airia_client import airia_client
 from services.cache_service import session_cache
+from services.integration_status import get_integration_status
 from services.memory_service import memory_service
 
 logger = logging.getLogger(__name__)
@@ -53,7 +54,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(
     title="OmniMind AI API",
-    description="Autonomous Multi-Agent AI Platform — DigitalOcean Gradient AI Hackathon",
+    description="Autonomous Multi-Agent AI Platform — Airia Hackathon",
     version="1.0.0",
     lifespan=lifespan,
 )
@@ -79,7 +80,7 @@ app.include_router(query.router, tags=["workflow-stream"])
 async def root():
     return {
         "message": "OmniMind AI API is running",
-        "provider": "DigitalOcean Gradient AI",
+        "provider": "Airia",
     }
 
 
@@ -93,10 +94,11 @@ async def health_check():
         "layers": {
             "layer3_agent_engine": {
                 "langgraph": "active",
-                "gradient_ai": {
-                    "enabled": gradient_client.enabled,
-                    "model": gradient_client.model,
-                    "base_url": gradient_client.base_url,
+                "airia": {
+                    "enabled": airia_client.enabled,
+                    "model": airia_client.model,
+                    "base_url": airia_client.base_url,
+                    "agent_id": airia_client.agent_id,
                 },
             },
             "layer4_knowledge": {
@@ -109,20 +111,33 @@ async def health_check():
                 "redis_cache": cache_health,
                 "redis_memory": memory_health,
             },
+            "layer6_integrations": get_integration_status(),
         },
     }
 
 
-@app.get("/api/gradient/status")
-async def gradient_status():
-    """Visible endpoint for judges to verify DO Gradient AI integration."""
+@app.get("/api/airia/status")
+async def airia_status():
+    """Visible endpoint for judges to verify Airia integration."""
     return {
-        "provider": "DigitalOcean Gradient AI",
-        "model": gradient_client.model,
-        "base_url": gradient_client.base_url,
-        "api_key_configured": gradient_client.enabled,
-        "workspace_id_configured": bool(gradient_client.workspace_id),
+        "provider": "Airia",
+        "model": airia_client.model,
+        "base_url": airia_client.base_url,
+        "api_key_configured": airia_client.enabled,
+        "agent_id": airia_client.agent_id,
+        "agent_id_configured": bool(airia_client.agent_id),
     }
+
+
+@app.get("/api/gradient/status")
+async def gradient_status_compat():
+    """Backward-compatible alias kept for existing clients."""
+    return await airia_status()
+
+
+@app.get("/api/integrations/status")
+async def integrations_status():
+    return get_integration_status()
 
 
 if __name__ == "__main__":

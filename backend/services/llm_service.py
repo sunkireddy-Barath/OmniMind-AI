@@ -1,12 +1,12 @@
 """
-LLM service - routes every call through DigitalOcean Gradient AI (Llama 3.1 70B).
+LLM service - routes every call through Airia.
 Each expert agent uses the exact named persona system prompt from the master spec.
 """
 
 from __future__ import annotations
 from typing import Any
 from models.schemas import KnowledgeDocument, SimulationScenario
-from services.gradient_ai import gradient_client
+from services.airia_client import airia_client
 from services.persona_output_validator import validate_persona_output
 
 PERSONA_PROMPTS: dict[str, str] = {
@@ -131,7 +131,7 @@ def _format_docs(documents: list[KnowledgeDocument]) -> str:
 
 
 class LLMService:
-    """Routes all LLM calls through DigitalOcean Gradient AI (Llama 3.1 70B)."""
+    """Routes all LLM calls through Airia."""
 
     async def _call(
         self,
@@ -144,14 +144,14 @@ class LLMService:
             agent_type, "You are a helpful AI assistant."
         )
         try:
-            return await gradient_client.complete(
+            return await airia_client.complete(
                 system_prompt=system_prompt,
                 user_prompt=user_prompt,
                 temperature=temperature,
                 max_tokens=max_tokens,
             )
         except Exception as exc:
-            marker = f"[FALLBACK requested=gradient used=none reason={str(exc)[:80]}]"
+            marker = f"[FALLBACK requested=airia used=none reason={str(exc)[:80]}]"
             return {
                 "content": f"{marker}\n{self._fallback(agent_type, str(exc))}",
                 "model": "fallback",
@@ -178,7 +178,7 @@ class LLMService:
         )
 
         try:
-            repaired = await gradient_client.complete(
+            repaired = await airia_client.complete(
                 system_prompt=PERSONA_PROMPTS.get(
                     agent_type, "You are a strict output formatter."
                 ),
@@ -196,16 +196,16 @@ class LLMService:
 
     def _fallback(self, agent_type: str, err: str = "") -> str:
         defaults = {
-            "planner": "Planner unavailable: configure GRADIENT_API_KEY to generate planning output.",
-            "research": "Research agent unavailable: configure GRADIENT_API_KEY.",
-            "risk": "Risk agent unavailable: configure GRADIENT_API_KEY.",
-            "finance": "Finance agent unavailable: configure GRADIENT_API_KEY.",
-            "strategy": "Strategy agent unavailable: configure GRADIENT_API_KEY.",
-            "policy": "Policy agent unavailable: configure GRADIENT_API_KEY.",
-            "debate": "Debate agent unavailable: configure GRADIENT_API_KEY.",
-            "consensus": "Consensus agent unavailable: configure GRADIENT_API_KEY.",
+            "planner": "Planner unavailable: configure AIRIA_API_KEY to generate planning output.",
+            "research": "Research agent unavailable: configure AIRIA_API_KEY.",
+            "risk": "Risk agent unavailable: configure AIRIA_API_KEY.",
+            "finance": "Finance agent unavailable: configure AIRIA_API_KEY.",
+            "strategy": "Strategy agent unavailable: configure AIRIA_API_KEY.",
+            "policy": "Policy agent unavailable: configure AIRIA_API_KEY.",
+            "debate": "Debate agent unavailable: configure AIRIA_API_KEY.",
+            "consensus": "Consensus agent unavailable: configure AIRIA_API_KEY.",
         }
-        return defaults.get(agent_type, f"Configure GRADIENT_API_KEY. Error: {err}")
+        return defaults.get(agent_type, f"Configure AIRIA_API_KEY. Error: {err}")
 
     async def generate_plan(
         self, query: str, documents: list[KnowledgeDocument], context: dict[str, Any]

@@ -129,6 +129,12 @@ interface CouncilChatEntry {
   timestamp: Date;
 }
 
+interface IntegrationState {
+  airia: { connected: boolean; label: string };
+  gmail: { connected: boolean; label: string };
+  calendar: { connected: boolean; label: string };
+}
+
 type CouncilPhase = "idle" | "starting" | "running" | "complete" | "error";
 
 /* ================================================================== */
@@ -601,6 +607,9 @@ export default function MultiAgentChat() {
   ]);
   const [councilInput, setCouncilInput] = useState("");
   const [councilPhase, setCouncilPhase] = useState<CouncilPhase>("idle");
+  const [integrationState, setIntegrationState] = useState<IntegrationState | null>(
+    null,
+  );
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -609,6 +618,20 @@ export default function MultiAgentChat() {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
   }, [debateMessages, councilEntries, debatePhase, councilPhase, mode]);
+
+  useEffect(() => {
+    const loadIntegrationState = async () => {
+      try {
+        const resp = await fetch(`${API_BASE}/api/integrations/status`);
+        if (!resp.ok) return;
+        const data = await resp.json();
+        setIntegrationState(data);
+      } catch {
+        // keep UI resilient when backend is unavailable
+      }
+    };
+    loadIntegrationState();
+  }, []);
 
   /* ---------------------------------------------------------------- */
   /*  Debate send                                                       */
@@ -829,8 +852,24 @@ export default function MultiAgentChat() {
           </button>
         </div>
 
-        {/* Agent dots */}
-        <div className="hidden sm:flex items-center gap-1 px-2 py-1 bg-[var(--glass-bg)] rounded-lg border border-[var(--border-primary)]">
+        {/* Connected systems */}
+        <div className="hidden sm:flex items-center gap-2 px-2 py-1 bg-[var(--glass-bg)] rounded-lg border border-[var(--border-primary)]">
+          {integrationState && (
+            <>
+              {Object.values(integrationState).map((sys) => (
+                <div key={sys.label} className="flex items-center gap-1">
+                  <span
+                    className={`w-2 h-2 rounded-full ${sys.connected ? "bg-emerald-500" : "bg-slate-400"}`}
+                    title={sys.label}
+                  />
+                  <span className="text-[10px] text-[var(--text-secondary)]">
+                    {sys.label}
+                  </span>
+                </div>
+              ))}
+            </>
+          )}
+
           {mode === "debate" ? (
             <>
               <div

@@ -9,8 +9,8 @@ import json
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 from datetime import datetime
-from pydantic import BaseModel
-from services.gradient_ai import gradient_client
+from pydantic import BaseModel, Field
+from services.airia_client import airia_client
 
 from dotenv import load_dotenv
 
@@ -63,7 +63,7 @@ class ChatMessage(BaseModel):
 class ChatSession(BaseModel):
     session_id: str
     question: str
-    messages: List[ChatMessage] = []
+    messages: List[ChatMessage] = Field(default_factory=list)
     status: str = "active"
     created_at: datetime
     final_answer: str = ""
@@ -289,10 +289,10 @@ class LLMCouncilChat:
 
     def _get_llm(self, provider: str):
         """Strict provider lookup with no implicit cross-provider fallback."""
-        if provider == "gradient":
-            return "gradient" if gradient_client.enabled else None
+        if provider == "airia":
+            return "airia" if airia_client.enabled else None
         if provider == "hybrid":
-            return "gradient" if gradient_client.enabled else None
+            return "airia" if airia_client.enabled else None
         return self.llms.get(provider)
 
     def _build_fallback_marker(self, requested: str, used: str, reason: str) -> str:
@@ -310,8 +310,8 @@ class LLMCouncilChat:
     async def get_session(self, session_id: str) -> Optional[ChatSession]:
         return self.sessions.get(session_id)
 
-    async def _invoke_gradient(self, system_prompt: str, user_prompt: str) -> str:
-        result = await gradient_client.complete(
+    async def _invoke_airia(self, system_prompt: str, user_prompt: str) -> str:
+        result = await airia_client.complete(
             system_prompt=system_prompt,
             user_prompt=user_prompt,
             temperature=0.6,
@@ -330,12 +330,12 @@ class LLMCouncilChat:
         provider_used = requested_provider
 
         if not llm:
-            if gradient_client.enabled:
-                llm = "gradient"
-                provider_used = "gradient"
+            if airia_client.enabled:
+                llm = "airia"
+                provider_used = "airia"
                 fallback_marker = self._build_fallback_marker(
                     requested=requested_provider,
-                    used="gradient",
+                    used="airia",
                     reason="provider_unavailable",
                 )
             else:
@@ -370,8 +370,8 @@ Respond as the {agent["role"]} using {agent["model"]}. Be concise and insightful
                 pass
 
         try:
-            if llm == "gradient":
-                content = await self._invoke_gradient(agent["prompt"], prompt)
+            if llm == "airia":
+                content = await self._invoke_airia(agent["prompt"], prompt)
             else:
                 response = await llm.ainvoke(prompt)
                 content = response.content
@@ -387,20 +387,20 @@ Respond as the {agent["role"]} using {agent["model"]}. Be concise and insightful
                 "fallback_marker": fallback_marker,
             }
         except Exception as e:
-            if gradient_client.enabled and provider_used != "gradient":
+            if airia_client.enabled and provider_used != "airia":
                 try:
-                    gradient_content = await self._invoke_gradient(
+                    gradient_content = await self._invoke_airia(
                         agent["prompt"], prompt
                     )
                     marker = self._build_fallback_marker(
                         requested=requested_provider,
-                        used="gradient",
+                        used="airia",
                         reason="provider_error",
                     )
                     return {
                         "message": f"{marker}\n{agent['emoji']} {agent['name']} ({agent['model']}): {gradient_content}",
                         "provider_requested": requested_provider,
-                        "provider_used": "gradient",
+                        "provider_used": "airia",
                         "fallback_marker": marker,
                     }
                 except Exception as ge:
@@ -472,23 +472,23 @@ Respond as the {agent["role"]} using {agent["model"]}. Be concise and insightful
 
         best_llm = self._get_llm("hybrid")
         fallback_marker = ""
-        provider_used = "gradient" if best_llm == "gradient" else "none"
+        provider_used = "airia" if best_llm == "airia" else "none"
         if not best_llm:
-            # Explicitly surface when we drift away from gradient-first behavior.
+            # Explicitly surface when we drift away from Airia-first behavior.
             for alt in ("openai", "gemini", "groq"):
                 if self.llms.get(alt):
                     best_llm = self.llms[alt]
                     provider_used = alt
                     fallback_marker = self._build_fallback_marker(
-                        requested="gradient",
+                        requested="airia",
                         used=alt,
-                        reason="gradient_unavailable",
+                        reason="airia_unavailable",
                     )
                     break
 
         if not best_llm:
             marker = self._build_fallback_marker(
-                requested="gradient",
+                requested="airia",
                 used="none",
                 reason="no_provider_available",
             )
@@ -506,8 +506,8 @@ Discussion:
 Synthesize all perspectives into a balanced, actionable final answer:"""
 
         try:
-            if best_llm == "gradient":
-                content = await self._invoke_gradient(
+            if best_llm == "airia":
+                content = await self._invoke_airia(
                     "You are a neutral judge.",
                     prompt,
                 )
@@ -521,7 +521,7 @@ Synthesize all perspectives into a balanced, actionable final answer:"""
                 session.final_answer = f"{fallback_marker}\n{session.final_answer}"
         except Exception as e:
             marker = self._build_fallback_marker(
-                requested="gradient",
+                requested="airia",
                 used="none",
                 reason="consensus_error",
             )
@@ -546,7 +546,7 @@ Synthesize all perspectives into a balanced, actionable final answer:"""
 
     def get_provider_status(self) -> Dict[str, bool]:
         return {
-            "gradient": gradient_client.enabled,
+            "airia": airia_client.enabled,
             "openai": "openai" in self.llms,
             "gemini": "gemini" in self.llms,
             "groq": "groq" in self.llms,

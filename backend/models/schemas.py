@@ -17,6 +17,7 @@ class AgentStatus(str, Enum):
 class SessionStatus(str, Enum):
     QUEUED = "queued"
     RUNNING = "running"
+    PAUSED = "paused"
     COMPLETED = "completed"
     FAILED = "failed"
 

@@ -32,8 +32,20 @@ export interface CouncilAgentPayload {
 }
 
 export type AgentStatus = 'pending' | 'active' | 'completed' | 'failed';
-export type SessionStatus = 'queued' | 'running' | 'completed' | 'failed';
+export type SessionStatus = 'queued' | 'running' | 'paused' | 'completed' | 'failed';
 export type WorkflowStage = 'planner' | 'experts' | 'debate' | 'simulation' | 'consensus' | 'completed';
+
+export interface HitlDecisionRequest {
+  gate: 'scenario_approval' | 'debate_approval' | 'calendar_approval';
+  approved: boolean;
+  notes?: string;
+  payload?: Record<string, any>;
+}
+
+export interface IntegrationExecuteRequest {
+  actions?: string[];
+  payload?: Record<string, any>;
+}
 
 export interface QueryResponse {
   id: string;
@@ -246,12 +258,34 @@ class ApiClient {
     return this.request<SimulationResponse[]>(`/api/simulations/query/${queryId}`);
   }
 
-  async exportQuery(queryId: string, format: 'json' = 'json'): Promise<Blob> {
+  async exportQuery(queryId: string, format: 'json' | 'pdf' = 'json'): Promise<Blob> {
     const response = await fetch(`${this.baseUrl}/api/queries/${queryId}/export?format=${format}`);
     if (!response.ok) {
       throw new Error(`Failed to export decision ${queryId}`);
     }
     return response.blob();
+  }
+
+  async submitHitlDecision(queryId: string, decision: HitlDecisionRequest): Promise<any> {
+    return this.request<any>(`/api/queries/${queryId}/hitl/decision`, {
+      method: 'POST',
+      body: JSON.stringify(decision),
+    });
+  }
+
+  async listHitlDecisions(queryId: string): Promise<any> {
+    return this.request<any>(`/api/queries/${queryId}/hitl`);
+  }
+
+  async executeIntegrations(queryId: string, request: IntegrationExecuteRequest): Promise<any> {
+    return this.request<any>(`/api/queries/${queryId}/integrations/execute`, {
+      method: 'POST',
+      body: JSON.stringify(request),
+    });
+  }
+
+  async listIntegrationHistory(queryId: string): Promise<any> {
+    return this.request<any>(`/api/queries/${queryId}/integrations`);
   }
 
   streamQuery(

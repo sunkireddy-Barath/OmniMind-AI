@@ -156,54 +156,82 @@ class DecisionRuntime:
         graph = ReasoningGraph(
             nodes=[
                 ReasoningNode(
-                    id="planner",
-                    label="Planner",
+                    id="orchestrator",
+                    label="Orchestrator",
                     stage=WorkflowStage.PLANNER,
                     status=AgentStatus.PENDING,
                     position={"x": 0, "y": 0},
                 ),
-                ReasoningNode(
-                    id="experts",
-                    label="Experts",
-                    stage=WorkflowStage.EXPERTS,
-                    status=AgentStatus.PENDING,
-                    position={"x": 180, "y": 0},
-                ),
+                *[
+                    ReasoningNode(
+                        id=f"expert-{expert}",
+                        label=expert,
+                        stage=WorkflowStage.EXPERTS,
+                        status=AgentStatus.PENDING,
+                        position={"x": 180, "y": 0},
+                    )
+                    for expert in expert_types
+                ],
+                *[
+                    ReasoningNode(
+                        id=f"rag-{expert}",
+                        label=f"{expert}-RAG",
+                        stage=WorkflowStage.EXPERTS,
+                        status=AgentStatus.PENDING,
+                        position={"x": 300, "y": 0},
+                    )
+                    for expert in expert_types
+                ],
                 ReasoningNode(
                     id="debate",
                     label="Debate",
                     stage=WorkflowStage.DEBATE,
                     status=AgentStatus.PENDING,
-                    position={"x": 360, "y": 0},
+                    position={"x": 520, "y": 0},
                 ),
                 ReasoningNode(
                     id="simulation",
                     label="Simulation",
                     stage=WorkflowStage.SIMULATION,
                     status=AgentStatus.PENDING,
-                    position={"x": 540, "y": 0},
+                    position={"x": 680, "y": 0},
                 ),
                 ReasoningNode(
                     id="consensus",
                     label="Consensus",
                     stage=WorkflowStage.CONSENSUS,
                     status=AgentStatus.PENDING,
-                    position={"x": 720, "y": 0},
+                    position={"x": 840, "y": 0},
                 ),
             ],
             edges=[
-                ReasoningEdge(
-                    id="e-planner-experts",
-                    source="planner",
-                    target="experts",
-                    label="plan",
-                ),
-                ReasoningEdge(
-                    id="e-experts-debate",
-                    source="experts",
-                    target="debate",
-                    label="challenge",
-                ),
+                *[
+                    ReasoningEdge(
+                        id=f"e-orch-{expert}",
+                        source="orchestrator",
+                        target=f"expert-{expert}",
+                        label="assign",
+                    )
+                    for expert in expert_types
+                ],
+                *[
+                    ReasoningEdge(
+                        id=f"e-{expert}-rag",
+                        source=f"expert-{expert}",
+                        target=f"rag-{expert}",
+                        label="retrieve",
+                    )
+                    for expert in expert_types
+                ],
+                *[
+                    ReasoningEdge(
+                        id=f"e-{expert}-debate",
+                        source=f"expert-{expert}",
+                        target="debate",
+                        label="argue",
+                    )
+                    for expert in expert_types
+                ],
                 ReasoningEdge(
                     id="e-debate-simulation",
                     source="debate",

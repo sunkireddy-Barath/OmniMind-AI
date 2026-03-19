@@ -13,7 +13,7 @@ The platform includes a FastAPI backend, a Next.js frontend, RAG-backed knowledg
 |---|---|
 | Frontend | Next.js 14, TypeScript, Tailwind CSS |
 | Backend | FastAPI, Python 3.13, Uvicorn |
-| Primary LLM Path | DigitalOcean Gradient AI (Llama 3.1 70B) |
+| Primary LLM Path | Airia (Llama 3.1 70B agent) |
 | Additional Providers | OpenAI, Gemini, Groq, OpenRouter, Tavily |
 | Decision Graph | LangGraph workflow pipeline |
 | Data | SQLite (local) or PostgreSQL (prod) |
@@ -42,7 +42,7 @@ start-full-system.bat
 | http://localhost:8000 | Backend API |
 | http://localhost:8000/docs | Swagger UI |
 | http://localhost:8000/health | Service health |
-| http://localhost:8000/api/gradient/status | Gradient provider status |
+| http://localhost:8000/api/airia/status | Airia provider status |
 | http://localhost:8000/api/council/health | Council provider and routing health |
 
 ## Architecture Diagrams
@@ -63,9 +63,9 @@ flowchart LR
 
     Council --> Providers[Provider Router]
     Debate --> Providers
-    Workflow --> Gradient[DigitalOcean Gradient AI]
+    Workflow --> Airia[Airia Platform]
 
-    Providers --> Gradient
+    Providers --> Airia
     Providers --> OpenAI
     Providers --> Gemini
     Providers --> Groq
@@ -121,7 +121,7 @@ sequenceDiagram
 | Strategist | Plan framing | Gemini | Gemini 1.5 Flash |
 | Debater | Counter-positions | Groq | Llama 3.1 |
 | Synthesizer | Pattern merge | Groq | Llama 3.1 |
-| Verifier | Consensus | Hybrid (Gradient-first) | Llama 3.1 70B |
+| Verifier | Consensus | Hybrid (Airia-first) | Llama 3.1 70B |
 
 ## Debate Mode (4 Agents)
 
@@ -132,13 +132,13 @@ sequenceDiagram
 | Kavya | Financial and resource strategy | OpenAI |
 | Ravi | Strategy and execution | Gemini |
 
-## Gradient-First and Provider Drift Policy
+## Airia-First and Provider Drift Policy
 
 The backend now enforces explicit routing semantics:
 
 | Rule | Behavior |
 |---|---|
-| Gradient-first fallback | If a requested provider is unavailable/fails, the system attempts Gradient fallback first |
+| Airia-first fallback | If a requested provider is unavailable/fails, the system attempts Airia fallback first |
 | No silent cross-provider drift | No hidden OpenAI->Gemini or Gemini->Groq substitution without markers |
 | Marker propagation | Responses include explicit fallback markers in payload/text |
 | UI visibility | Frontend surfaces fallback badges and provider requested/used metadata |
@@ -188,8 +188,24 @@ Current API behavior remains backward compatible while structure evolves.
 |---|---|---|
 | POST | /api/queries | Start full decision workflow |
 | GET | /api/queries/{id} | Fetch workflow state |
+| GET | /api/queries/{id}/export?format=json\|pdf | Export decision artifact |
 | WS | /api/queries/{id}/stream | Stream workflow events |
 | POST | /api/simulations | Run scenario simulation |
+
+### Human-in-the-Loop (HITL)
+
+| Method | Path | Description |
+|---|---|---|
+| POST | /api/queries/{id}/hitl/decision | Approve or reject a workflow gate |
+| GET | /api/queries/{id}/hitl | List recorded gate decisions |
+
+### Integrations
+
+| Method | Path | Description |
+|---|---|---|
+| GET | /api/integrations/status | Connectivity status for Airia/Gmail/Calendar |
+| POST | /api/queries/{id}/integrations/execute | Execute integration actions (Gmail/Calendar) |
+| GET | /api/queries/{id}/integrations | Fetch integration execution history |
 
 ### Council
 
@@ -210,9 +226,12 @@ Current API behavior remains backward compatible while structure evolves.
 
 | Variable | Used For |
 |---|---|
-| GRADIENT_API_KEY | Primary/fallback inference path |
-| GRADIENT_BASE_URL | Gradient endpoint base URL |
-| GRADIENT_WORKSPACE_ID | Optional Gradient workspace routing |
+| AIRIA_API_KEY | Primary/fallback inference path |
+| AIRIA_API_URL | Airia endpoint base URL |
+| AIRIA_AGENT_ID | Optional Airia agent routing |
+| GRADIENT_API_KEY | Legacy fallback alias for AIRIA_API_KEY |
+| GRADIENT_BASE_URL | Legacy fallback alias for AIRIA_API_URL |
+| GRADIENT_WORKSPACE_ID | Legacy fallback alias for AIRIA_AGENT_ID |
 | OPENAI_API_KEY | Council OpenAI agents |
 | OPENAI_RESEARCH_API_KEY | Priya research analysis |
 | OPENAI_FINANCE_API_KEY | Kavya financial analysis |

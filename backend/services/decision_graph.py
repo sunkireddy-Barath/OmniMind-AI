@@ -5,6 +5,7 @@ LangGraph decision workflow:
 
 from __future__ import annotations
 
+import asyncio
 from datetime import datetime
 from typing import Awaitable, Callable, TypedDict
 
@@ -25,6 +26,7 @@ from models.schemas import (
 )
 from services.llm_service import AGENT_META, LLMService
 from services.rag_service import RAGService
+from services.session_store import session_store
 
 # Default expert agents in order.
 DEFAULT_EXPERT_TYPES = ["research", "risk", "finance", "strategy", "policy"]
@@ -81,12 +83,78 @@ class DecisionGraph:
                 return a
         return None
 
+    def _graph_node(self, snapshot: QueryResponse, node_id: str):
+        for node in snapshot.graph.nodes:
+            if node.id == node_id:
+                return node
+        return None
+
     def _expert_types_for_snapshot(self, snapshot: QueryResponse) -> list[str]:
         configured = snapshot.context.get("expert_types") if snapshot.context else None
         if not configured:
             return DEFAULT_EXPERT_TYPES
         normalized = [str(x) for x in configured if str(x) in set(DEFAULT_EXPERT_TYPES)]
         return normalized or DEFAULT_EXPERT_TYPES
+
+    def _hitl_enabled(self, snapshot: QueryResponse) -> bool:
+        value = snapshot.context.get("hitl_enabled", True)
+        return bool(value)
+
+    def _latest_hitl_decision(
+        self, snapshot: QueryResponse, gate: str
+    ) -> dict | None:
+        decisions = snapshot.context.get("hitl_decisions") or []
+        for decision in reversed(decisions):
+            if decision.get("gate") == gate:
+                return decision
+        return None
+
+    async def _wait_for_hitl_gate(
+        self,
+        snapshot: QueryResponse,
+        gate: str,
+        prompt: str,
+        timeout_seconds: int = 900,
+    ) -> bool:
+        if not self._hitl_enabled(snapshot):
+            return True
+
+        existing = self._latest_hitl_decision(snapshot, gate)
+        if existing is not None:
+            return bool(existing.get("approved"))
+
+        snapshot.status = SessionStatus.PAUSED
+        snapshot.context["hitl_pending_gate"] = gate
+        snapshot.updated_at = datetime.utcnow()
+        await self._emit(snapshot, "hitl.required", f"{prompt} ({gate})")
+
+        for _ in range(max(1, timeout_seconds // 2)):
+            persisted = await session_store.get(snapshot.id)
+            if persisted is not None:
+                snapshot.context = persisted.context
+                decision = self._latest_hitl_decision(snapshot, gate)
+                if decision is not None:
+                    snapshot.status = SessionStatus.RUNNING
+                    snapshot.context.pop("hitl_pending_gate", None)
+                    snapshot.updated_at = datetime.utcnow()
+                    approved = bool(decision.get("approved"))
+                    await self._emit(
+                        snapshot,
+                        "hitl.resolved",
+                        f"HITL gate {gate} {'approved' if approved else 'rejected'}.",
+                    )
+                    return approved
+            await asyncio.sleep(2)
+
+        snapshot.context.pop("hitl_pending_gate", None)
+        snapshot.status = SessionStatus.FAILED
+        snapshot.updated_at = datetime.utcnow()
+        await self._emit(
+            snapshot,
+            "hitl.timeout",
+            f"Timed out waiting for HITL gate {gate}.",
+        )
+        return False
 
     # ── Stage 1: Planner ────────────────────────────────────────────────────
 
@@ -95,7 +163,9 @@ class DecisionGraph:
         snapshot.status = SessionStatus.RUNNING
         snapshot.current_stage = WorkflowStage.PLANNER
         snapshot.workflow_steps[0].status = AgentStatus.ACTIVE
-        snapshot.graph.nodes[0].status = AgentStatus.ACTIVE
+        orchestrator_node = self._graph_node(snapshot, "orchestrator")
+        if orchestrator_node:
+            orchestrator_node.status = AgentStatus.ACTIVE
         await self._emit(
             snapshot, "stage.started", "Planner is decomposing the decision problem."
         )
@@ -115,7 +185,7 @@ class DecisionGraph:
             agent.output = planner_output
             agent.messages = [planner_output]
             agent.provider = result.get("provider")
-            agent.provider_requested = "gradient"
+            agent.provider_requested = "airia"
             agent.provider_used = result.get("provider")
             agent.model = result.get("model")
             agent.tokens = result.get("tokens_used")
@@ -134,8 +204,11 @@ class DecisionGraph:
         )
         snapshot.workflow_steps[0].status = AgentStatus.COMPLETED
         snapshot.workflow_steps[1].status = AgentStatus.ACTIVE
-        snapshot.graph.nodes[0].status = AgentStatus.COMPLETED
-        snapshot.graph.nodes[1].status = AgentStatus.ACTIVE
+        if orchestrator_node:
+            orchestrator_node.status = AgentStatus.COMPLETED
+        for node in snapshot.graph.nodes:
+            if node.stage == WorkflowStage.EXPERTS:
+                node.status = AgentStatus.ACTIVE
         snapshot.updated_at = datetime.utcnow()
         await self._emit(
             snapshot, "stage.completed", "Planner completed task decomposition."
@@ -191,7 +264,7 @@ class DecisionGraph:
                 agent.output = text
                 agent.messages = [text]
                 agent.provider = result.get("provider")
-                agent.provider_requested = "gradient"
+                agent.provider_requested = "airia"
                 agent.provider_used = result.get("provider")
                 agent.model = result.get("model")
                 agent.tokens = result.get("tokens_used")
@@ -216,8 +289,12 @@ class DecisionGraph:
         state["expert_outputs"] = expert_outputs
         snapshot.workflow_steps[1].status = AgentStatus.COMPLETED
         snapshot.workflow_steps[2].status = AgentStatus.ACTIVE
-        snapshot.graph.nodes[1].status = AgentStatus.COMPLETED
-        snapshot.graph.nodes[2].status = AgentStatus.ACTIVE
+        for node in snapshot.graph.nodes:
+            if node.stage == WorkflowStage.EXPERTS:
+                node.status = AgentStatus.COMPLETED
+        debate_node = self._graph_node(snapshot, "debate")
+        if debate_node:
+            debate_node.status = AgentStatus.ACTIVE
         snapshot.current_stage = WorkflowStage.DEBATE
         snapshot.updated_at = datetime.utcnow()
         await self._emit(
@@ -251,7 +328,7 @@ class DecisionGraph:
             agent.output = summary
             agent.messages = [summary]
             agent.provider = result.get("provider")
-            agent.provider_requested = "gradient"
+            agent.provider_requested = "airia"
             agent.provider_used = result.get("provider")
             agent.model = result.get("model")
             agent.tokens = result.get("tokens_used")
@@ -269,8 +346,12 @@ class DecisionGraph:
         )
         snapshot.workflow_steps[2].status = AgentStatus.COMPLETED
         snapshot.workflow_steps[3].status = AgentStatus.ACTIVE
-        snapshot.graph.nodes[2].status = AgentStatus.COMPLETED
-        snapshot.graph.nodes[3].status = AgentStatus.ACTIVE
+        debate_node = self._graph_node(snapshot, "debate")
+        simulation_node = self._graph_node(snapshot, "simulation")
+        if debate_node:
+            debate_node.status = AgentStatus.COMPLETED
+        if simulation_node:
+            simulation_node.status = AgentStatus.ACTIVE
         snapshot.current_stage = WorkflowStage.SIMULATION
         snapshot.updated_at = datetime.utcnow()
         await self._emit(snapshot, "stage.completed", "Debate phase completed.")
@@ -280,6 +361,22 @@ class DecisionGraph:
 
     async def _simulation_node(self, state: DecisionState) -> DecisionState:
         snapshot = state["snapshot"]
+
+        debate_gate_ok = await self._wait_for_hitl_gate(
+            snapshot,
+            gate="debate_approval",
+            prompt="Human approval required before running scenarios",
+        )
+        if not debate_gate_ok:
+            snapshot.status = SessionStatus.FAILED
+            snapshot.updated_at = datetime.utcnow()
+            await self._emit(
+                snapshot,
+                "session.failed",
+                "Simulation stage blocked by HITL debate approval.",
+            )
+            return state
+
         agent = self._agent_by_type(snapshot, "simulation")
         if agent:
             agent.status = AgentStatus.ACTIVE
@@ -315,8 +412,12 @@ class DecisionGraph:
 
         snapshot.workflow_steps[3].status = AgentStatus.COMPLETED
         snapshot.workflow_steps[4].status = AgentStatus.ACTIVE
-        snapshot.graph.nodes[3].status = AgentStatus.COMPLETED
-        snapshot.graph.nodes[4].status = AgentStatus.ACTIVE
+        simulation_node = self._graph_node(snapshot, "simulation")
+        consensus_node = self._graph_node(snapshot, "consensus")
+        if simulation_node:
+            simulation_node.status = AgentStatus.COMPLETED
+        if consensus_node:
+            consensus_node.status = AgentStatus.ACTIVE
         snapshot.current_stage = WorkflowStage.CONSENSUS
         snapshot.updated_at = datetime.utcnow()
         await self._emit(snapshot, "stage.completed", "Simulation phase completed.")
@@ -326,6 +427,22 @@ class DecisionGraph:
 
     async def _consensus_node(self, state: DecisionState) -> DecisionState:
         snapshot = state["snapshot"]
+
+        scenario_gate_ok = await self._wait_for_hitl_gate(
+            snapshot,
+            gate="scenario_approval",
+            prompt="Human approval required before consensus finalization",
+        )
+        if not scenario_gate_ok:
+            snapshot.status = SessionStatus.FAILED
+            snapshot.updated_at = datetime.utcnow()
+            await self._emit(
+                snapshot,
+                "session.failed",
+                "Consensus stage blocked by HITL scenario approval.",
+            )
+            return state
+
         agent = self._agent_by_type(snapshot, "consensus")
         if agent:
             agent.status = AgentStatus.ACTIVE
@@ -362,7 +479,7 @@ class DecisionGraph:
             agent.output = rec["analysis"]
             agent.messages = [rec["analysis"]]
             agent.provider = rec.get("provider")
-            agent.provider_requested = "gradient"
+            agent.provider_requested = "airia"
             agent.provider_used = rec.get("provider")
             agent.model = rec.get("model")
             agent.tokens = rec.get("tokens_used")
@@ -379,7 +496,9 @@ class DecisionGraph:
             )
         )
         snapshot.workflow_steps[4].status = AgentStatus.COMPLETED
-        snapshot.graph.nodes[4].status = AgentStatus.COMPLETED
+        consensus_node = self._graph_node(snapshot, "consensus")
+        if consensus_node:
+            consensus_node.status = AgentStatus.COMPLETED
         snapshot.current_stage = WorkflowStage.COMPLETED
         snapshot.status = SessionStatus.COMPLETED
         snapshot.updated_at = datetime.utcnow()
