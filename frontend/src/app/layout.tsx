@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "react-hot-toast";
 
-const inter = Inter({ subsets: ["latin"] });
+const spaceGrotesk = Space_Grotesk({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "OmniMind AI - Autonomous Multi-Agent AI Platform",
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#3b82f6",
+  themeColor: "#111111",
 };
 
 import { ThemeProvider } from "@/context/ThemeContext";
@@ -37,7 +37,7 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
       </head>
-      <body className={`${inter.className} antialiased`}>
+      <body className={`${spaceGrotesk.className} antialiased`}>
         <ThemeProvider>
           <div className="min-h-screen mesh-gradient text-[var(--text-primary)]">
             {children}
@@ -46,24 +46,24 @@ export default function RootLayout({
               toastOptions={{
                 duration: 4000,
                 style: {
-                  background: "rgba(255, 255, 255, 0.95)",
+                  background: "rgba(247, 247, 247, 0.97)",
                   backdropFilter: "blur(10px)",
-                  border: "1px solid rgba(255, 255, 255, 0.2)",
+                  border: "1px solid rgba(0, 0, 0, 0.12)",
                   borderRadius: "12px",
-                  color: "#1f2937",
+                  color: "#151515",
                   fontSize: "14px",
-                  fontWeight: "500",
+                  fontWeight: "600",
                 },
                 success: {
                   iconTheme: {
-                    primary: "#22c55e",
-                    secondary: "#ffffff",
+                    primary: "#111111",
+                    secondary: "#f7f7f7",
                   },
                 },
                 error: {
                   iconTheme: {
-                    primary: "#ef4444",
-                    secondary: "#ffffff",
+                    primary: "#111111",
+                    secondary: "#f7f7f7",
                   },
                 },
               }}
