@@ -25,6 +25,7 @@ import Header from "@/components/layout/Header";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { auth, db, googleProvider } from "@/lib/firebase";
+import { useAppStore } from "@/store/useAppStore";
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
@@ -137,10 +138,11 @@ export default function LandingPage() {
       }, { merge: true });
 
       localStorage.setItem("user", JSON.stringify(userData));
+      useAppStore.getState().setMode('live');
       toast.success("Google Neural Sync Established.");
       
       setTimeout(() => {
-        router.push("/mode-selection");
+        router.push("/muse");
       }, 400);
     } catch (error: any) {
       console.error("Google Auth Error:", error);
