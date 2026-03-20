@@ -88,7 +88,12 @@ export default function AppLayout({
           {menuItems.map((item) => (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id)}
+              onClick={() => {
+                if (item.id === "sim") window.location.href = "/muse/scenarios";
+                else if (item.id === "rag") window.location.href = "/muse/reasoning";
+                else if (item.id === "analytics") window.location.href = "/muse/activity";
+                else setActiveTab(item.id);
+              }}
               className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group ${
                 activeTab === item.id
                   ? "active-nav-item text-[var(--bg-main)]"

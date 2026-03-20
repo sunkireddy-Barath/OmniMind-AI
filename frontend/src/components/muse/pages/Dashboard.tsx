@@ -18,9 +18,15 @@ export default function Dashboard() {
 
     setLoading(true);
     try {
+      const userStr = localStorage.getItem("user");
+      let userId = "anonymous_user";
+      if (userStr) {
+        try { userId = JSON.parse(userStr).uid; } catch(e) {}
+      }
+
       const response = await apiClient.createQuery({ 
         query: query.trim(),
-        user_id: "anonymous_user",
+        user_id: userId,
         context: {}
       });
       localStorage.setItem("activeQueryId", response.id);
@@ -111,7 +117,12 @@ export default function Dashboard() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.3 + i * 0.08 }}
               className="glass-panel rounded-xl p-5 space-y-3 hover:border-foreground/20 transition-colors cursor-pointer"
-              onClick={() => router.push("/muse/council")}
+              onClick={() => {
+                if (agent.name.includes("Scenario")) router.push("/muse/scenarios");
+                else if (agent.name.includes("Research")) router.push("/muse/activity");
+                else if (agent.name.includes("RAG") || agent.name.includes("Knowledge")) router.push("/muse/reasoning");
+                else router.push("/muse/council");
+              }}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">

@@ -14,21 +14,20 @@ import {
   Zap,
   Play,
   LogOut,
+  MessageSquare,
+  Share2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useAppStore } from "@/store/useAppStore";
 
 const navItems = [
-  { to: "/muse", icon: LayoutDashboard, label: "Dashboard" },
+  { to: "/muse", icon: LayoutDashboard, label: "Overview" },
   { to: "/muse/council", icon: Users, label: "Agent Council" },
-  { to: "/muse/debate", icon: Swords, label: "Debate Engine" },
-  { to: "/muse/scenarios", icon: BarChart3, label: "Scenarios" },
-  { to: "/muse/reasoning", icon: GitBranch, label: "Reasoning Graph" },
-  { to: "/muse/activity", icon: Activity, label: "Activity Log" },
-  { to: "/muse/export", icon: FileText, label: "Decision Export" },
-  { to: "/simulations", icon: BarChart3, label: "Simulations" },
-  { to: "/research", icon: Play, label: "Research Agent" },
-  { to: "/documents", icon: FileText, label: "Knowledge Base" },
+  { to: "/muse/debate", icon: MessageSquare, label: "Debate Engine" },
+  { to: "/muse/scenarios", icon: BarChart3, label: "Simulations" },
+  { to: "/muse/reasoning", icon: GitBranch, label: "Knowledge Base" },
+  { to: "/muse/activity", icon: Activity, label: "Research Agent" },
+  { to: "/muse/export", icon: Share2, label: "Export" },
 ];
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {

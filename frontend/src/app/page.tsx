@@ -19,13 +19,15 @@ import {
   Database,
   Globe,
   MessageSquare,
-  Sparkles
+  Sparkles,
+  Search,
 } from "lucide-react";
 import Header from "@/components/layout/Header";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 import { auth, db, googleProvider } from "@/lib/firebase";
 import { useAppStore } from "@/store/useAppStore";
+import { apiClient } from "@/lib/api";
 import { 
   signInWithEmailAndPassword, 
   createUserWithEmailAndPassword,
@@ -221,6 +223,54 @@ export default function LandingPage() {
                     <span className="text-[10px] font-bold text-[var(--text-secondary)] opacity-30 uppercase tracking-[0.6em]">Truth Integrity</span>
                   </div>
                 </div>
+
+                {/* Neural Command Input */}
+                <div className="w-full max-w-[550px] mt-10 relative group/search">
+                  <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 to-blue-800 rounded-2xl blur opacity-20 group-hover/search:opacity-40 transition-opacity" />
+                  <div className="relative flex items-center bg-[var(--bg-sidebar)] border border-blue-600/20 rounded-2xl p-2 shadow-2xl overflow-hidden group-hover/search:border-blue-600/40 transition-all">
+                    <Search className="w-5 h-5 text-blue-600 ml-4 flex-shrink-0" />
+                    <input 
+                      type="text" 
+                      placeholder="ENTER STRATEGIC CHALLENGE..."
+                      className="flex-1 bg-transparent border-none py-4 px-6 text-xs font-black text-[var(--text-primary)] placeholder:text-[var(--text-secondary)] placeholder:opacity-30 focus:outline-none uppercase tracking-widest"
+                      onKeyDown={async (e) => {
+                        if (e.key === 'Enter') {
+                          const queryText = (e.target as HTMLInputElement).value;
+                          if (!queryText.trim()) return;
+                          
+                          const userStr = localStorage.getItem("user");
+                          if (!userStr) {
+                            toast.error("Vanguard Linkage Required. Redirecting to Identity Hub...");
+                            document.getElementById("auth-hub")?.scrollIntoView({ behavior: "smooth" });
+                            return;
+                          }
+
+                          try {
+                            const user = JSON.parse(userStr);
+                            toast.success("Query Captured. Warming Neural Core...");
+                            
+                            const response = await apiClient.createQuery({ 
+                              query: queryText.trim(),
+                              user_id: user.uid,
+                              context: {}
+                            });
+                            
+                            localStorage.setItem("activeQueryId", response.id);
+                            localStorage.setItem("activeQueryText", queryText.trim());
+                            router.push("/muse/council"); 
+                          } catch (err) {
+                            console.error("Failed to initiate council:", err);
+                            localStorage.setItem("activeQueryText", queryText.trim());
+                            router.push("/muse");
+                          }
+                        }
+                      }}
+                    />
+                    <div className="hidden md:flex items-center gap-2 mr-4 text-[8px] font-black text-[var(--text-secondary)] opacity-20 uppercase tracking-widest border border-white/5 px-3 py-1.5 rounded-lg">
+                      Enter to Warp
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <motion.div 
@@ -232,7 +282,7 @@ export default function LandingPage() {
               </motion.div>
             </motion.div>
 
-            {/* --- RIGHT: AUTH HUB (Pinned to Right, Perfect Alighnment) --- */}
+            {/* --- RIGHT: AUTH HUB --- */}
             <motion.div 
               id="auth-hub"
               initial={{ opacity: 0, x: 50, scale: 0.95 }}
@@ -242,8 +292,6 @@ export default function LandingPage() {
               className="flex items-center justify-end w-full scroll-mt-32"
             >
               <div className="w-full max-w-[450px] bg-[var(--bg-sidebar)] border border-[var(--border-primary)] rounded-[32px] p-8 lg:p-10 shadow-[var(--shadow-deep)] flex flex-col gap-8 relative overflow-hidden group">
-                 
-                 {/* Symmetrical Header */}
                   <div className="flex flex-col items-center gap-6 text-center">
                      <div className="relative group">
                        <div className="absolute -inset-4 bg-blue-600/20 blur-2xl rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -259,7 +307,6 @@ export default function LandingPage() {
                     </div>
                   </div>
 
-                 {/* VERTICAL FORM STACK */}
                  <div className="flex-1 flex flex-col gap-6 w-full">
                     <form onSubmit={handleFormSubmit} className="flex flex-col w-full gap-5">
                        <AnimatePresence mode="wait">
@@ -268,6 +315,7 @@ export default function LandingPage() {
                              initial={{ opacity: 0, height: 0 }}
                              animate={{ opacity: 1, height: 'auto' }}
                              exit={{ opacity: 0, height: 0 }}
+                             key="name-input"
                              required 
                              type="text" 
                              placeholder="FULL LEGAL NAME"
@@ -297,7 +345,6 @@ export default function LandingPage() {
                        />
                     </form>
 
-                    {/* ACTION SECTION */}
                      <div className="flex flex-col gap-4 pt-6 border-t border-[var(--border-primary)]">
                         <motion.button
                            onClick={(e) => handleFormSubmit(e as any)}
@@ -344,10 +391,8 @@ export default function LandingPage() {
                              {isLogin ? "NO IDENTITY? INITIALIZE JOIN" : "MEMBER? DIRECT LINK"}
                           </button>
                        </div>
-                    </div>
+                     </div>
                  </div>
-                 
-                 {/* Internal glass highlights */}
                  <div className="absolute top-0 inset-x-0 h-40 bg-gradient-to-b from-blue-600/[0.05] to-transparent pointer-events-none" />
               </div>
             </motion.div>
@@ -378,7 +423,14 @@ export default function LandingPage() {
                 className="group relative p-12 bg-[var(--bg-sidebar)] border border-[var(--border-primary)] rounded-[40px] hover:border-blue-600/30 transition-all flex flex-col gap-10 overflow-hidden"
               >
                 <div className="absolute -right-20 -top-20 w-64 h-64 bg-blue-600/5 blur-[100px] rounded-full group-hover:bg-blue-600/10 transition-all" />
-                <div className="w-16 h-16 rounded-2xl bg-[var(--bg-main)] flex items-center justify-center border border-[var(--border-primary)] group-hover:bg-blue-600 group-hover:border-blue-600 transition-all">
+                <div 
+                  className="w-16 h-16 rounded-2xl bg-[var(--bg-main)] flex items-center justify-center border border-[var(--border-primary)] group-hover:bg-blue-600 group-hover:border-blue-600 transition-all cursor-pointer"
+                  onClick={() => {
+                    const user = localStorage.getItem("user");
+                    if (user) router.push("/muse/council");
+                    else document.getElementById("auth-hub")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                >
                   <Network className="w-8 h-8 group-hover:text-black transition-all" />
                 </div>
                 <div className="flex flex-col gap-4">
@@ -399,7 +451,14 @@ export default function LandingPage() {
                 className="group relative p-12 bg-[var(--bg-sidebar)] border border-[var(--border-primary)] rounded-[40px] hover:border-blue-600/30 transition-all flex flex-col gap-10 overflow-hidden"
               >
                 <div className="absolute -right-20 -top-20 w-64 h-64 bg-blue-800/5 blur-[100px] rounded-full group-hover:bg-blue-600/10 transition-all" />
-                <div className="w-16 h-16 rounded-2xl bg-[var(--bg-main)] flex items-center justify-center border border-[var(--border-primary)] group-hover:bg-blue-600 group-hover:border-blue-600 transition-all">
+                <div 
+                  className="w-16 h-16 rounded-2xl bg-[var(--bg-main)] flex items-center justify-center border border-[var(--border-primary)] group-hover:bg-blue-600 group-hover:border-blue-600 transition-all cursor-pointer"
+                  onClick={() => {
+                    const user = localStorage.getItem("user");
+                    if (user) router.push("/muse/reasoning");
+                    else document.getElementById("auth-hub")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                >
                   <Database className="w-8 h-8 group-hover:text-black transition-all" />
                 </div>
                 <div className="flex flex-col gap-4">
@@ -420,7 +479,14 @@ export default function LandingPage() {
                 className="group relative p-12 bg-[var(--bg-sidebar)] border border-[var(--border-primary)] rounded-[40px] hover:border-blue-600/30 transition-all flex flex-col gap-10 overflow-hidden"
               >
                 <div className="absolute -right-20 -top-20 w-64 h-64 bg-blue-400/5 blur-[100px] rounded-full group-hover:bg-blue-600/10 transition-all" />
-                <div className="w-16 h-16 rounded-2xl bg-[var(--bg-main)] flex items-center justify-center border border-[var(--border-primary)] group-hover:bg-blue-600 group-hover:border-blue-600 transition-all">
+                <div 
+                  className="w-16 h-16 rounded-2xl bg-[var(--bg-main)] flex items-center justify-center border border-[var(--border-primary)] group-hover:bg-blue-600 group-hover:border-blue-600 transition-all cursor-pointer"
+                  onClick={() => {
+                    const user = localStorage.getItem("user");
+                    if (user) router.push("/muse/scenarios");
+                    else document.getElementById("auth-hub")?.scrollIntoView({ behavior: "smooth" });
+                  }}
+                >
                   <Activity className="w-8 h-8 group-hover:text-black transition-all" />
                 </div>
                 <div className="flex flex-col gap-4">
