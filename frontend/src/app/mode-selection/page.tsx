@@ -33,7 +33,7 @@ export default function ModeSelection() {
   };
 
   return (
-    <div className="relative min-h-screen bg-[#050505] text-white flex flex-col items-center justify-center p-6 font-[family-name:var(--font-space-grotesk)] overflow-hidden">
+    <div className="relative min-h-screen bg-[var(--bg-main)] text-[var(--text-primary)] flex flex-col items-center justify-center p-6 font-[family-name:var(--font-space-grotesk)] overflow-hidden">
       
       {/* Background Decor */}
       <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-20">
@@ -46,100 +46,104 @@ export default function ModeSelection() {
         {/* DEMO CARD */}
         <motion.div 
           whileHover={{ scale: 1.02 }}
-          className="glass-panel p-10 rounded-[32px] border border-white/5 bg-white/[0.02] flex flex-col justify-between gap-12 group cursor-pointer"
+          className="glass-panel p-10 rounded-[32px] border border-[var(--border-primary)] bg-[var(--glass-bg)] flex flex-col justify-between gap-12 group cursor-pointer"
           onClick={handleSelectDemo}
         >
-          <div className="space-y-6">
-            <div className="w-16 h-16 rounded-2xl bg-blue-500/10 flex items-center justify-center border border-blue-500/20 group-hover:bg-blue-500/20 transition-all">
-              <Play className="w-8 h-8 text-blue-500" />
+          <div className="flex flex-col gap-6">
+            <div className="w-14 h-14 rounded-2xl bg-white/[0.05] border border-white/5 flex items-center justify-center text-blue-500 group-hover:bg-blue-600 group-hover:text-black transition-all">
+              <Play className="fill-current" />
             </div>
             <div>
-              <h2 className="text-3xl font-black italic tracking-tighter uppercase mb-2">Demo Mode</h2>
-              <p className="text-sm text-white/40 leading-relaxed">
-                Experience the full power of OmniMind with locally simulated data. No API dependency. Perfect for evaluation.
+              <h2 className="text-3xl font-black italic tracking-tighter uppercase mb-2">Simulation <br /> <span className="text-blue-600">Archive</span></h2>
+              <p className="text-xs font-medium text-[var(--text-secondary)] opacity-40 uppercase tracking-widest leading-relaxed">
+                Explore the council with pre-generated strategic data. No keys required.
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-4 text-xs font-black uppercase tracking-[0.4em] text-blue-500 group-hover:gap-6 transition-all">
-            Enter Simulation <ArrowRight className="w-4 h-4" />
+          <div className="flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.5em] text-blue-600 border-t border-[var(--border-primary)] pt-8 group-hover:gap-6 transition-all">
+            Initiate Warp <ArrowRight className="w-4 h-4" />
           </div>
         </motion.div>
 
         {/* LIVE CARD */}
         <motion.div 
           initial={false}
-          animate={{ height: isLiveActive ? 'auto' : '100%' }}
-          className={`glass-panel p-10 rounded-[32px] border transition-all duration-500 ${isLiveActive ? 'border-primary shadow-[0_0_60px_rgba(59,130,246,0.15)] bg-white/[0.04]' : 'border-white/5 bg-white/[0.02]'}`}
+          animate={{ height: isLiveActive ? 'auto' : 'auto' }}
+          whileHover={{ scale: 1.02 }}
+          className={`glass-panel p-10 rounded-[32px] border transition-all duration-500 overflow-hidden flex flex-col justify-between gap-12 ${isLiveActive ? 'border-blue-600 bg-blue-600/[0.02]' : 'border-[var(--border-primary)] bg-[var(--glass-bg)] hover:border-blue-600/30'}`}
         >
-          <div className="flex flex-col h-full justify-between gap-12">
-            <div className="space-y-6">
-              <div className={`w-16 h-16 rounded-2xl flex items-center justify-center border transition-all ${isLiveActive ? 'bg-primary/20 border-primary/40' : 'bg-white/5 border-white/10'}`}>
-                <Zap className={`w-8 h-8 ${isLiveActive ? 'text-primary' : 'text-white/40'}`} />
+          <div className="flex flex-col gap-6">
+            <div className="flex items-center justify-between">
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all ${isLiveActive ? 'bg-blue-600 text-black shadow-[0_0_30px_rgba(59,130,246,0.5)]' : 'bg-white/[0.05] border border-white/5 text-blue-500'}`}>
+                <Zap className={`fill-current ${isLiveActive ? 'animate-pulse' : ''}`} />
               </div>
-              <div>
-                <h2 className="text-3xl font-black italic tracking-tighter uppercase mb-2">Live Mode</h2>
-                <p className="text-sm text-white/40 leading-relaxed">
-                  Connect to real multi-agent models via the Airia gateway. Requires a valid API Key for inference routing.
-                </p>
-              </div>
-
-              <AnimatePresence>
-                {!isLiveActive ? (
-                  <motion.button 
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    onClick={() => setIsLiveActive(true)}
-                    className="flex items-center gap-4 text-xs font-black uppercase tracking-[0.4em] text-white/40 hover:text-white transition-all pt-6"
-                  >
-                    Establish Link <ArrowRight className="w-4 h-4" />
-                  </motion.button>
-                ) : (
-                  <motion.form 
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    className="space-y-4 pt-6"
-                    onSubmit={handleSelectLive}
-                  >
-                    <div className="relative">
-                      <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-white/20" />
-                      <input 
-                        required
-                        type="password"
-                        value={tempKey}
-                        onChange={(e) => setTempKey(e.target.value)}
-                        placeholder="ENTER_API_KEY_HERCULES"
-                        className="w-full bg-[#0a0a0a] border border-white/10 rounded-xl py-4 pl-12 pr-4 text-xs font-mono text-white placeholder:text-white/10 focus:outline-none focus:border-primary transition-all uppercase tracking-widest"
-                      />
-                    </div>
-                    <button 
-                      type="submit"
-                      className="w-full bg-primary text-white py-4 rounded-xl text-[10px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-3 hover:bg-primary/90 transition-all"
-                    >
-                      <ShieldCheck className="w-4 h-4" /> Verify & Launch
-                    </button>
-                    <button 
-                      type="button"
-                      onClick={() => setIsLiveActive(false)}
-                      className="w-full text-[10px] text-white/20 hover:text-white uppercase tracking-[0.2em] pt-2"
-                    >
-                      Cancel
-                    </button>
-                  </motion.form>
-                )}
-              </AnimatePresence>
+              {!isLiveActive && (
+                 <button 
+                  onClick={() => setIsLiveActive(true)}
+                  className="px-4 py-2 rounded-full border border-blue-600/20 text-blue-600 text-[9px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-black transition-all"
+                >
+                  Unlock Live
+                </button>
+              )}
             </div>
             
-            {isLiveActive && (
-               <div className="flex items-start gap-3 p-4 bg-white/5 border border-white/5 rounded-2xl">
-                 <Info className="w-4 h-4 text-blue-500 flex-shrink-0 mt-0.5" />
-                 <p className="text-[10px] text-white/40 leading-tight">Your API key is only stored in your browser's local sandbox for session continuity.</p>
-               </div>
-            )}
-          </div>
-        </motion.div>
+            <div>
+              <h2 className="text-3xl font-black italic tracking-tighter uppercase mb-2">Vanguard <br /> <span className="text-blue-600">Direct</span></h2>
+              <p className="text-xs font-medium text-[var(--text-secondary)] opacity-40 uppercase tracking-widest leading-relaxed">
+                Connect your unique identity for real-time strategic orchestration. 
+              </p>
+            </div>
 
+            <AnimatePresence>
+              {isLiveActive && (
+                <motion.form 
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="pt-6 border-t border-[var(--border-primary)] mt-4 space-y-4"
+                  onSubmit={handleSelectLive}
+                >
+                  <div className="relative">
+                    <Key className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-blue-500" />
+                    <input 
+                      autoFocus
+                      type="password"
+                      value={tempKey}
+                      onChange={(e) => setTempKey(e.target.value)}
+                      placeholder="ENTER HYPER-CIPHER..."
+                      className="w-full bg-[var(--bg-main)] border border-[var(--border-primary)] rounded-xl py-4 pl-12 pr-6 text-[10px] font-bold text-[var(--text-primary)] focus:border-blue-600 outline-none placeholder:text-[var(--text-secondary)] placeholder:opacity-20 transition-all uppercase tracking-widest"
+                    />
+                  </div>
+                  <button 
+                    type="submit"
+                    className="w-full bg-blue-600 text-black py-4 rounded-xl text-[10px] font-black uppercase tracking-[0.4em] flex items-center justify-center gap-3 hover:bg-white transition-all shadow-[0_20px_40px_rgba(59,130,246,0.2)]"
+                  >
+                    Establish Link <ArrowRight className="w-4 h-4" />
+                  </button>
+                  <button 
+                    type="button"
+                    onClick={() => setIsLiveActive(false)}
+                    className="w-full text-[9px] font-black text-[var(--text-secondary)] opacity-20 uppercase tracking-widest hover:opacity-100 transition-all"
+                  >
+                    Abort Connection
+                  </button>
+                </motion.form>
+              )}
+            </AnimatePresence>
+          </div>
+
+          {!isLiveActive && (
+             <div className="flex items-center gap-2 text-[9px] font-bold uppercase tracking-widest text-[var(--text-secondary)] opacity-20">
+              <ShieldCheck className="w-4 h-4 text-blue-600" /> End-to-End Linkage
+            </div>
+          )}
+        </motion.div>
       </div>
+
+       {/* Security Badge */}
+       <div className="absolute bottom-10 flex items-center gap-4 text-[10px] font-black uppercase tracking-[0.6em] text-[var(--text-secondary)] opacity-10">
+          <Info className="w-4 h-4" /> Validating Neural Architecture v4.3.3
+       </div>
+
     </div>
   );
 }

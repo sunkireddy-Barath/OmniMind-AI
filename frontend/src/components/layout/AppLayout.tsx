@@ -58,7 +58,7 @@ export default function AppLayout({
         {/* Toggle Button */}
         <button
           onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
-          className="absolute -right-3 top-20 w-6 h-6 bg-[#0a0a0a] rounded-full flex items-center justify-center text-white shadow-lg border border-black/80 z-50 hover:scale-110 transition-transform"
+          className="absolute -right-3 top-20 w-6 h-6 bg-[var(--bg-main)] rounded-full flex items-center justify-center text-[var(--text-primary)] shadow-lg border border-[var(--border-primary)] z-50 hover:scale-110 transition-transform"
         >
           {isSidebarCollapsed ? (
             <ChevronRight size={14} />
@@ -68,15 +68,15 @@ export default function AppLayout({
         </button>
 
         {/* Brand */}
-        <div className="p-5 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-[#0a0a0a] flex items-center justify-center shrink-0 shadow-sm">
-            <Brain className="text-white w-5 h-5" />
+        <div className="p-4 flex items-center gap-3">
+          <div className="w-7 h-7 rounded-lg bg-[var(--bg-main)] flex items-center justify-center shrink-0 shadow-sm border border-[var(--border-primary)]">
+            <Brain className="text-[var(--text-primary)] w-4 h-4" />
           </div>
           {!isSidebarCollapsed && (
             <motion.span
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="text-lg font-semibold tracking-tight text-[var(--text-primary)]"
+              className="text-[15px] font-black tracking-tight text-[var(--text-primary)] uppercase"
             >
               OmniMind
             </motion.span>
@@ -84,27 +84,27 @@ export default function AppLayout({
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-3 py-6 space-y-1">
+        <nav className="flex-1 px-2.5 py-4 space-y-1">
           {menuItems.map((item) => (
             <button
               key={item.id}
               onClick={() => setActiveTab(item.id)}
-              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group ${
+              className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg transition-all duration-200 group ${
                 activeTab === item.id
-                  ? "active-nav-item text-[var(--text-primary)]"
+                  ? "active-nav-item text-[var(--bg-main)]"
                   : "text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:bg-[var(--glass-bg)]"
               }`}
             >
               <item.icon
-                size={18}
+                size={16}
                 className={
                   activeTab === item.id
-                    ? "text-[var(--text-primary)]"
+                    ? "text-inherit"
                     : "group-hover:text-[var(--text-primary)] transition-colors"
                 }
               />
               {!isSidebarCollapsed && (
-                <span className="text-sm font-medium whitespace-nowrap">
+                <span className="text-[11px] font-black uppercase tracking-widest whitespace-nowrap">
                   {item.name}
                 </span>
               )}
@@ -120,7 +120,7 @@ export default function AppLayout({
           >
             <LogOut size={18} />
             {!isSidebarCollapsed && (
-              <span className="text-sm font-medium">Sign Out</span>
+              <span className="text-[10px] font-black uppercase tracking-widest">Sign Out</span>
             )}
           </button>
         </div>
@@ -131,7 +131,7 @@ export default function AppLayout({
         {/* Top Header */}
         <header className="h-16 bg-[var(--glass-bg)] backdrop-blur-xl border-b border-[var(--border-primary)] px-8 flex items-center justify-between z-20">
           <div className="flex items-center gap-4">
-            <h2 className="text-sm font-medium text-[var(--text-secondary)]">
+            <h2 className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--text-secondary)] opacity-50">
               {menuItems.find((i) => i.id === activeTab)?.name ||
                 "Welcome Center"}
             </h2>
@@ -157,17 +157,17 @@ export default function AppLayout({
             {/* Profile */}
             <div className="relative flex items-center gap-3 pl-4 border-l border-[var(--border-primary)]">
               <div className="text-right hidden sm:block">
-                <p className="text-xs font-medium">{user.name}</p>
-                <p className="text-[10px] text-[var(--text-secondary)]">
+                <p className="text-[10px] font-black uppercase tracking-widest">{user.name}</p>
+                <p className="text-[8px] text-[var(--text-secondary)] opacity-40 uppercase tracking-widest">
                   Member
                 </p>
               </div>
-              <div
+               <div
                 onClick={() => setIsProfileOpen(!isProfileOpen)}
                 className="relative cursor-pointer"
               >
-                <div className="w-8 h-8 rounded-lg bg-[#0a0a0a] flex items-center justify-center font-bold text-white shadow-sm hover:bg-[#1a1a1a] transition-colors">
-                  {user.name.charAt(0)}
+                <div className="w-7 h-7 rounded-lg bg-[var(--bg-main)] flex items-center justify-center font-bold text-[var(--text-primary)] shadow-sm border border-[var(--border-primary)] hover:bg-[var(--glass-bg)] transition-colors">
+                  <span className="text-xs">{user.name.charAt(0)}</span>
                 </div>
               </div>
 
@@ -182,7 +182,7 @@ export default function AppLayout({
                       initial={{ opacity: 0, y: 10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 top-16 w-56 bg-[var(--bg-elev-1)] backdrop-blur-2xl border border-[var(--border-primary)] rounded-2xl shadow-[0_20px_40px_rgba(0,0,0,0.2)] p-2 z-50 overflow-hidden"
+                      className="absolute right-0 top-16 w-56 bg-[var(--bg-elev-1)] backdrop-blur-2xl border border-[var(--border-primary)] rounded-2xl shadow-[var(--shadow-deep)] p-2 z-50 overflow-hidden"
                     >
                       <div className="px-4 py-3 mb-2 border-b border-[var(--border-primary)]">
                         <p className="text-[10px] font-bold text-[var(--text-primary)] uppercase tracking-tighter truncate">
@@ -228,14 +228,6 @@ export default function AppLayout({
         <main
           className={`flex-1 relative scrollbar-hide ${activeTab === "chat" ? "overflow-hidden" : "overflow-y-auto overflow-x-hidden"}`}
         >
-          {/* Background decoration */}
-          {activeTab !== "chat" && (
-            <>
-              <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-black/5 blur-[120px] rounded-full -mr-64 -mt-64 pointer-events-none" />
-              <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-white/40 blur-[120px] rounded-full -ml-64 -mb-64 pointer-events-none" />
-            </>
-          )}
-
           <div className="relative z-10">{children}</div>
         </main>
       </div>
